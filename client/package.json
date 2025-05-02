@@ -1,5 +1,5 @@
 {
-  "name": "zik_cilent",
+  "name": "client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
