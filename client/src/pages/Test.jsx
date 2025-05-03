@@ -33,7 +33,7 @@ const Test = () => {
         //   dimmed={true}
         // />
 
-        <CareerSelectModal />
+        <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
       )}
     </div>
   );

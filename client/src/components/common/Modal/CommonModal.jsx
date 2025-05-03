@@ -18,7 +18,7 @@ const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
             닫기
           </button>
           <button
-            onClick={""}
+            onClick={()=>{}}
             className="bg-zik-main flex-1 rounded-lg p-2 text-white"
           >
             {btnText}
