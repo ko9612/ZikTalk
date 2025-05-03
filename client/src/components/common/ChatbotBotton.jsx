@@ -14,7 +14,7 @@ const ChatbotBotton = () => {
   return (
     <div
       className={twMerge(
-        "fixed right-5 bottom-20 z-50 flex flex-col items-end gap-6 transition-all duration-500 sm:bottom-28 md:right-8 md:bottom-32",
+        "fixed right-5 bottom-20 z-30 flex flex-col items-end gap-6 transition-all duration-500 sm:bottom-28 md:right-8 md:bottom-32",
       )}
     >
       {isChatOpen && <ChatContainer />}
@@ -25,7 +25,7 @@ const ChatbotBotton = () => {
           topButtonVisible && "right-20 sm:right-24 md:right-32",
         )}
       >
-        <IoChatbubble className="h-10 w-10 p-[1px]" />
+        <IoChatbubble size={35} className="p-[1px]" />
       </button>
     </div>
   );
