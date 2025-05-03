@@ -74,3 +74,36 @@
   --color-zik-border: oklch(0.82 0 0);
   --color-zik-text: oklch(0.49 0.073 286.36);
 }
+
+@layer utilities {
+  .stroke-draw-check {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: stroke-draw 1s linear forwards;
+  }
+
+  @keyframes stroke-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .dot-bounce {
+    @apply h-3 w-3 rounded-full;
+    background-color: oklch(0.82 0 0);
+    animation: bounce-color 1.2s infinite ease-in-out;
+  }
+
+  @keyframes bounce-color {
+    0%,
+    80%,
+    100% {
+      transform: translateY(0);
+      background-color: oklch(0.82 0 0);
+    }
+    40% {
+      transform: translateY(-6px);
+      background-color: oklch(0.63 0.2032 281.04);
+    }
+  }
+}
