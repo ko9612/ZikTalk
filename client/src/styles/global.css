@@ -1,10 +1,5 @@
 /* 기본 Tailwind 레이어 구조 */
 @layer base {
-  /* pc화면 최대너비, 나중에 #root 바꿔야 함 */
-  #root {
-    @apply mx-auto max-w-[1440px];
-  }
-
   /* 계산하기 쉽게 기본 픽셀 10px, 10px 당 1rem으로 계산하면 됨*/
   html {
     font-size: 10px;
@@ -70,6 +65,11 @@
 @layer components {
   .blind {
     @apply absolute top-[-9999px];
+  }
+
+  /* 임시 */
+  .container-wrap {
+    @apply flex items-center justify-center;
   }
 }
 
