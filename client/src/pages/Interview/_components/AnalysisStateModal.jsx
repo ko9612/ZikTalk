@@ -18,8 +18,10 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
             <i className="w-12">
               <img src={MainLogo} alt="logo" />
             </i>
-            <p className="text-xl font-semibold">모의면접이 완료되었습니다.</p>
-            <p className="text-zik-text text-sm">
+            <p className="text-center text-base font-semibold sm:text-xl">
+              모의면접이 완료되었습니다.
+            </p>
+            <p className="text-zik-text text-center text-sm">
               답변 분석 및 피드백을 생성하는 중...
             </p>
             <LoadingIcon />
@@ -27,10 +29,13 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
         ) : (
           <>
             <AnalysisCompleteIcon />
-            <p className="text-xl font-semibold">
+            <p className="text-center text-base font-semibold sm:text-xl">
               User님의 답변 분석이 완료되었습니다!
             </p>
-            <Link to="" className="bg-zik-main rounded-lg px-8 py-3 text-white">
+            <Link
+              to=""
+              className="bg-zik-main rounded-lg px-8 py-3 text-center text-sm text-white sm:text-base"
+            >
               분석 결과 페이지로 이동
             </Link>
           </>
