@@ -3,7 +3,7 @@ import { useState } from "react";
 import { IoChatbubble } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
 import useVisibilityStore from "../../store/useVisibilityStore";
-import ChatContainer from "./chatbot/ChatContainer";
+import ChatContainer from "../chatbot/ChatContainer";
 
 const ChatbotBotton = () => {
   const topButtonVisible = useVisibilityStore(
