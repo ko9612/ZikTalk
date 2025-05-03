@@ -1,10 +1,5 @@
 /* 기본 Tailwind 레이어 구조 */
 @layer base {
-  /* 계산하기 쉽게 기본 픽셀 10px, 10px 당 1rem으로 계산하면 됨*/
-  html {
-    font-size: 10px;
-  }
-
   /* 모든 선택자 여백제거 */
   * {
     @apply m-0 box-border p-0;
