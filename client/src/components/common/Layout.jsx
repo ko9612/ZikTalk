@@ -1,8 +1,9 @@
 // 해당 컴포넌트에 헤더 푸터, css임시로 대충 해둔거라 변경해야함
 import { Outlet, Link } from "react-router-dom";
 import TopButton from "./TopButton";
+import ChatbotBotton from "./ChatbotBotton";
 
-export default function Layout() {
+const Layout = () => {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -28,6 +29,9 @@ export default function Layout() {
       </footer>
 
       <TopButton />
+      <ChatbotBotton />
     </div>
   );
-}
+};
+
+export default Layout;

@@ -1,10 +1,11 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import useVisibilityStore from "../../store/useVisibilityStore";
+import { useEffect } from "react";
 import { twJoin } from "tailwind-merge";
 import { FaAngleUp } from "react-icons/fa";
 
 const TopButton = () => {
-  const [topButtonVisible, setTopButtonVisible] = useState(false);
+  const { topButtonVisible, setTopButtonVisible } = useVisibilityStore();
 
   useEffect(() => {
     const handleScroll = () => {
