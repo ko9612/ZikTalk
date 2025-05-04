@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 
 // 드롭다운에 표시될 옵션 목록 정의
 const options = [
-  { value: '필터 옵션 1', label: '필터 옵션 1' },
-  { value: '필터 옵션 2', label: '필터 옵션 2' },
-  { value: '필터 옵션 3', label: '필터 옵션 3' },
+  { value: '최신순', label: '최신순' },
+  { value: '별', label: '별' },
+  { value: '조회수', label: '조회수' },
 ];
 
-const FilterDropdown = ({ value, onChange }) => {
+const FilterDropdown = ({ value = '최신순', onChange }) => {
   // 드롭다운 열림/닫힘 상태 관리
   const [open, setOpen] = useState(false);
   // 드롭다운 컴포넌트의 DOM 요소 참조를 위한 ref
@@ -33,6 +33,9 @@ const FilterDropdown = ({ value, onChange }) => {
     setOpen(false); // 선택 후 드롭다운 닫기
   };
 
+  // 현재 선택된 값이 options에 없는 경우 기본값으로 설정
+  const currentValue = options.find(opt => opt.value === value) ? value : '최신순';
+
   return (
     <div className="relative w-48" ref={ref}>
       {/* 드롭다운 토글 버튼 */}
@@ -43,10 +46,14 @@ const FilterDropdown = ({ value, onChange }) => {
         aria-haspopup="listbox" // 접근성: 팝업 목록이 있음을 표시
         aria-expanded={open} // 접근성: 현재 드롭다운 상태 표시
       >
-        {value} {/* 현재 선택된 값 표시 */}
-        <span className={`ml-2 transition-transform duration-200 ${!open ? 'rotate-180' : ''}`}>
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        {currentValue} {/* 현재 선택된 값 표시 */}
+        <span className="ml-2 transition-transform duration-200">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d={open ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}
+            />
           </svg>
         </span>
       </button>
@@ -58,9 +65,9 @@ const FilterDropdown = ({ value, onChange }) => {
             {options.map((opt) => (
               <li
                 key={opt.value} // React 리스트 렌더링을 위한 고유 키
-                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${value === opt.value ? 'bg-gray-50 text-zik-main font-medium' : 'text-gray-700'}`}
+                className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-100 ${currentValue === opt.value ? 'bg-gray-50 text-zik-main font-medium' : 'text-gray-700'}`}
                 role="option" // 접근성: 옵션 역할 지정
-                aria-selected={value === opt.value} // 접근성: 현재 선택된 항목 표시
+                aria-selected={currentValue === opt.value} // 접근성: 현재 선택된 항목 표시
                 onClick={() => handleSelect(opt.value)} // 클릭 시 해당 옵션 선택
               >
                 {opt.label} {/* 옵션 텍스트 표시 */}
