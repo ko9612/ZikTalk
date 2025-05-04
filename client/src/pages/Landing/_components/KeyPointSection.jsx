@@ -2,7 +2,7 @@
 import React from "react";
 
 const KeyPointSection = () => {
-  return <div></div>;
+  return <div>KeyPoint</div>;
 };
 
 export default KeyPointSection;
