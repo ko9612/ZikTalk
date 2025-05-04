@@ -2,7 +2,7 @@
 import React from "react";
 
 const BottomSection = () => {
-  return <div></div>;
+  return <div>Bottom</div>;
 };
 
 export default BottomSection;

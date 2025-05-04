@@ -2,7 +2,7 @@
 import React from "react";
 
 const FeatureSection = () => {
-  return <div></div>;
+  return <div>Feature</div>;
 };
 
 export default FeatureSection;
