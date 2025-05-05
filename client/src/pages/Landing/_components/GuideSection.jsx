@@ -25,10 +25,10 @@ const faqList = [
   },
 ];
 
-function autoLineBreak(text) {
-  if (!text) return "";
-  return text.replace(/(\.|\?|\!)/g, "$1\n");
-}
+// function autoLineBreak(text) {
+//   if (!text) return "";
+//   return text.replace(/(\.|\?|\!)/g, "$1\n");
+// }
 
 const GuideSection = () => {
   const [faqs, setFaqs] = React.useState(faqList);
@@ -57,7 +57,7 @@ const GuideSection = () => {
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white transition-all duration-300"
+              className="w-full cursor-pointer rounded-xl border border-gray-400 bg-white transition-all duration-300"
               style={{ minHeight: 56 }}
               onClick={() => toggleFaq(idx)}
             >
@@ -67,7 +67,8 @@ const GuideSection = () => {
                   alt="Q"
                   className="mr-3 h-5 w-5"
                 />
-                <span className="flex-1 text-left text-lg leading-tight font-semibold text-gray-900">
+                <span className="flex-1 text-left text-base leading-tight font-semibold text-gray-600">
+                
                   {faq.question}
                 </span>
                 <span
@@ -92,7 +93,7 @@ const GuideSection = () => {
               <div
                 className={`overflow-hidden rounded-b-2xl bg-white px-6 transition-all duration-300 ${
                   faq.expanded
-                    ? "max-h-[1000px] py-4 opacity-100"
+                    ? "max-h-[100px] py-2 opacity-100"
                     : "max-h-0 py-0 opacity-0"
                 }`}
                 style={{ willChange: "max-height, opacity, padding" }}
@@ -100,24 +101,14 @@ const GuideSection = () => {
                 {/* 답변 섹션 */}
                 {faq.answer && (
                   <div className="mb-4">
-                    <div className="mb-2 text-sm font-medium text-gray-500">
+                    <div className="mb-2 text-sm font-medium text-gray-200">
                     </div>
-                    <div className="rounded-2xl bg-gray-50 p-4 text-base text-gray-800">
+                    <div className="rounded-2xl bg-gray-50 p-4 text-base text-gray-500">
                       {faq.answer}
                     </div>
                   </div>
                 )}
-                {/* 추천 답변 섹션 */}
-                {faq.recommendation && (
-                  <div className="mb-4">
-                    <div className="mb-2 text-sm font-medium text-gray-500">
-                      추천 답변
-                    </div>
-                    <div className="rounded-2xl bg-gray-50 p-4 text-base text-gray-800">
-                      {faq.recommendation}
-                    </div>
-                  </div>
-                )}
+                
               </div>
             </div>
           ))}
