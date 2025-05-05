@@ -10,7 +10,7 @@ const Test = () => {
   // Modal Test
   const [isOpenModal, setIsOpenModal] = useState(false);
   // FaqItem 상태 관리
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [openedIndex, setOpenedIndex] = useState(null);
   const [isStarred, setIsStarred] = useState(false);
   const [selected, setSelected] = useState('필터 옵션 1');
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,11 +18,6 @@ const Test = () => {
 
   const modalHandler = () => {
     setIsOpenModal(!isOpenModal);
-  };
-
-  // FaqItem 토글 핸들러
-  const handleToggle = () => {
-    setIsExpanded(!isExpanded);
   };
 
   // FaqItem 즐겨찾기 토글 핸들러
@@ -60,18 +55,36 @@ const Test = () => {
           
           {/* FaqItem 테스트 */}
           <div>
-            <FaqItem 
-              id="1"
-              title="자주 묻는 질문 예시"
-              career="신입 개발자"
-              question="이 서비스는 어떻게 사용하나요?"
-              answer="이 서비스는 간단하게 회원가입 후 이용할 수 있습니다."
-              recommendation="이 서비스는 회원가입 후 바로 이용 가능합니다. 메인 페이지에서 원하는 기능을 선택하여 사용하시면 됩니다."
-              isExpanded={isExpanded}
-              onToggle={handleToggle}
-              isStarred={isStarred}
-              onStarToggle={handleStarToggle}
-            />
+            {[
+              {
+                career: "프론트엔드개발자",
+                type: "인성",
+                question: "이 서비스는 어떻게 사용하나요?",
+                answer: "이 서비스는 간단하게 회원가입 후 이용할 수 있습니다.",
+                recommendation: "이 서비스는 회원가입 후 바로 이용 가능합니다. 메인 페이지에서 원하는 기능을 선택하여 사용하시면 됩니다."
+              },
+              {
+                career: "백엔드개발자",
+                type: "직무",
+                question: "면접 준비는 어떻게 하나요?",
+                answer: "면접 준비는 자주 묻는 질문을 연습하는 것이 좋습니다.",
+                recommendation: "면접 준비는 예상 질문을 미리 연습하고 자신의 경험을 정리해두는 것이 효과적입니다."
+              }
+            ].map((item, index) => (
+              <FaqItem 
+                key={index}
+                id={`${index + 1}`}
+                career={item.career}
+                type={item.type}
+                question={item.question}
+                answer={item.answer}
+                recommendation={item.recommendation}
+                isExpanded={openedIndex === index}
+                onToggle={() => setOpenedIndex(openedIndex === index ? null : index)}
+                isStarred={isStarred}
+                onStarToggle={handleStarToggle}
+              />
+            ))}
           </div>
           
           {/* FilterDropdown 테스트 */}
