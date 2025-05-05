@@ -3,7 +3,7 @@ import React from 'react';
 const faqList = [
   {
     question: '질문은 매번 똑같은가요, 아니면 상황에 따라 달라지나요?',
-    answer: '',
+    answer: '직톡에서는 기본 질문 틀은 있지만, 사용자의 지원 분야, 직무, 이전 응답 내용에 따라 질문이 실시간으로 유동적으로 변화합니다. AI가 응답의 흐름을 이해하고 심층 질문이나 팔로업 질문을 이어가며 실제 면접처럼 상황 맞춤형 대화를 만들어냅니다. 즉, 질문은 단순히 반복되는 것이 아니라, 지원자의 특성과 대화 흐름에 따라 달라집니다.',
     recommendation: '',
     expanded: false,
   },
@@ -15,11 +15,19 @@ const faqList = [
   },
   {
     question: '직톡 면접 연습을 어떻게 활용하면 좋을까요?',
-    answer: '',
+    answer: '직톡은 면접 연습을 통해 지원자의 특성과 대화 흐름에 따라 달라지는 질문을 학습합니다. 이를 통해 지원자는 실제 면접에서 더 자신감을 가지고 대화를 이어나갈 수 있습니다. 또한, 면접 연습을 통해 지원자의 대화 능력을 향상시키고, 면접 경험을 쌓을 수 있습니다.',
     recommendation: '',
     expanded: false,
   },
 ];
+
+// 구두점 뒤에 줄바꿈을 자동으로 추가하는 함수 (비활성화)
+function autoLineBreak(text) {
+   if (!text) return '';
+   return text
+    //  .replace(/(입니다\.|이나,|지고,|이렇게,|\.)/g, '$1\n');
+     .replace(/(\.|\?|\!)/g, '$1\n');
+ }
 
 const BottomSection = () => {
   const [faqs, setFaqs] = React.useState(faqList);
@@ -32,7 +40,7 @@ const BottomSection = () => {
 
   return (
     <div className="w-full flex flex-col items-center bg-white pb-0">
-      <div className="max-w-[600px] w-full mx-auto mt-12">
+      <div className="max-w-[800px] w-full mx-auto mt-12">
         <h2 className="text-center text-2xl font-bold mb-2">ZIKTALK</h2>
         <p className="text-center text-xl font-semibold mb-8">더 자세히 알고 싶다면?</p>
         <div className="flex flex-col gap-5">
@@ -54,8 +62,9 @@ const BottomSection = () => {
               </div>
               {faq.expanded && (
                 <div className="px-7 pb-7">
-                  <div className="text-gray-700 text-sm text-left whitespace-pre-line mt-2 leading-relaxed">
-                    {faq.answer}
+                  <div className="text-gray-800  p-5 rounded-2xl whitespace-pre-line">
+                    {autoLineBreak(faq.answer)}
+                    {/* {faq.answer} */}
                   </div>
                 </div>
               )}

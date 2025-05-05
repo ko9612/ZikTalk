@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 /**
  * FAQ 아이템 컴포넌트
  * @param {string} id - FAQ 아이템의 고유 ID
- * @param {string} title - FAQ 아이템의 제목
  * @param {string} career - 경력 정보 (선택적)
+ * @param {string} type - 타입 정보 (선택적)
  * @param {string} question - 질문 내용
  * @param {string} answer - 답변 내용
  * @param {string} recommendation - 추천 답변 내용
@@ -14,8 +14,8 @@ import React, { useState } from 'react';
  */
 const FaqItem = ({
   id,
-  title,
   career,
+  type,
   question,
   answer,
   recommendation,
@@ -49,26 +49,19 @@ const FaqItem = ({
         }
       >
         {/* 헤더 영역 */}
-        <div className="flex items-center justify-between px-6 py-4">
-          {/* 콘텐츠 래퍼 */}
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              {/* ID 표시 */}
-              <span className={`text-gray-400 text-sm font-bold ${isExpanded ? 'text-zik-main font-medium' : ''}`}>{id}</span>
-              {/* 제목 표시 */}
-              <div className={`text-base font-medium text-gray-900 ${isExpanded ? 'font-bold text-zik-main' : ''}`}>{title}</div>
-              {/* 경력 정보 표시 (있을 경우) */}
-              {career && <div className={`ml-2 text-xs font-medium px-2 py-1 rounded-full text-sm bg-gray-100 text-gray-700${isExpanded ? ' text-zik-main' : ''}`}>{career}</div>}
-              {/* 축소 상태일 때 질문 미리보기 표시 */}
-              {!isExpanded && question && (
-                <div className="text-gray-600 ml-2 text-sm flex items-center line-clamp-1">
-                  {question}
-                </div>
-              )}
-            </div>
+        <div className="flex items-center px-6 py-4">
+          {/* badge row: 고정 너비 */}
+          <div className="flex items-center" style={{ width: 220 }}>
+            <span className={`text-gray-400 text-sm font-bold ${isExpanded ? 'text-zik-main font-medium' : ''}`}>{id}</span>
+            {/* career badge: 고정 너비, 한 줄 표시, question과의 간격을 넓히기 위해 mr-4 추가 */}
+            {career && <div className="ml-2 mr-4 w-[100px] text-xs font-medium px-2 py-1 rounded-full text-sm text-gray-700 text-center whitespace-nowrap">{career}</div>}
+            {/* type badge: 고정 너비, career와의 간격은 ml-2만 유지 */}
+            {type && <div className="ml-2 w-[60px] text-xs font-medium px-2 py-1 rounded-full text-sm text-gray-700 text-center">{type}</div>}
           </div>
+          {/* question */}
+          <div className="ml-4 text-base font-medium text-gray-900 flex-1 min-w-0 truncate">{question}</div>
           {/* 버튼 그룹 */}
-          <div className="flex items-center gap-2 ml-2">
+          <div className="flex items-center gap-2 ml-4">
             {/* 토글 버튼 */}
             <button
               onClick={handleToggle}
