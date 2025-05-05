@@ -47,13 +47,9 @@ const FilterDropdown = ({ value = '최신순', onChange }) => {
         aria-expanded={open} // 접근성: 현재 드롭다운 상태 표시
       >
         {currentValue} {/* 현재 선택된 값 표시 */}
-        <span className="ml-2 transition-transform duration-200">
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d={open ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"}
-            />
+        <span className={`ml-2 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+          <svg width="20" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z" fill="#7B7B7B" stroke="#DFDFDF" stroke-width="0.0488281"/>
           </svg>
         </span>
       </button>
