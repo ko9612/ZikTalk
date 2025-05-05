@@ -12,11 +12,11 @@ const shapeClasses = {
 // 배경색 기준: 배경색/글자색
 // 1. violet: 보라/흰 2. lightViolet: 연보라/흰 3. white: 흰/보라 4. gray: 회색/진회색 5. red: 빨강/흰
 const colorClasses = {
-  violet: "bg-zik-main text-[#fff]",
-  lightViolet: "bg-zik-main opacity-35 text-[#fff]",
-  white: "bg-[#fff] text-zik-main border border-zik-main",
-  gray: "bg-[#DDDDDD] text-[#6E6E6E]",
-  red: "bg-[#FE607D] text-[#fff]",
+  violet: "bg-zik-main text-[#fff] hover:bg-[#5f58d6]",
+  lightViolet: "bg-zik-main opacity-35 text-[#fff] hover:bg-[#5f58d6]",
+  white: "bg-[#fff] text-zik-main border border-zik-main hover:bg-[#f0f0f0]",
+  gray: "bg-[#DDDDDD] text-[#6E6E6E] hover:bg-[#c6c6c6]",
+  red: "bg-[#FE607D] text-[#fff] hover:bg-[#e64c6b]",
 };
 
 const Button = ({
@@ -34,7 +34,7 @@ const Button = ({
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        "flex items-center justify-center text-base font-semibold filter hover:brightness-90",
+        "flex items-center justify-center text-base font-semibold",
         shapeClasses[shape],
         colorClasses[color],
         disabled && "cursor-not-allowed opacity-50",
