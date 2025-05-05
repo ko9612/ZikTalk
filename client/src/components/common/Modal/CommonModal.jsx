@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "@/components/common/Modal/Modal";
+import Button from "@/components/common/Button";
 
 const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
   return (
@@ -10,19 +11,22 @@ const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
           <p className="text-zik-text text-sm">{subText}</p>
         </div>
         <div className="flex gap-4">
-          {/* 공통 버튼 컴포넌트로 바꿀 예정 */}
-          <button
+          <Button
+            shape="bar"
             onClick={onClose}
-            className="border-zik-main text-zik-main flex-1 rounded-lg border bg-white p-2"
+            color="white"
+            className="flex-1"
           >
             닫기
-          </button>
-          <button
-            onClick={()=>{}}
-            className="bg-zik-main flex-1 rounded-lg p-2 text-white"
+          </Button>
+          <Button
+            shape="bar"
+            color="violet"
+            onClick={() => {}}
+            className="flex-1"
           >
             {btnText}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
