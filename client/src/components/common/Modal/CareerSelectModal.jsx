@@ -1,6 +1,7 @@
 import Modal from "@/components/common/Modal/Modal";
 import React, { useState } from "react";
 import { careerData } from "@/data/carrerData";
+import Button from "@/components/common/Button";
 
 const CareerSelectModal = ({ isOpen, onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -69,19 +70,23 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
       </div>
       <div className="mt-5 flex justify-between">
         {/* 공통 버튼 컴포넌트 구현 시 바꿀 예정 */}
-        <button
+        <Button
+          shape="bar"
+          color="white"
           onClick={resetHandler}
-          className="border-zik-border text-zik-text w-20 rounded-lg border py-2 sm:w-28"
+          className="w-20 sm:w-28"
         >
           초기화
-        </button>
-        <button
+        </Button>
+        <Button
+          shape="bar"
+          color="violet"
+          className="w-20 sm:w-28"
           onClick={() => {}}
           disabled={!selectedRole}
-          className="bg-zik-main disabled:bg-zik-border disabled:text-zik-text w-20 rounded-lg py-2 text-white disabled:cursor-not-allowed sm:w-28"
         >
           선택
-        </button>
+        </Button>
       </div>
     </Modal>
   );

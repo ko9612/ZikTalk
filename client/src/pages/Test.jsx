@@ -11,8 +11,8 @@ const Test = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   // FaqItem 상태 관리
   const [openedIndex, setOpenedIndex] = useState(null);
-  const [starredList, setStarredList] = useState([false, false]); // FAQ 개수만큼 즐겨찾기기능 
-  const [selected, setSelected] = useState('필터 옵션 1');
+  const [starredList, setStarredList] = useState([false, false]); // FAQ 개수만큼 즐겨찾기기능
+  const [selected, setSelected] = useState("필터 옵션 1");
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 3;
 
@@ -22,7 +22,7 @@ const Test = () => {
 
   // FaqItem 즐겨찾기 토글 핸들러 (개별)
   const handleStarToggle = (idx) => {
-    setStarredList(prev => prev.map((star, i) => (i === idx ? !star : star)));
+    setStarredList((prev) => prev.map((star, i) => (i === idx ? !star : star)));
   };
 
   return (
@@ -46,64 +46,65 @@ const Test = () => {
         //   onClose={modalHandler}
         //   dimmed={true}
         // />
-      
 
         <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
       )}
-      
+
       <div>
-          
-          {/* FaqItem 테스트 */}
-          <div>
-            {[
-              {
-                career: "프론트엔드개발자",
-                type: "인성",
-                question: "이 서비스는 어떻게 사용하나요?",
-                answer: "이 서비스는 간단하게 회원가입 후 이용할 수 있습니다.",
-                recommendation: "이 서비스는 회원가입 후 바로 이용 가능합니다. 메인 페이지에서 원하는 기능을 선택하여 사용하시면 됩니다."
-              },
-              {
-                career: "백엔드개발자",
-                type: "직무",
-                question: "면접 준비는 어떻게 하나요?",
-                answer: "면접 준비는 자주 묻는 질문을 연습하는 것이 좋습니다.",
-                recommendation: "면접 준비는 예상 질문을 미리 연습하고 자신의 경험을 정리해두는 것이 효과적입니다."
+        {/* FaqItem 테스트 */}
+        <div>
+          {[
+            {
+              career: "프론트엔드개발자",
+              type: "인성",
+              question: "이 서비스는 어떻게 사용하나요?",
+              answer: "이 서비스는 간단하게 회원가입 후 이용할 수 있습니다.",
+              recommendation:
+                "이 서비스는 회원가입 후 바로 이용 가능합니다. 메인 페이지에서 원하는 기능을 선택하여 사용하시면 됩니다.",
+            },
+            {
+              career: "백엔드개발자",
+              type: "직무",
+              question: "면접 준비는 어떻게 하나요?",
+              answer: "면접 준비는 자주 묻는 질문을 연습하는 것이 좋습니다.",
+              recommendation:
+                "면접 준비는 예상 질문을 미리 연습하고 자신의 경험을 정리해두는 것이 효과적입니다.",
+            },
+          ].map((item, index) => (
+            <FaqItem
+              key={index}
+              id={`${index + 1}`}
+              career={item.career}
+              type={item.type}
+              question={item.question}
+              answer={item.answer}
+              recommendation={item.recommendation}
+              isExpanded={openedIndex === index}
+              onToggle={() =>
+                setOpenedIndex(openedIndex === index ? null : index)
               }
-            ].map((item, index) => (
-              <FaqItem 
-                key={index}
-                id={`${index + 1}`}
-                career={item.career}
-                type={item.type}
-                question={item.question}
-                answer={item.answer}
-                recommendation={item.recommendation}
-                isExpanded={openedIndex === index}
-                onToggle={() => setOpenedIndex(openedIndex === index ? null : index)}
-                isStarred={starredList[index]}
-                onStarToggle={() => handleStarToggle(index)}
-              />
-            ))}
-          </div>
-          
-          {/* FilterDropdown 테스트 */}
-          <div>
-            <FilterDropdown value={selected} onChange={setSelected} />
-          </div>
-          {/* Pagination 테스트 */}
-          <div>
-            <div className="flex justify-center">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+              isStarred={starredList[index]}
+              onStarToggle={() => handleStarToggle(index)}
+            />
+          ))}
+        </div>
+
+        {/* FilterDropdown 테스트 */}
+        <div>
+          <FilterDropdown value={selected} onChange={setSelected} />
+        </div>
+        {/* Pagination 테스트 */}
+        <div>
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
+      </div>
     </div>
-    
   );
 };
 

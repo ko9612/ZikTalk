@@ -5,6 +5,7 @@ import AnalysisCompleteIcon from "./AnalysisCompleteIcon";
 import MainLogo from "@/assets/images/logo.svg";
 import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
+import Button from "@/components/common/Button";
 
 const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   // 임시
@@ -32,11 +33,10 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
             <p className="text-center text-base font-semibold sm:text-xl">
               User님의 답변 분석이 완료되었습니다!
             </p>
-            <Link
-              to=""
-              className="bg-zik-main rounded-lg px-8 py-3 text-center text-sm text-white sm:text-base"
-            >
-              분석 결과 페이지로 이동
+            <Link to="">
+              <Button shape="bar" className="px-8">
+                분석 결과 페이지로 이동
+              </Button>
             </Link>
           </>
         )}

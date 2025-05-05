@@ -5,7 +5,7 @@ const Header = () => {
     <header>
       <div className="mx-auto flex h-[80px] w-full max-w-[1240px] items-center justify-between py-4">
         <h1 className="logo">
-          <a href="#">
+          <a href="/">
             <img
               src="/src/assets/images/ziktalk_typo.svg"
               alt="로고"
