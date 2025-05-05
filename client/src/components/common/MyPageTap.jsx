@@ -13,7 +13,7 @@ const MyPageTab = () => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`text-sm transition-colors ${
-              activeTab === tab ? "font-bold text-black" : "text-gray-400"
+              activeTab === tab ? "font-bold text-black" : "text-zik-text/50"
             }`}
           >
             {tab}
