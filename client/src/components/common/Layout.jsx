@@ -2,17 +2,20 @@
 import { Outlet, Link } from "react-router-dom";
 import TopButton from "./TopButton";
 import ChatbotBotton from "./ChatbotBotton";
+import Header from "./Header";
+import Footer from "./Footer";
 
 const Layout = () => {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="bg-zik-main flex h-[80px] justify-center text-white">
+      {/* <header className="bg-zik-main flex h-[80px] justify-center text-white">
         <div className="flex w-full max-w-[1240px] items-center gap-5 p-4 text-xl">
           <Link to="/">홈</Link>
           <Link to="/interview">면접</Link>
         </div>
-      </header>
+      </header> */}
+      <Header />
 
       {/* Main */}
       <main className="flex flex-1 justify-center">
@@ -22,11 +25,12 @@ const Layout = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-zik-border text-zik-text flex justify-center">
+      {/* <footer className="bg-zik-border text-zik-text flex justify-center">
         <div className="w-full max-w-[1240px] p-4 text-center text-[1.6rem]">
           ⓒ 2025 ZikTalk
         </div>
-      </footer>
+      </footer> */}
+      <Footer />
 
       <TopButton />
       <ChatbotBotton />
