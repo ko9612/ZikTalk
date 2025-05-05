@@ -44,8 +44,7 @@ const FaqItem = ({
     <div className="mb-4">
       <div
         className={
-          "border border-gray-200 bg-white shadow-md " +
-          (isExpanded ? 'rounded-3xl' : 'rounded-full')
+          "border border-gray-200 bg-white shadow-md transition-all duration-300 rounded-2xl overflow-hidden"
         }
       >
         {/* 헤더 영역 */}
@@ -54,9 +53,9 @@ const FaqItem = ({
           <div className="flex items-center" style={{ width: 220 }}>
             <span className={`text-gray-400 text-sm font-bold ${isExpanded ? 'text-zik-main font-medium' : ''}`}>{id}</span>
             {/* career badge: 고정 너비, 한 줄 표시, question과의 간격을 넓히기 위해 mr-4 추가 */}
-            {career && <div className="ml-2 mr-4 w-[100px] text-xs font-medium px-2 py-1 rounded-full text-sm text-gray-700 text-center whitespace-nowrap">{career}</div>}
+            {career && <div className="ml-2 mr-4 w-[100px] text-sm font-bold px-2 py-1 rounded-full text-gray-700 text-center whitespace-nowrap">{career}</div>}
             {/* type badge: 고정 너비, career와의 간격은 ml-2만 유지 */}
-            {type && <div className="ml-2 w-[60px] text-xs font-medium px-2 py-1 rounded-full text-sm text-gray-700 text-center">{type}</div>}
+            {type && <div className="ml-2 w-[60px] text-sm font-bold px-2 py-1 rounded-full text-gray-700 text-center">{type}</div>}
           </div>
           {/* question */}
           <div className="ml-4 text-base font-medium text-gray-900 flex-1 min-w-0 truncate">{question}</div>
@@ -71,8 +70,8 @@ const FaqItem = ({
             >
               {/* 토글 아이콘 */}
               <span className="transition-transform duration-300">
-                <svg width="20" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z" fill="#7B7B7B" stroke="#DFDFDF" stroke-width="0.0488281"/>
+                <svg width="15" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z" fill="#7B7B7B" stroke="#DFDFDF" strokeWidth="0.0488281"/>
                 </svg>
               </span>
             </button>
@@ -98,31 +97,34 @@ const FaqItem = ({
           </div>
         </div>
         {/* 확장된 콘텐츠 영역 */}
-        {isExpanded && (
-          <div className="px-6 py-4 bg-white">
-            {/* 질문 섹션 */}
-            {question && (
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-500 mb-2">질문</div>
-                <div className="text-gray-800 bg-gray-50 p-3 rounded-2xl">{question}</div>
-              </div>
-            )}
-            {/* 답변 섹션 */}
-            {answer && (
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-500 mb-2">내 답변</div>
-                <div className="text-gray-800 bg-gray-50 p-3 rounded-2xl">{answer}</div>
-              </div>
-            )}
-            {/* 추천 답변 섹션 */}
-            {recommendation && (
-              <div className="mb-4">
-                <div className="text-sm font-medium text-gray-500 mb-2">추천 답변</div>
-                <div className="text-gray-800 bg-gray-50 p-3 rounded-2xl">{recommendation}</div>
-              </div>
-            )}
-          </div>
-        )}
+        <div
+          className={`transition-all duration-300 overflow-hidden px-6 bg-white rounded-b-2xl ${
+            isExpanded ? 'max-h-[1000px] py-4 opacity-100' : 'max-h-0 py-0 opacity-0'
+          }`}
+          style={{ willChange: 'max-height, opacity, padding' }}
+        >
+          {/* 질문 섹션 */}
+          {question && (
+            <div className="mb-4">
+              <div className="text-sm font-medium text-gray-500 mb-2">질문</div>
+              <div className="text-base text-gray-800 bg-gray-50 p-4 rounded-2xl">{question}</div>
+            </div>
+          )}
+          {/* 답변 섹션 */}
+          {answer && (
+            <div className="mb-4">
+              <div className="text-sm font-medium text-gray-500 mb-2">내 답변</div>
+              <div className="text-base text-gray-800 bg-gray-50 p-4 rounded-2xl">{answer}</div>
+            </div>
+          )}
+          {/* 추천 답변 섹션 */}
+          {recommendation && (
+            <div className="mb-4">
+              <div className="text-sm font-medium text-gray-500 mb-2">추천 답변</div>
+              <div className="text-base text-gray-800 bg-gray-50 p-4 rounded-2xl">{recommendation}</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

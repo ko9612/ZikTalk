@@ -11,7 +11,7 @@ const Test = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   // FaqItem 상태 관리
   const [openedIndex, setOpenedIndex] = useState(null);
-  const [isStarred, setIsStarred] = useState(false);
+  const [starredList, setStarredList] = useState([false, false]); // FAQ 개수만큼 즐겨찾기기능 
   const [selected, setSelected] = useState('필터 옵션 1');
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 3;
@@ -20,9 +20,9 @@ const Test = () => {
     setIsOpenModal(!isOpenModal);
   };
 
-  // FaqItem 즐겨찾기 토글 핸들러
-  const handleStarToggle = () => {
-    setIsStarred(!isStarred);
+  // FaqItem 즐겨찾기 토글 핸들러 (개별)
+  const handleStarToggle = (idx) => {
+    setStarredList(prev => prev.map((star, i) => (i === idx ? !star : star)));
   };
 
   return (
@@ -81,8 +81,8 @@ const Test = () => {
                 recommendation={item.recommendation}
                 isExpanded={openedIndex === index}
                 onToggle={() => setOpenedIndex(openedIndex === index ? null : index)}
-                isStarred={isStarred}
-                onStarToggle={handleStarToggle}
+                isStarred={starredList[index]}
+                onStarToggle={() => handleStarToggle(index)}
               />
             ))}
           </div>

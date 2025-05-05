@@ -1,83 +1,19 @@
 import React from 'react';
-
-const faqList = [
-  {
-    question: '질문은 매번 똑같은가요, 아니면 상황에 따라 달라지나요?',
-    answer: '직톡에서는 기본 질문 틀은 있지만, 사용자의 지원 분야, 직무, 이전 응답 내용에 따라 질문이 실시간으로 유동적으로 변화합니다. AI가 응답의 흐름을 이해하고 심층 질문이나 팔로업 질문을 이어가며 실제 면접처럼 상황 맞춤형 대화를 만들어냅니다. 즉, 질문은 단순히 반복되는 것이 아니라, 지원자의 특성과 대화 흐름에 따라 달라집니다.',
-    recommendation: '',
-    expanded: false,
-  },
-  {
-    question: '직톡은 어떤 사람들에게 특히 도움이 될까요?',
-    answer: '직톡은 다양한 직무에 지원하고자 하는 사람이나, 면접 경험이 부족한 취업 준비생에게 특히 도움이 됩니다. 반복적인 음성 기반 모의 면접을 통해 직무별 질문에 익숙해지고, 실전에서 말하는 연습까지 체계적으로 할 수 있기 때문입니다.',
-    recommendation: '',
-    expanded: true,
-  },
-  {
-    question: '직톡 면접 연습을 어떻게 활용하면 좋을까요?',
-    answer: '직톡은 면접 연습을 통해 지원자의 특성과 대화 흐름에 따라 달라지는 질문을 학습합니다. 이를 통해 지원자는 실제 면접에서 더 자신감을 가지고 대화를 이어나갈 수 있습니다. 또한, 면접 연습을 통해 지원자의 대화 능력을 향상시키고, 면접 경험을 쌓을 수 있습니다.',
-    recommendation: '',
-    expanded: false,
-  },
-];
-
-// 구두점 뒤에 줄바꿈을 자동으로 추가하는 함수 (비활성화)
-function autoLineBreak(text) {
-   if (!text) return '';
-   return text
-    //  .replace(/(입니다\.|이나,|지고,|이렇게,|\.)/g, '$1\n');
-     .replace(/(\.|\?|\!)/g, '$1\n');
- }
+import Button from '@/components/common/Button';
 
 const BottomSection = () => {
-  const [faqs, setFaqs] = React.useState(faqList);
-
-  const toggleFaq = (index) => {
-    setFaqs(faqs.map((faq, i) => 
-      i === index ? { ...faq, expanded: !faq.expanded } : faq
-    ));
-  };
-
   return (
-    <div className="w-full flex flex-col items-center bg-white pb-0">
-      <div className="max-w-[800px] w-full mx-auto mt-12">
-        <h2 className="text-center text-2xl font-bold mb-2">ZIKTALK</h2>
-        <p className="text-center text-xl font-semibold mb-8">더 자세히 알고 싶다면?</p>
-        <div className="flex flex-col gap-5">
-          {faqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className={`border border-gray-300 bg-white ${faq.expanded ? 'rounded-2xl' : 'rounded-2xl'} shadow-sm cursor-pointer`}
-              style={{minHeight: 64}}
-              onClick={() => toggleFaq(idx)}
-            >
-              <div className="flex items-center px-7 py-5">
-                <img src="/src/assets/images/Q.svg" alt="Q" className="mr-4 flex-shrink-0" />
-                <span className="text-base font-bold text-gray-800 flex-1 text-left leading-tight">{faq.question}</span>
-                <span className={`ml-2 w-7 h-7 flex items-center justify-center ${faq.expanded ? 'rotate-180' : ''} transition-transform duration-300`}>
-                  <svg width="20" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z" fill="#7B7B7B" stroke="#DFDFDF" strokeWidth="0.0488281"/>
-                  </svg>
-                </span>
-              </div>
-              {faq.expanded && (
-                <div className="px-7 pb-7">
-                  <div className="text-gray-800  p-5 rounded-2xl whitespace-pre-line">
-                    {autoLineBreak(faq.answer)}
-                    {/* {faq.answer} */}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="w-full bg-[#8676FF] mt-24 py-16 flex flex-col items-center">
-        <h2 className="text-white text-2xl font-bold mb-2">ZIKTALK</h2>
-        <p className="text-white text-xl font-semibold mb-6">지금 바로 시작하세요.</p>
-        <button className="bg-white text-[#8676FF] font-bold px-8 py-3 rounded-full shadow-md hover:bg-gray-100 transition">모의 면접 바로가기</button>
-      </div>
-    </div>
+    <section className="w-full bg-[#8676FF] py-32 flex flex-col items-center">
+      <h2 className="text-white text-4xl font-extrabold mb-6 tracking-tight">ZIKTALK</h2>
+      <p className="text-white text-2xl font-bold mb-10">지금 바로 시작하세요.</p>
+      <Button
+        shape="bar"
+        color="white"
+        className="text-2xl px-16 py-6 rounded-[16px] shadow-xl min-w-[320px]"
+      >
+        모의 면접 바로가기
+      </Button>
+    </section>
   );
 };
 
