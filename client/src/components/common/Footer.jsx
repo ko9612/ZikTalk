@@ -11,7 +11,7 @@ const Footer = () => {
   ];
   return (
     <footer>
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-10 px-6 py-4 text-center text-xs lg:flex-row lg:text-sm">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-5 px-6 py-4 text-center text-xs lg:h-[160px] lg:flex-row lg:gap-10 lg:text-sm">
         <span className="text-zik-text/50">
           Copyright Â© 2025 ZikTalk | All Rights Reserved
         </span>
