@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useRef } from "react";
 import jobQuestion from "@/assets/images/job-question.svg";
 import difficultyLevel from "@/assets/images/difficulty-level.svg";
 import feedback from "@/assets/images/feedback.svg";
+import { motion, useInView } from "framer-motion";
 
 const listWrap =
   "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
@@ -15,6 +16,11 @@ const descriptionStyle =
   "text-left text-[clamp(14px,1.5vw,18px)] lg:text-[16px] text-gray-500";
 
 const KeyPointSection = () => {
+  const listRef = useRef(null);
+  const isListRef = useInView(listRef, {
+    once: true,
+  });
+
   return (
     <div className="bg-zik-main/5 relative z-0 flex h-screen flex-col items-center justify-center overflow-hidden pt-[clamp(24px,8.3333vw,80px)] pb-7">
       <div className="flex flex-col justify-center md:mt-7">
@@ -27,9 +33,21 @@ const KeyPointSection = () => {
       </div>
 
       <div className="flex w-full justify-center after:absolute after:top-[60%] after:left-1/2 after:-z-10 after:block after:h-full after:w-[calc(100%+200px)] after:translate-x-[-50%] after:rounded-[50%] after:content-[''] md:after:bg-white lg:after:top-[60%]">
-        <ul className="flex-start flex flex-col justify-center gap-[clamp(40px,5vw,240px)] md:flex-row">
-          <li className={listWrap}>
-            <div className={imageWrap}>
+        <ul
+          ref={listRef}
+          className="flex-start flex flex-col justify-center gap-[clamp(40px,5vw,240px)] md:flex-row"
+        >
+          {/* <li  className={listWrap}> */}
+          <motion.li
+            initial={{ opacity: 0, y: 40 }}
+            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1, delay: 0.2 }}
+            className={listWrap}
+          >
+            <div
+              animate={isListRef && { y: 0, opacity: 1 }}
+              className={imageWrap}
+            >
               <img
                 src={jobQuestion}
                 alt="직무 질문 그림"
@@ -43,9 +61,15 @@ const KeyPointSection = () => {
               </p>
               <p className={descriptionStyle}>면접 대비 효과 극대화</p>
             </div>
-          </li>
+            {/* </li> */}
+          </motion.li>
 
-          <li className={listWrap}>
+          <motion.li
+            initial={{ opacity: 0, y: 40 }}
+            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1, delay: 2 * 0.2 }}
+            className={listWrap}
+          >
             <div className={imageWrap}>
               <img
                 src={difficultyLevel}
@@ -60,9 +84,14 @@ const KeyPointSection = () => {
                 실전 면접 상황에서의 대응력 향상
               </p>
             </div>
-          </li>
+          </motion.li>
 
-          <li className={listWrap}>
+          <motion.li
+            initial={{ opacity: 0, y: 40 }}
+            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1, delay: 3 * 0.2 }}
+            className={listWrap}
+          >
             <div className={imageWrap}>
               <img src={feedback} alt="피드백 그림" className={imageSize} />
             </div>
@@ -71,7 +100,7 @@ const KeyPointSection = () => {
               <p className={descriptionStyle}>구체적인 피드백으로</p>
               <p className={descriptionStyle}>취업 경쟁력 강화</p>
             </div>
-          </li>
+          </motion.li>
         </ul>
       </div>
     </div>
