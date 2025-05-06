@@ -37,7 +37,6 @@ const KeyPointSection = () => {
           ref={listRef}
           className="flex-start flex flex-col justify-center gap-[clamp(40px,5vw,240px)] md:flex-row"
         >
-          {/* <li  className={listWrap}> */}
           <motion.li
             initial={{ opacity: 0, y: 40 }}
             animate={isListRef ? { opacity: 1, y: 0 } : {}}
@@ -61,7 +60,6 @@ const KeyPointSection = () => {
               </p>
               <p className={descriptionStyle}>면접 대비 효과 극대화</p>
             </div>
-            {/* </li> */}
           </motion.li>
 
           <motion.li
