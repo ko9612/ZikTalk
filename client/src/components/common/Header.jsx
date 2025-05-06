@@ -19,7 +19,7 @@ const Header = () => {
           <ul className="flex items-center gap-3 sm:gap-5">
             <li>
               <Link
-                href="/interview"
+                to="/interview"
                 className="block text-sm font-medium md:text-base lg:text-lg"
               >
                 면접 연습
