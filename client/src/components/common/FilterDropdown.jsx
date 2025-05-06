@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { FaStar } from "react-icons/fa";
 
 // 드롭다운에 표시될 옵션 목록 정의
 const options = [
@@ -100,49 +101,51 @@ const FilterDropdown = ({
           </svg>
         </span>
       </button>
-      {/* 드롭다운이 열려있을 때만 옵션 목록 표시 */}
-      {open && (
-        <div
-          className="animate-fadeIn absolute z-10 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ul className="max-h-60 overflow-auto py-1" role="listbox">
-            {" "}
-            {/* 접근성: 목록 역할 지정 */}
-            {/* 옵션 목록을 순회하며 각 항목 렌더링 */}
-            {options.map((opt) => (
-              <li
-                key={opt.value} // React 리스트 렌더링을 위한 고유 키
-                className={`cursor-pointer px-4 py-2 text-sm hover:bg-gray-100 ${
-                  displayValue.type === opt.value
-                    ? "text-zik-main bg-gray-50 font-medium"
-                    : "text-gray-700"
-                }`}
-                role="option" // 접근성: 옵션 역할 지정
-                aria-selected={displayValue.type === opt.value} // 접근성: 현재 선택된 항목 표시
-                onClick={(e) => {
-                  e.stopPropagation(); // 이벤트 버블링 방지
-                  handleSelect(opt.value);
-                }} // 클릭 시 해당 옵션 선택
-              >
-                {opt.label} {/* 옵션 텍스트 표시 */}
-                {opt.value === "별" && displayValue.type === "별" && (
-                  <div
-                    className="mt-2"
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
-                    <StarRating
-                      rating={displayValue.rating}
-                      onRatingChange={handleStarRatingChange}
-                    />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* 드롭다운 옵션 목록 - 애니메이션 적용 */}
+      <div
+        className={`absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
+          open
+            ? "max-h-60 scale-100 transform opacity-100"
+            : "pointer-events-none max-h-0 scale-95 transform opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ul className="py-1" role="listbox">
+          {" "}
+          {/* 접근성: 목록 역할 지정 */}
+          {/* 옵션 목록을 순회하며 각 항목 렌더링 */}
+          {options.map((opt) => (
+            <li
+              key={opt.value} // React 리스트 렌더링을 위한 고유 키
+              className={`cursor-pointer px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
+                displayValue.type === opt.value
+                  ? "text-zik-main bg-gray-50 font-medium"
+                  : "text-gray-700"
+              }`}
+              role="option" // 접근성: 옵션 역할 지정
+              aria-selected={displayValue.type === opt.value} // 접근성: 현재 선택된 항목 표시
+              onClick={(e) => {
+                e.stopPropagation(); // 이벤트 버블링 방지
+                handleSelect(opt.value);
+              }} // 클릭 시 해당 옵션 선택
+            >
+              {opt.label} {/* 옵션 텍스트 표시 */}
+              {opt.value === "별" && displayValue.type === "별" && (
+                <div
+                  className="mt-2"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <StarRating
+                    rating={displayValue.rating}
+                    onRatingChange={handleStarRatingChange}
+                  />
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

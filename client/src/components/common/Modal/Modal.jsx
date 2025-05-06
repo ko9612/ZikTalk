@@ -36,7 +36,7 @@ const Modal = ({ isOpen, onClose, children, className = "", dimmed }) => {
       )}
     >
       <div
-        className={`relative mx-3 rounded-xl bg-white p-4 shadow-lg ${className}`}
+        className={`relative mx-3 rounded-xl bg-white p-2 shadow-lg sm:p-4 ${className}`}
       >
         <button
           className="text-zik-main bg-zik-main/10 hover:bg-zik-main/60 absolute top-4 right-4 rounded-full p-1 transition-all duration-100 hover:text-white"
@@ -44,7 +44,7 @@ const Modal = ({ isOpen, onClose, children, className = "", dimmed }) => {
         >
           <IoClose size={20} />
         </button>
-        <div className="py-8 sm:p-8">{children}</div>
+        <div className="py-6 sm:p-8">{children}</div>
       </div>
     </div>
   );

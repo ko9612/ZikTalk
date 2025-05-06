@@ -1,5 +1,6 @@
 // 한재우
-import React from "react";
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 
 const faqList = [
   {
@@ -32,85 +33,96 @@ const faqList = [
 
 const GuideSection = () => {
   const [faqs, setFaqs] = React.useState(faqList);
+  const faqsRef = useRef(null);
+  const isFaqsInView = useInView(faqsRef, {
+    once: true,
+    threshold: 0.1,
+  });
 
   const toggleFaq = (index) => {
     setFaqs(
       faqs.map((faq, i) =>
-        i === index
-          ? { ...faq, expanded: !faq.expanded }
-          : { ...faq, expanded: false },
+        i === index ? { ...faq, expanded: !faq.expanded } : faq,
       ),
     );
   };
 
   return (
-    <section className="flex w-full flex-col items-center bg-white py-0">
+    <section className="flex w-full flex-col items-center bg-white py-20 md:py-28">
       {/* 타이틀 위에 띄우기 mt-16 mb-16 */}
-      <div className="mx-auto mt-16 mb-16 w-full">
-        <h2 className="mb-1.5 text-center text-5xl font-bold tracking-tight">
+      <div className="w-max-[1200px] mx-auto mt-16 mb-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 className="mb-1.5 text-center text-3xl font-bold tracking-tight sm:text-4xl">
           ZIKTALK 면접연습
         </h2>
-        <p className="mb-13 text-center text-3xl font-bold">
+        <p className="mb-13 text-center text-xl font-bold sm:text-2xl">
           더 자세히 알고 싶다면?
         </p>
-        <div className="flex flex-col gap-3">
+        <div ref={faqsRef} className="flex flex-col gap-3">
           {faqs.map((faq, idx) => (
-            <div
+            <motion.li
               key={idx}
-              className="w-full cursor-pointer rounded-xl border border-gray-400 bg-white transition-all duration-300"
-              style={{ minHeight: 56 }}
-              onClick={() => toggleFaq(idx)}
+              initial={{ y: 50, opacity: 0 }}
+              animate={isFaqsInView && { y: 0, opacity: 1 }}
+              transition={{
+                delay: idx * 0.2,
+                duration: 0.5,
+                ease: "easeOut",
+              }}
+              className="list-none"
             >
-              <div className="flex items-center px-7 py-5">
-                <img
-                  src="/src/assets/images/Q.svg"
-                  alt="Q"
-                  className="mr-3 h-5 w-5"
-                />
-                <span className="flex-1 text-left text-base leading-tight font-semibold text-gray-600">
-                
-                  {faq.question}
-                </span>
-                <span
-                  className={`ml-2 flex h-7 w-7 items-center justify-center ${faq.expanded ? "rotate-180" : ""} transition-transform duration-300`}
-                >
-                  <svg
-                    width="15"
-                    height="23"
-                    viewBox="0 0 20 13"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z"
-                      fill="#7B7B7B"
-                      stroke="#7B7B7B"
-                      strokeWidth="0.0488281"
-                    />
-                  </svg>
-                </span>
-              </div>
               <div
-                className={`overflow-hidden rounded-b-2xl bg-white px-6 transition-all duration-300 ${
-                  faq.expanded
-                    ? "max-h-[100px] py-2 opacity-100"
-                    : "max-h-0 py-0 opacity-0"
-                }`}
-                style={{ willChange: "max-height, opacity, padding" }}
+                className="w-full cursor-pointer rounded-xl border border-gray-400 bg-white transition-all duration-300"
+                style={{ minHeight: 56 }}
+                onClick={() => toggleFaq(idx)}
               >
-                {/* 답변 섹션 */}
-                {faq.answer && (
-                  <div className="mb-4">
-                    <div className="mb-2 text-sm font-medium text-gray-200">
+                <div className="flex items-center px-4 py-4 sm:px-7 sm:py-5">
+                  <img
+                    src="/src/assets/images/Q.svg"
+                    alt="Q"
+                    className="mr-2 h-4 w-4 sm:mr-3 sm:h-5 sm:w-5"
+                  />
+                  <span className="flex-1 text-left text-sm leading-tight font-semibold text-gray-600 sm:text-base">
+                    {faq.question}
+                  </span>
+                  <span
+                    className={`ml-2 flex h-6 w-6 items-center justify-center sm:h-7 sm:w-7 ${faq.expanded ? "rotate-180" : ""} transition-transform duration-300`}
+                  >
+                    <svg
+                      width="15"
+                      height="23"
+                      viewBox="0 0 20 13"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15.9287 1.0719C16.4364 0.5716 17.2379 0.540455 17.7773 0.978149L17.8818 1.0719L19.2061 2.37659C19.7134 2.87653 19.7453 3.66558 19.3018 4.1969L19.2061 4.30042L11.2344 12.1549C10.7378 12.6549 9.93696 12.6867 9.39258 12.2487L9.28809 12.1549L1.31641 4.30042C0.809014 3.80046 0.777104 3.01142 1.2207 2.4801L1.31641 2.37659L2.64062 1.0719C3.14836 0.571607 3.9498 0.540473 4.48926 0.978149L4.59375 1.0719L10.2441 6.63928L10.2617 6.65588L10.2783 6.63928L15.9287 1.0719Z"
+                        fill="#7B7B7B"
+                        stroke="#7B7B7B"
+                        strokeWidth="0.0488281"
+                      />
+                    </svg>
+                  </span>
+                </div>
+                <div
+                  className={`overflow-hidden rounded-b-2xl bg-white px-4 transition-all duration-300 sm:px-6 ${
+                    faq.expanded
+                      ? "max-h-[200px] py-2 opacity-100 sm:max-h-[150px]"
+                      : "max-h-0 py-0 opacity-0"
+                  }`}
+                  style={{ willChange: "max-height, opacity, padding" }}
+                >
+                  {/* 답변 섹션 */}
+                  {faq.answer && (
+                    <div className="mb-4">
+                      <div className="mb-2 text-sm font-medium text-gray-200"></div>
+                      <div className="rounded-2xl bg-gray-50 p-3 text-sm text-gray-500 sm:p-4 sm:text-base">
+                        {faq.answer}
+                      </div>
                     </div>
-                    <div className="rounded-2xl bg-gray-50 p-4 text-base text-gray-500">
-                      {faq.answer}
-                    </div>
-                  </div>
-                )}
-                
+                  )}
+                </div>
               </div>
-            </div>
+            </motion.li>
           ))}
         </div>
       </div>

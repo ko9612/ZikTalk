@@ -31,9 +31,9 @@ const FeatureSection = () => {
     "absolute bottom-0 left-0 w-full h-28 rounded-3xl bg-linear-to-b from-transparent to-[#484498]/40 z-10";
 
   return (
-    <section className="py-24">
+    <section className="px-6 py-24 md:px-0">
       <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center">
-        <strong className="text-center text-4xl/normal">
+        <strong className="text-center text-2xl/normal sm:text-4xl/normal">
           AI 음성 면접으로 완성하는 <br /> 나만의 취업 경쟁력
         </strong>
         <div className="grid w-full grid-cols-1 grid-rows-4 gap-y-6 pt-16 md:grid-cols-5 md:grid-rows-2 md:gap-6">
@@ -184,8 +184,8 @@ const FeatureSection = () => {
                         <div className="flex gap-6">
                           <FaAngleUp
                             className={twMerge(
-                              "text-zik-text transition-transform",
-                              q.opened && "rotate-180",
+                              "text-zik-text rotate-180",
+                              q.opened && "rotate-0",
                             )}
                           />
                           <FaStar className="text-zik-main" />

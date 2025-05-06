@@ -5,10 +5,10 @@ import Button from "@/components/common/Button";
 const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} dimmed={true} className="w-96">
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 p-4 sm:p-0">
         <div className="flex flex-col gap-4 text-center">
           <strong className="text-xl">{title}</strong>
-          <p className="text-zik-text text-sm">{subText}</p>
+          <p className="text-zik-text text-sm break-keep">{subText}</p>
         </div>
         <div className="flex gap-4">
           <Button

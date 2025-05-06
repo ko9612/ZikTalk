@@ -5,12 +5,13 @@ import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import FaqItem from "@/components/common/FaqItem.jsx";
 import FilterDropdown from "@/components/common/FilterDropdown.jsx";
 import Pagination from "@/components/common/Pagination.jsx";
+import InterviewTab from "@/components/common/InterviewTab";
 
 const Test = () => {
   // Modal Test
   const [isOpenModal, setIsOpenModal] = useState(false);
   // FaqItem 상태 관리
-  const [openedIndex, setOpenedIndex] = useState(null);
+  const [expandedStates, setExpandedStates] = useState([false, false]); // FAQ 개수만큼 확장 상태
   const [starredList, setStarredList] = useState([false, false]); // FAQ 개수만큼 즐겨찾기기능
   const [selected, setSelected] = useState("필터 옵션 1");
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,6 +19,13 @@ const Test = () => {
 
   const modalHandler = () => {
     setIsOpenModal(!isOpenModal);
+  };
+
+  // FaqItem 토글 핸들러 (개별)
+  const handleToggle = (index) => {
+    setExpandedStates((prev) =>
+      prev.map((state, i) => (i === index ? !state : state)),
+    );
   };
 
   // FaqItem 즐겨찾기 토글 핸들러 (개별)
@@ -31,15 +39,15 @@ const Test = () => {
         click
       </button>
       {isOpenModal && (
-        // <CommonModal
-        //   isOpen={isOpenModal}
-        //   onClose={modalHandler}
-        //   title={"페이지를 나가시겠습니까?"}
-        //   subText={
-        //     "현재 페이지를 벗어나시면 메인 페이지로 돌아가며 모든 설정이 초기화됩니다"
-        //   }
-        //   btnText={"나가기"}
-        // />
+        <CommonModal
+          isOpen={isOpenModal}
+          onClose={modalHandler}
+          title={"페이지를 나가시겠습니까?"}
+          subText={
+            "현재 페이지를 벗어나시면 메인 페이지로 돌아가며 모든 설정이 초기화됩니다"
+          }
+          btnText={"나가기"}
+        />
 
         // <AnalysisStateModal
         //   isOpen={isOpenModal}
@@ -47,9 +55,8 @@ const Test = () => {
         //   dimmed={true}
         // />
 
-        <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
+        // <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
       )}
-
       <div>
         {/* FaqItem 테스트 */}
         <div>
@@ -79,16 +86,13 @@ const Test = () => {
               question={item.question}
               answer={item.answer}
               recommendation={item.recommendation}
-              isExpanded={openedIndex === index}
-              onToggle={() =>
-                setOpenedIndex(openedIndex === index ? null : index)
-              }
+              isExpanded={expandedStates[index]}
+              onToggle={() => handleToggle(index)}
               isStarred={starredList[index]}
               onStarToggle={() => handleStarToggle(index)}
             />
           ))}
         </div>
-
         {/* FilterDropdown 테스트 */}
         <div>
           <FilterDropdown value={selected} onChange={setSelected} />
@@ -103,6 +107,7 @@ const Test = () => {
             />
           </div>
         </div>
+        <InterviewTab />r
       </div>
     </div>
   );
