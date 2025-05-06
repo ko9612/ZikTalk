@@ -3,29 +3,31 @@ import jobQuestion from "@/assets/images/job-question.svg";
 import difficultyLevel from "@/assets/images/difficulty-level.svg";
 import feedback from "@/assets/images/feedback.svg";
 
-const listWrap = "flex flex-col items-center justify-start";
+const listWrap =
+  "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
 const imageWrap =
   "w-[clamp(60px,15vw,220px)] h-[clamp(60px,15vw,220px)] bg-[#ECEBFF] rounded-[50%] flex items-center justify-center";
 const imageSize = "w-[clamp(30px,8vw,100px)] h-[clamp(30px,8vw,100px)]";
-const textWrap = "mt-7 flex flex-col items-center justify-center";
-const titleStyle = "mb-2 text-[clamp(12px,2vw,20px)]";
+const textWrap =
+  "md:mt-7 flex flex-col items-center justify-center flex items-start md:items-center whitespace-nowrap";
+const titleStyle = "text-left mb-2 text-[clamp(16px,2vw,24px)]";
 const descriptionStyle =
-  "text-[clamp(8px,1.5vw,16px)] lg:text-[16px] text-gray-500";
+  "text-left text-[clamp(14px,1.5vw,18px)] lg:text-[16px] text-gray-500";
 
 const KeyPointSection = () => {
   return (
-    <div className="bg-zik-main/5 relative z-0 flex flex-col items-center justify-center overflow-hidden pt-[clamp(24px,8.3333vw,80px)] pb-7">
-      <div>
-        <strong className="text-base leading-snug sm:text-2xl md:text-3xl">
+    <div className="bg-zik-main/5 relative z-0 flex h-screen flex-col items-center justify-center overflow-hidden pt-[clamp(24px,8.3333vw,80px)] pb-7">
+      <div className="flex flex-col justify-center md:mt-7">
+        <strong className="text-2xl leading-snug sm:text-3xl md:text-4xl">
           직톡, 면접이 두렵지 않은 이유
         </strong>
-        <p className="mb-[clamp(16px,5.5556vw,64px)] text-center text-sm leading-relaxed font-semibold text-[#5D5A88] sm:text-xl md:text-2xl">
+        <p className="mb-[clamp(70px,5.5556vw,100px)] text-center text-xl leading-relaxed font-semibold text-[#5D5A88] sm:text-2xl md:text-[32px]">
           직톡은 완벽하게 대비한다!
         </p>
       </div>
 
-      <div className="w-full after:absolute after:top-1/2 after:left-1/2 after:-z-10 after:block after:h-full after:w-[calc(100%+200px)] after:translate-x-[-50%] after:rounded-[50%] after:bg-white after:content-[''] lg:after:top-[60%]">
-        <ul className="flex justify-center gap-3 sm:gap-20 md:gap-30">
+      <div className="flex w-full justify-center after:absolute after:top-[60%] after:left-1/2 after:-z-10 after:block after:h-full after:w-[calc(100%+200px)] after:translate-x-[-50%] after:rounded-[50%] after:content-[''] md:after:bg-white lg:after:top-[60%]">
+        <ul className="flex-start flex flex-col justify-center gap-[clamp(40px,5vw,240px)] md:flex-row">
           <li className={listWrap}>
             <div className={imageWrap}>
               <img
