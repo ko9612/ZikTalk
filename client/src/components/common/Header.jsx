@@ -1,33 +1,36 @@
 import React from "react";
+import Button from "./Button";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
     <header>
-      <div className="mx-auto flex h-[80px] w-full max-w-[1240px] items-center justify-between py-4">
+      <div className="mx-auto flex h-[clamp(3.8rem,8vw,5rem)] w-full max-w-[1200px] items-center justify-between px-6">
         <h1 className="logo">
-          <a href="/">
+          <Link href="/">
             <img
               src="/src/assets/images/ziktalk_typo.svg"
               alt="로고"
-              className="h-[39px] w-[150px] align-middle"
+              className="h-[clamp(30px,5vw,39px)] w-[clamp(100px,15vw,150px)] align-middle"
             />
-          </a>
+          </Link>
         </h1>
         <nav>
-          <ul className="flex items-center gap-10">
+          <ul className="flex items-center gap-3 sm:gap-5">
             <li>
-              <a href="#" className="block text-[18px] font-medium">
-                면접 연습
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="border-font-medium border-zik-border block rounded-full border px-4 py-2 text-[18px]"
+              <Link
+                href="/interview"
+                className="block text-sm font-medium md:text-base lg:text-lg"
               >
-                로그인
-              </a>
+                면접 연습
+              </Link>
             </li>
+            <Button
+              color="white"
+              className="!px-4 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
+            >
+              로그인
+            </Button>
           </ul>
         </nav>
       </div>

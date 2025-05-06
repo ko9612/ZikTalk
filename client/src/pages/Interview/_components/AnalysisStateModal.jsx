@@ -13,7 +13,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-md" dimmed={dimmed}>
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-4 sm:gap-6">
         {isLoading ? (
           <>
             <i className="w-12">

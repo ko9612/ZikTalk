@@ -11,12 +11,12 @@ const Footer = () => {
   ];
   return (
     <footer>
-      <div className="flex items-center justify-around gap-40 px-6 py-4 text-sm">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-10 px-6 py-4 text-center text-xs lg:flex-row lg:text-sm">
         <span className="text-zik-text/50">
-          Copyright © 2025 ZikTalk | All Rights Reserved
+          Copyright Â© 2025 ZikTalk | All Rights Reserved
         </span>
 
-        <div className="flex items-center gap-4 space-x-4">
+        <div className="flex items-center space-x-4 md:gap-4">
           {teamMembers.map((member) => (
             <a
               key={member.name}
@@ -27,7 +27,9 @@ const Footer = () => {
               <div className="bg-zik-border/40 flex h-[36px] w-[36px] items-center justify-center rounded-lg">
                 <img src={github} className="block"></img>
               </div>
-              <span className="text-zik-text font-medium">{member.name}</span>
+              <span className="text-zik-text hidden font-medium md:inline">
+                {member.name}
+              </span>
             </a>
           ))}
         </div>

@@ -29,7 +29,7 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
       dimmed={true}
       className="w-full sm:w-[38rem]"
     >
-      <div className="mt-1 flex h-[30rem] overflow-hidden rounded-lg">
+      <div className="mt-1 flex h-full max-h-[20rem] overflow-hidden rounded-lg">
         <ul className="w-1/3 overflow-y-auto bg-white">
           {careerData.map((cat) => (
             <li
@@ -74,14 +74,14 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
           shape="bar"
           color="white"
           onClick={resetHandler}
-          className="w-20 sm:w-28"
+          className="w-20 text-nowrap sm:w-28"
         >
           초기화
         </Button>
         <Button
           shape="bar"
           color="violet"
-          className="w-20 sm:w-28"
+          className="w-20 text-nowrap sm:w-28"
           onClick={() => {}}
           disabled={!selectedRole}
         >

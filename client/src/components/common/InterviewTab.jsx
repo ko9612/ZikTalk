@@ -8,8 +8,8 @@ const InterviewTab = ({
   const tabs = ["설정", "사전 체크", "모의 면접", "응시 완료"];
 
   return (
-    <div className="bg-zik-border m-0 items-center px-6 py-3">
-      <ul className="m-0 flex list-none items-center justify-around gap-6 p-0 text-[20px] font-medium text-gray-600">
+    <div className="bg-zik-border/50 m-0 items-center px-6 py-3">
+      <ul className="text-zik-text m-0 flex list-none items-center justify-around gap-6 p-0 text-[20px] font-medium">
         {tabs.map((tab, index) => (
           <>
             <li
@@ -26,9 +26,6 @@ const InterviewTab = ({
         ))}
         <li>
           <Button>나가기</Button>
-          {/* <button className="bg-zik-main rounded-full px-4 py-2 text-white transition-colors hover:bg-indigo-500">
-            나가기
-          </button> */}
         </li>
       </ul>
     </div>
