@@ -34,7 +34,7 @@ const Button = ({
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        "flex items-center justify-center text-base font-semibold transition duration-300 ease-in-out",
+        "flex items-center justify-center text-base font-semibold transition duration-200 ease-in-out",
         shapeClasses[shape],
         colorClasses[color],
         disabled && "cursor-not-allowed opacity-50",
