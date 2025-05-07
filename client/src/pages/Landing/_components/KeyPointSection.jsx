@@ -39,14 +39,11 @@ const KeyPointSection = () => {
         >
           <motion.li
             initial={{ opacity: 0, y: 40 }}
-            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            animate={isListRef && { y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className={listWrap}
           >
-            <div
-              animate={isListRef && { y: 0, opacity: 1 }}
-              className={imageWrap}
-            >
+            <div className={imageWrap}>
               <img
                 src={jobQuestion}
                 alt="직무 질문 그림"
@@ -64,7 +61,7 @@ const KeyPointSection = () => {
 
           <motion.li
             initial={{ opacity: 0, y: 40 }}
-            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            animate={isListRef && { y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 2 * 0.2 }}
             className={listWrap}
           >
@@ -86,7 +83,7 @@ const KeyPointSection = () => {
 
           <motion.li
             initial={{ opacity: 0, y: 40 }}
-            animate={isListRef ? { opacity: 1, y: 0 } : {}}
+            animate={isListRef && { y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 3 * 0.2 }}
             className={listWrap}
           >
