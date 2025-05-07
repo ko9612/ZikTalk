@@ -12,12 +12,12 @@ const Input = ({
 }) => {
   return (
     <label
-      className={clsx("text-zik-main flex flex-col font-bold", labelClassName)}
+      className={clsx("text-zik-text flex flex-col font-bold", labelClassName)}
     >
       {children}
       <input
         className={clsx(
-          "border-zik-border text-zik-border rounded-[10px] border p-3 text-sm font-medium",
+          "border-zik-border text-zik-text placeholder:text-zik-border rounded-[10px] border p-3 text-sm font-medium",
           disabled && "bg-zik-main/20 text-zik-main",
           inputClassName,
         )}
