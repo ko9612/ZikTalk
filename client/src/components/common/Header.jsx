@@ -1,8 +1,9 @@
 import React from "react";
 import Button from "./Button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
+  const { pathname } = useLocation();
   return (
     <header>
       <div className="mx-auto flex h-[clamp(3.8rem,8vw,5rem)] w-full max-w-[1200px] items-center justify-between px-6 xl:px-0">
@@ -20,7 +21,7 @@ const Header = () => {
             <li>
               <Link
                 to="/interview"
-                className="block text-sm font-medium md:text-base lg:text-lg"
+                className={`block text-sm font-medium md:text-base lg:text-lg ${pathname === "/interview" && "hidden"}`}
               >
                 면접 연습
               </Link>
