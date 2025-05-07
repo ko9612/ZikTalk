@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { careerData } from "@/data/carrerData";
 import Button from "@/components/common/Button";
 
-const CareerSelectModal = ({ isOpen, onClose }) => {
+const CareerSelectModal = ({ isOpen, onClose, onSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
 
@@ -81,8 +81,18 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
         <Button
           shape="bar"
           color="violet"
+<<<<<<< Updated upstream
           className="w-20 sm:w-28"
           onClick={() => {}}
+=======
+          className="w-20 text-nowrap sm:w-28"
+          onClick={() => {
+            if (selectedRole && onSelect) {
+              onSelect(selectedRole);
+              onClose();
+            }
+          }}
+>>>>>>> Stashed changes
           disabled={!selectedRole}
         >
           선택

@@ -1,12 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 
-// 드롭다운에 표시될 옵션 목록 정의
-const options = [
-  { value: "최신순", label: "최신순" },
-  { value: "즐겨찾기", label: "즐겨찾기" },
-  { value: "조회수", label: "조회수" },
-];
-
 const StarRating = ({ rating, onRatingChange }) => {
   const handleStarClick = (starValue) => {
     onRatingChange(starValue);
@@ -32,6 +25,8 @@ const StarRating = ({ rating, onRatingChange }) => {
 const FilterDropdown = ({
   value = { type: "최신순", rating: 0 },
   onChange,
+  options = [],
+  label,
 }) => {
   // 드롭다운 열림/닫힘 상태 관리
   const [open, setOpen] = useState(false);
@@ -70,8 +65,16 @@ const FilterDropdown = ({
     onChange({ type: "별", rating });
   };
 
+  // 옵션 목록을 props로 받음, 없으면 기본값 사용
+  const optionList = options.length > 0 ? options : [
+    { value: "최신순", label: "최신순" },
+    { value: "즐겨찾기", label: "즐겨찾기" },
+    { value: "조회수", label: "조회수" },
+  ];
+
   return (
     <div className="relative w-48" ref={ref}>
+      {label && <div className="mb-1 ml-1 text-xs text-gray-500">{label}</div>}
       {/* 드롭다운 토글 버튼 */}
       <button
         type="button"
@@ -100,6 +103,7 @@ const FilterDropdown = ({
           </svg>
         </span>
       </button>
+<<<<<<< Updated upstream
       {/* 드롭다운이 열려있을 때만 옵션 목록 표시 */}
       {open && (
         <div
@@ -143,6 +147,74 @@ const FilterDropdown = ({
           </ul>
         </div>
       )}
+=======
+      {/* 드롭다운 옵션 목록 - 애니메이션 적용 */}
+      <div
+        className={`absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
+          open
+            ? "max-h-60 scale-100 transform opacity-100"
+            : "pointer-events-none max-h-0 scale-95 transform opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ul className="py-1" role="listbox">
+          {optionList.map((opt) =>
+            opt.options ? (
+              <React.Fragment key={opt.label}>
+                <li className="px-4 py-2 text-xs font-bold text-gray-400 bg-gray-50 cursor-default select-none">{opt.label}</li>
+                {opt.options.map((role) => (
+            <li
+                    key={role.value}
+                    className={`cursor-pointer px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
+                      displayValue.type === role.value
+                        ? "text-zik-main bg-gray-50 font-medium"
+                        : "text-gray-700"
+                    }`}
+                    role="option"
+                    aria-selected={displayValue.type === role.value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(role.value);
+                    }}
+                  >
+                    {role.label}
+                  </li>
+                ))}
+              </React.Fragment>
+            ) : (
+              <li
+                key={opt.value}
+              className={`cursor-pointer px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
+                displayValue.type === opt.value
+                  ? "text-zik-main bg-gray-50 font-medium"
+                  : "text-gray-700"
+              }`}
+                role="option"
+                aria-selected={displayValue.type === opt.value}
+              onClick={(e) => {
+                  e.stopPropagation();
+                handleSelect(opt.value);
+                }}
+            >
+                {opt.label}
+              {opt.value === "별" && displayValue.type === "별" && (
+                <div
+                  className="mt-2"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <StarRating
+                    rating={displayValue.rating}
+                    onRatingChange={handleStarRatingChange}
+                  />
+                </div>
+              )}
+            </li>
+            )
+          )}
+        </ul>
+      </div>
+>>>>>>> Stashed changes
     </div>
   );
 };
