@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CommonModal from "@/components/common/Modal/CommonModal";
-import AnalysisStateModal from "@/pages/Interview/_components/AnalysisStateModal";
+import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import FaqItem from "@/components/common/FaqItem.jsx";
 import FilterDropdown from "@/components/common/FilterDropdown.jsx";
