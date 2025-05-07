@@ -2,6 +2,7 @@
 import React from "react";
 import hero_section_video from "@/assets/videos/hero_section_video.mp4";
 import Button from "@/components/common/Button";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -36,9 +37,11 @@ const HeroSection = () => {
           </p>
         </div>
 
-        <Button shape="pill" color="violet" className="mt-[45px] text-[1rem]">
-          모의 면접 바로가기
-        </Button>
+        <Link to={"/interview"}>
+          <Button shape="pill" color="violet" className="mt-[45px] text-[1rem]">
+            모의 면접 바로가기
+          </Button>
+        </Link>
       </div>
     </div>
   );

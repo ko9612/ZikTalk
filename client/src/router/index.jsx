@@ -3,6 +3,7 @@ import Layout from "../components/common/Layout";
 import Landing from "../pages/Landing";
 import Interview from "../pages/Interview";
 import Test from "../pages/Test";
+import InterviewLayout from "@/pages/Interview/InterViewLayout";
 
 const router = createBrowserRouter([
   {
@@ -37,7 +38,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/interview",
-        element: <Interview />,
+        element: (
+          <InterviewLayout>
+            <Interview />
+          </InterviewLayout>
+        ),
       },
       {
         path: "/test",

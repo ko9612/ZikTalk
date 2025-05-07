@@ -40,7 +40,7 @@ const KeyPointSection = () => {
           <motion.li
             initial={{ opacity: 0, y: 40 }}
             animate={isListRef ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className={listWrap}
           >
             <div
@@ -65,7 +65,7 @@ const KeyPointSection = () => {
           <motion.li
             initial={{ opacity: 0, y: 40 }}
             animate={isListRef ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 2 * 0.2 }}
+            transition={{ duration: 0.5, delay: 2 * 0.2 }}
             className={listWrap}
           >
             <div className={imageWrap}>
@@ -87,7 +87,7 @@ const KeyPointSection = () => {
           <motion.li
             initial={{ opacity: 0, y: 40 }}
             animate={isListRef ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 3 * 0.2 }}
+            transition={{ duration: 0.5, delay: 3 * 0.2 }}
             className={listWrap}
           >
             <div className={imageWrap}>
