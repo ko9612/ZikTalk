@@ -31,7 +31,7 @@ const FeatureSection = () => {
     "absolute bottom-0 left-0 w-full h-28 rounded-3xl bg-linear-to-b from-transparent to-[#484498]/40 z-10";
 
   return (
-    <section className="px-6 py-24 md:px-0">
+    <section className="px-6 py-24 xl:px-0">
       <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center">
         <strong className="text-center text-2xl/normal sm:text-4xl/normal">
           AI 음성 면접으로 완성하는 <br /> 나만의 취업 경쟁력
