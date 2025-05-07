@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { IoChatbubble } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
-import { useVisibilityStore } from "../../store/store";
+import useVisibilityStore from "../../store/useVisibilityStore";
 import ChatContainer from "../chatbot/ChatContainer";
 
 const ChatbotBotton = () => {
