@@ -8,22 +8,23 @@ const InterviewTab = () => {
 
   return (
     <div className="bg-zik-border/50 mx-auto flex h-[4rem] w-full justify-center">
-      <div className="text-zik-text flex w-full max-w-[1200px] items-center justify-between gap-6 px-6 text-[20px] font-medium xl:px-0">
+      <ul className="text-zik-text m-0 flex w-full max-w-[1200px] list-none items-center justify-between gap-6 px-6 text-[20px] font-medium xl:px-0">
         {tabs.map((tab, index) => (
-          <li key={tab} className="flex w-full">
-            <div
-              key={tab}
-              className={`text-nowrap ${tabSelect === tab ? "text-zik-text font-bold" : "text-zik-text/50"}`}
+          <React.Fragment key={tab}>
+            <li
+              className={`${tabSelect === tab ? "text-zik-text font-bold" : "text-zik-text/50"}`}
             >
               {tab}
-            </div>
+            </li>
             {index < tabs.length - 1 && (
-              <i className="text-zik-text/50 mx-auto text-center">···</i>
+              <li className="text-zik-text/50">···</li>
             )}
-          </li>
+          </React.Fragment>
         ))}
-        <Button className="text-nowrap">나가기</Button>
-      </div>
+        <li>
+          <Button>나가기</Button>
+        </li>
+      </ul>
     </div>
   );
 };
