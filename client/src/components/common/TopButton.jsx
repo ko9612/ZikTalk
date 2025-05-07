@@ -1,5 +1,5 @@
 import React from "react";
-import { useVisibilityStore } from "../../store/store";
+import useVisibilityStore from "../../store/useVisibilityStore";
 import { useEffect } from "react";
 import { twJoin } from "tailwind-merge";
 import { FaAngleUp } from "react-icons/fa";
