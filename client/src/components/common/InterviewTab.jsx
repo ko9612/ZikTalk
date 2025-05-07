@@ -8,7 +8,7 @@ const InterviewTab = ({
   const tabs = ["설정", "사전 체크", "모의 면접", "응시 완료"];
 
   return (
-    <div className="bg-zik-border/50 mx-auto flex h-[clamp(3.8rem,8vw,5rem)] w-full justify-center">
+    <div className="bg-zik-border/50 mx-auto flex h-[4rem] w-full justify-center">
       <ul className="text-zik-text m-0 flex w-full max-w-[1200px] list-none items-center justify-between gap-6 px-6 text-[20px] font-medium xl:px-0">
         {tabs.map((tab, index) => (
           <>
