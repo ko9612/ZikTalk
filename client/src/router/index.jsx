@@ -4,7 +4,7 @@ import Landing from "../pages/Landing";
 import Interview from "../pages/Interview";
 import Test from "../pages/Test";
 import InterviewLayout from "@/pages/Interview/InterViewLayout";
-
+import Signin from "@/pages/Signin";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/signin",
-        element: "",
+        element: <Signin />,
       },
       {
         path: "/mypage",
