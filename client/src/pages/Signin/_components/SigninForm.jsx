@@ -36,8 +36,8 @@ const SigninForm = () => {
   };
 
   return (
-    <>
-      <div className="mx-auto my-0 mt-7 mb-7 w-[70vw] md:w-[445px]">
+    <div className="flex h-screen items-center">
+      <div className="mx-auto my-0 mb-7 w-[70vw] md:w-[445px]">
         <div className="flex flex-col items-center">
           <img
             src="/src/assets/images/ziktalk_typo.svg"
@@ -227,7 +227,7 @@ const SigninForm = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

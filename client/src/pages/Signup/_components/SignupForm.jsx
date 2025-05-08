@@ -102,8 +102,8 @@ const SignupForm = () => {
   }, [roleValue]);
 
   return (
-    <>
-      <div className="mx-auto my-0 mt-10 mb-2 flex w-fit flex-col text-lg font-bold sm:mb-4 sm:text-3xl md:mb-6">
+    <div className="flex h-screen flex-col items-center justify-center">
+      <div className="mx-auto my-0 w-fit text-lg font-bold sm:mb-4 sm:text-3xl md:mb-6">
         <p>환영합니다!</p>
         <p>직톡에서 취업 준비의 모든 과정을 경험해보세요.</p>
       </div>
@@ -119,7 +119,6 @@ const SignupForm = () => {
                 required
                 placeholder="이름을 입력해 주세요."
                 labelClassName="text-sm md:text-base"
-                inputClassName="h-[clamp(32px,5vw,55px)]"
               >
                 이름
               </Input>
@@ -133,7 +132,6 @@ const SignupForm = () => {
                 required
                 placeholder="example@example.com"
                 labelClassName="text-sm md:text-base flex-3"
-                inputClassName="h-[clamp(32px,5vw,55px)]"
               >
                 이메일
               </Input>
@@ -141,7 +139,7 @@ const SignupForm = () => {
                 onClick={handleVerification}
                 shape="bar"
                 className={
-                  "ml-2 h-[clamp(32px,5vw,55px)] max-w-[164px] flex-1 text-xs sm:ml-4 sm:text-base"
+                  "ml-2 max-w-[164px] flex-1 text-xs leading-5 sm:ml-4 sm:text-base"
                 }
               >
                 {verification ? "인증확인" : "인증요청"}
@@ -152,7 +150,6 @@ const SignupForm = () => {
                 placeholder="인증 번호를 입력해 주세요."
                 required
                 labelClassName="text-sm md:text-base flex-3 mb-3 md:mb-5"
-                inputClassName="h-[clamp(32px,5vw,55px)]"
               >
                 인증 번호
               </Input>
@@ -168,7 +165,7 @@ const SignupForm = () => {
                 maxLength={12}
                 placeholder="영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
                 labelClassName="text-sm md:text-base"
-                inputClassName="h-[clamp(32px,5vw,55px)]"
+                inputClassName="text-xs md:text-sm"
               >
                 비밀번호
               </Input>
@@ -184,7 +181,6 @@ const SignupForm = () => {
                 maxLength={12}
                 placeholder="비밀번호를 입력해 주세요."
                 labelClassName="text-sm md:text-base"
-                inputClassName="h-[clamp(32px,5vw,55px)]"
               >
                 비밀번호 확인
               </Input>
@@ -197,7 +193,7 @@ const SignupForm = () => {
                 required
                 value={career || "직무를 선택해 주세요."}
                 labelClassName="text-sm md:text-base"
-                inputClassName="h-[clamp(32px,5vw,55px)] text-left leading-2 cursor-pointer"
+                inputClassName="text-left leading-2 cursor-pointer"
               >
                 직무
               </Input>
@@ -258,7 +254,7 @@ const SignupForm = () => {
                 </div>
               </div>
               {termsOpen && (
-                <div className="mr-2 ml-2">
+                <div className="eease-in-out mr-2 ml-2">
                   <div className="mb-2 flex justify-between">
                     <label>
                       <input
@@ -309,7 +305,7 @@ const SignupForm = () => {
           </form>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
