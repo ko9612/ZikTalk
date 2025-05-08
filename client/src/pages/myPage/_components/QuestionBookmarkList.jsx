@@ -54,57 +54,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const [starredItems, setStarredItems] = useState(getBookmarkedIds());
   const [page, setPage] = useState(1);
   const [isCareerModalOpen, setCareerModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [shouldCloseModal, setShouldCloseModal] = useState(false);
-  const modalRef = useRef(null);
 
-  useEffect(() => {
-    if (shouldCloseModal) {
-      setCareerModalOpen(false);
-      setSelectedCategory(null);
-      setSelectedRole(null);
-      setShouldCloseModal(false);
-    }
-  }, [shouldCloseModal]);
-
-  const handleModalClose = () => {
-    console.log("handleModalClose called");
-    console.log("Before state update - isCareerModalOpen:", isCareerModalOpen);
-    setCareerModalOpen(false);
-    setSelectedCategory(null);
-    setSelectedRole(null);
-    console.log("After state update - isCareerModalOpen:", isCareerModalOpen);
-  };
-
-  const handleModalOpen = () => {
-    setSelectedCategory(null);
-    setSelectedRole(null);
-    setCareerModalOpen(true);
-  };
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setSelectedRole(null);
-  };
-
-  const handleRoleSelect = (role) => {
-    setSelectedRole(role);
-  };
-
-  const handleRoleConfirm = () => {
-    console.log("handleRoleConfirm called");
-    if (selectedRole) {
-      console.log("selectedRole:", selectedRole);
-      setJob(selectedRole);
-      console.log("job set to:", selectedRole);
-      console.log(
-        "Before state update - isCareerModalOpen:",
-        isCareerModalOpen,
-      );
-      handleModalClose();
-      console.log("After state update - isCareerModalOpen:", isCareerModalOpen);
-    }
+  const modalHandler = () => {
+    setCareerModalOpen(!isCareerModalOpen);
   };
 
   const toggleBookmark = (id) => {
@@ -176,19 +128,19 @@ const QuestionBookmarkList = ({ testEmpty }) => {
               <button
                 type="button"
                 className="relative ml-1 flex w-auto min-w-24 items-center justify-center truncate rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none"
-                onClick={handleModalOpen}
+                onClick={isCareerModalOpen}
                 role="listbox"
                 aria-haspopup="listbox"
                 aria-expanded={isCareerModalOpen}
               >
                 {job}
               </button>
-              {isCareerModalOpen && (
+              {/* {isCareerModalOpen && (
                 <CareerSelectModal
-                  isOpen={isOpenModal}
+                  isOpen={isCareerModalOpen}
                   onClose={modalHandler}
                 />
-              )}
+              )} */}
 
               <FilterDropdown
                 value={{ type: type }}

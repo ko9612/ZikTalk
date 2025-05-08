@@ -9,6 +9,7 @@ import {
   useReplyingStore,
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
+import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
 const Answer = ({ end, text }) => {
   const navigate = useNavigate();
@@ -17,8 +18,8 @@ const Answer = ({ end, text }) => {
   );
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
   const { isLoading, setIsLoading } = useLoadingStateStore();
-
   const [answer, setAnswer] = useState(text);
+  const [showOpenModal, setShowOpenModal] = useState(false);
 
   // 임시
   useEffect(() => {
@@ -37,11 +38,14 @@ const Answer = ({ end, text }) => {
     setInterviewState("question");
   };
 
+  const completeHandler = () => {
+    setShowOpenModal(true);
+  };
+
   const buttonHanlder = () => {
     if (end) {
-      navigate("/interview-result/1");
+      completeHandler();
     } else {
-      //
     }
   };
   return (
@@ -84,6 +88,14 @@ const Answer = ({ end, text }) => {
           <Button onClick={buttonHanlder} color="violet">
             {end ? "완료 하기" : "답변 제출"}
           </Button>
+          {showOpenModal && (
+            <AnalysisStateModal
+              isOpen={showOpenModal}
+              onClose={() => setShowOpenModal(false)}
+              dimmed={true}
+              id={1}
+            />
+          )}
         </div>
       </div>
     </div>

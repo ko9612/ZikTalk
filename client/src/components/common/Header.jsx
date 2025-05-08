@@ -20,6 +20,14 @@ const Header = () => {
           <ul className="flex items-center gap-3 sm:gap-5">
             <li>
               <Link
+                to="/mypage/result-list"
+                className={`text-zik-border block text-sm font-medium md:text-base lg:text-lg ${pathname === "/interview" && "hidden"}`}
+              >
+                myPage(임시)
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/interview"
                 className={`block text-sm font-medium md:text-base lg:text-lg ${pathname === "/interview" && "hidden"}`}
               >
