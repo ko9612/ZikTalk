@@ -41,7 +41,7 @@ const InterviewSection = () => {
   }, [setTabSelect, setIsLoading, setInterviewState]);
 
   return (
-    <section className="flex w-full flex-col justify-center gap-5 px-24">
+    <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
       <QuestionBox {...exampleValue} />
       {interviewState === "answer" ? (
         <Answer
