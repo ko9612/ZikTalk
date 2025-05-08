@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import QuestionBox from "./QuestionBox";
 import Timer from "./Timer";
 import Answer from "./Answer";
@@ -6,12 +6,14 @@ import {
   useInterviewStateStore,
   useInterviewTabStore,
   useLoadingStateStore,
+  useReplyingStore,
 } from "@/store/store";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
   const { setInterviewState, interviewState } = useInterviewStateStore();
-  const { isLoading, setIsLoading } = useLoadingStateStore();
+  const setIsLoading = useLoadingStateStore((state) => state.setIsLoading);
+  const setIsReplying = useReplyingStore((state) => state.setIsReplying);
 
   // 임시
   const exampleValue = {
@@ -34,11 +36,12 @@ const InterviewSection = () => {
       clearTimeout(timer);
       setInterviewState("question");
       setIsLoading(true);
+      setIsReplying(false);
     };
   }, [setTabSelect, setIsLoading, setInterviewState]);
 
   return (
-    <section className="flex w-full flex-col gap-10 p-24">
+    <section className="flex w-full flex-col justify-center gap-5 px-24">
       <QuestionBox {...exampleValue} />
       {interviewState === "answer" ? (
         <Answer

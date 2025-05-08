@@ -25,3 +25,8 @@ export const useLoadingStateStore = create((set) => ({
   isLoading: true,
   setIsLoading: (bool) => set({ isLoading: bool }),
 }));
+
+export const useReplyingStore = create((set) => ({
+  isReplying: false,
+  setIsReplying: (bool) => set({ isReplying: bool }),
+}));

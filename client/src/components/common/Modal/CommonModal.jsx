@@ -2,7 +2,14 @@ import React from "react";
 import Modal from "@/components/common/Modal/Modal";
 import Button from "@/components/common/Button";
 
-const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
+const CommonModal = ({
+  isOpen,
+  onClose,
+  title,
+  subText,
+  btnText,
+  btnHandler,
+}) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} dimmed={true} className="w-96">
       <div className="flex flex-col gap-8 p-4 sm:p-0">
@@ -22,7 +29,7 @@ const CommonModal = ({ isOpen, onClose, title, subText, btnText }) => {
           <Button
             shape="bar"
             color="violet"
-            onClick={() => {}}
+            onClick={btnHandler}
             className="flex-1"
           >
             {btnText}
