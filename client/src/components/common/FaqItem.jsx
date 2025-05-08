@@ -42,14 +42,31 @@ const FaqItem = ({
       setLocalIsExpanded(!localIsExpanded);
     }
   };
+
+  /**
+   * 즐겨찾기 버튼 클릭 핸들러 - 이벤트 전파 방지
+   */
+  const handleStarClick = (e) => {
+    e.stopPropagation();
+    if (onStarToggle) {
+      onStarToggle();
+    }
+  };
+
   return (
     <div className="mb-4">
-      <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300">
+      <div 
+        className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300 cursor-pointer"
+        onClick={handleToggle}
+      >
         {/* 버튼 그룹: 오른쪽 상단에 고정 */}
         <div className="absolute top-3 right-4 z-10 flex flex-row items-center gap-2">
           {/* 토글 버튼 */}
           <button
-            onClick={handleToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggle();
+            }}
             className={`flex h-7 w-7 items-center justify-center rounded-full transition-transform duration-300 hover:bg-gray-100 sm:h-8 sm:w-8 ${isExpanded ? "rotate-180" : ""}`}
             aria-expanded={isExpanded}
             aria-label={isExpanded ? "접기" : "펼치기"}
@@ -74,7 +91,7 @@ const FaqItem = ({
           </button>
           {/* 즐겨찾기 버튼 */}
           <button
-            onClick={onStarToggle}
+            onClick={handleStarClick}
             className="hover:bg-zik-main/10 ml-1 flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300 sm:h-8 sm:w-8"
             aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
           >
@@ -121,6 +138,7 @@ const FaqItem = ({
               : "max-h-0 py-0 opacity-0"
           }`}
           style={{ willChange: "max-height, opacity, padding" }}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* 답변 섹션 */}
           {answer && (
