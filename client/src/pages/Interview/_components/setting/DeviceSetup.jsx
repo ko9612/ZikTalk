@@ -18,14 +18,14 @@ const DeviceSetup = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center justify-center">
+    <div className="mx-auto flex w-full flex-col items-center justify-center py-6">
       <div className="text-zik-text mt-3 mb-5 text-2xl font-bold">
         연결된 기기를 확인하세요
       </div>
 
       <div className="flex w-full gap-4">
         {/* Left side - Device guides */}
-        <div className="border-zik-border w-4/7 rounded-lg border p-5">
+        <div className="border-zik-border w-4/7 rounded-xl border p-5">
           <div className="mb-4">
             <div className={xlTextWrap}>마이크 / 카메라 가이드</div>
             <ul className={smTextWrap}>
@@ -74,45 +74,34 @@ const DeviceSetup = () => {
         </div>
 
         {/* Right side - Camera Preview */}
-        <div className="border-zik-border w-full justify-center rounded-lg border p-5 md:w-3/7">
-          <div className="bg-zik-border/50 mb-4 flex aspect-square w-[80%] items-center justify-center rounded-lg">
+        <div className="border-zik-border relative flex w-3/7 flex-col items-center rounded-xl border p-5">
+          <div className="bg-zik-border/50 mb-4 flex aspect-square w-[80%] items-center justify-center rounded-xl">
             <p className="text-zik-text/70 text-xl">카메라 상태</p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex w-3/5 items-center gap-3">
+          <div className="flex w-full items-center justify-between">
+            <div className="flex w-4/6 items-center gap-3">
               <span className="text-zik-text/75 text-xl font-bold text-nowrap">
                 마이크
               </span>
-              <div className="border-zik-border w-full rounded-md border px-4 py-2"></div>
+              <div className="border-zik-border h-12 w-full rounded-md border px-4 py-2"></div>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-red-500"></div>
-              <span className="text-xs">연결실패</span>
+              <span className="text-sm">연결실패</span>
             </div>
           </div>
+          <div className="absolute bottom-6 flex justify-center gap-15">
+            <Button
+              color="gray"
+              disabled
+              className="pointer-events-none cursor-default"
+            >
+              이전
+            </Button>
+            <Button onClick={handleNext}>다음</Button>
+          </div>
         </div>
-      </div>
-      {/* <div className="mt-5 flex gap-15">
-        <Button
-          color="gray"
-          disabled
-          className="pointer-events-none cursor-default"
-        >
-          이전
-        </Button>
-        <Button onClick={handleNext}>다음</Button>
-      </div> */}
-
-      <div className="absolute bottom-10 flex justify-center gap-15">
-        <Button
-          color="gray"
-          disabled
-          className="pointer-events-none cursor-default"
-        >
-          이전
-        </Button>
-        <Button onClick={handleNext}>다음</Button>
       </div>
     </div>
   );
