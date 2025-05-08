@@ -16,12 +16,16 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+    };
   });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-md" dimmed={dimmed}>
       <div className="flex flex-col items-center gap-4 sm:gap-6">
-        {isLoading ? (
+        {isOpen && isLoading ? (
           <>
             <i className="w-12">
               <img src={MainLogo} alt="logo" />

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
-import pencil from "@/assets/images/pencil.svg";
+import Pencil from "@/assets/images/pencil.svg";
 // import task from "@/assets/images/task.svg";
-import task2 from "@/assets/images/task2.png";
-import timebulb from "@/assets/images/time-bulb.svg";
-import interactivesession from "@/assets/images/interactive-session.svg";
-import minus from "@/assets/images/minus.svg";
-import plus from "@/assets/images/plus.svg";
+import Task2 from "@/assets/images/task2.png";
+import Timebulb from "@/assets/images/time-bulb.svg";
+import Interactivesession from "@/assets/images/interactive-session.svg";
+import Minus from "@/assets/images/minus.svg";
+import Plus from "@/assets/images/plus.svg";
 
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
 
@@ -14,7 +14,6 @@ const listWrap =
   "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
 const imageWrap =
   "w-[clamp(60px,15vw,150px)] h-[clamp(60px,15vw,150px)] bg-[#ECEBFF] rounded-[50%] flex items-center justify-center border-[4px] border-zik-main/50";
-const imageSize = "w-[clamp(30px,8vw,80px)] h-[clamp(30px,8vw,80px)]";
 const textWrap =
   "md:mt-7 flex flex-col items-center justify-center flex items-start md:items-center whitespace-nowrap text-lg text-zik-text";
 
@@ -55,7 +54,7 @@ const PreCheckStep = () => {
       </div>
 
       <div className="flex items-center justify-center">
-        <img src={pencil} alt="연필"></img>
+        <img src={Pencil} alt="연필"></img>
         <div className="text-zik-main px-2 text-sm font-bold 2xl:text-base">
           문항 수는 1개부터 최대 10개까지 자유롭게 변경할 수 있어요
         </div>
@@ -66,16 +65,16 @@ const PreCheckStep = () => {
           <li className={listWrap}>
             <div className={imageWrap}>
               <img
-                src={task2}
+                src={Task2}
                 alt="문항"
-                className={`translate-x-1 -translate-y-1.5 ${imageSize}`}
+                className={`w-20 translate-x-1 -translate-y-1.5`}
               />
             </div>
             <div className={textWrap}>
               <strong>문항수</strong>
               <div className="flex">
                 <img
-                  src={minus}
+                  src={Minus}
                   alt="-"
                   className="cursor-pointer"
                   onClick={decrease}
@@ -84,7 +83,7 @@ const PreCheckStep = () => {
                   <span className="underline">{count}</span>개
                 </p>
                 <img
-                  src={plus}
+                  src={Plus}
                   alt="+"
                   className="cursor-pointer"
                   onClick={increase}
@@ -94,7 +93,7 @@ const PreCheckStep = () => {
           </li>
           <li className={listWrap}>
             <div className={imageWrap}>
-              <img src={timebulb} alt="준비시간" className={imageSize} />
+              <img src={Timebulb} alt="준비시간" className="w-20" />
             </div>
             <div className={textWrap}>
               <strong>답변 준비 시간</strong>
@@ -105,7 +104,7 @@ const PreCheckStep = () => {
           </li>
           <li className={listWrap}>
             <div className={imageWrap}>
-              <img src={interactivesession} alt="답변" className={imageSize} />
+              <img src={Interactivesession} alt="답변" className="w-20" />
             </div>
             <div className={textWrap}>
               <strong>대답시간</strong>
@@ -116,17 +115,6 @@ const PreCheckStep = () => {
           </li>
         </ul>
       </div>
-
-      {/* <div className="mt-5 flex gap-15">
-        <Button color="gray" onClick={handlePrevious}>
-          이전
-        </Button>
-        <Button color="red" onClick={handleNext}>
-          시작
-        </Button>
-      </div> */}
-      {/* <div class="relative bottom-0 mt-5 flex justify-center gap-15 2xl:!absolute 2xl:!bottom-10"> */}
-      {/* <div class="absolute bottom-16 flex justify-center gap-15"> */}
       <div className="absolute bottom-10 flex justify-center gap-15">
         <Button color="gray" onClick={handlePrevious}>
           이전
