@@ -6,6 +6,7 @@ import Test from "../pages/Test";
 import InterviewLayout from "@/pages/Interview/InterViewLayout";
 import Signin from "@/pages/Signin";
 import InterviewResult from "@/pages/Interview-result";
+import MyPage from "@/pages/myPage/index";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -25,13 +26,8 @@ const router = createBrowserRouter([
         element: <Signin />,
       },
       {
-        path: "/mypage",
-        element: "",
-        children: [
-          { path: "result-list", element: "" }, // element에 <ResultPage /> 이런식으로 페이지 넣으면 됨
-          { path: "bookmark", element: "" },
-          { path: "info", element: "" },
-        ],
+        path: "/mypage/*",
+        element: <MyPage />,
       },
       {
         path: "/interview-result/:resultId",
