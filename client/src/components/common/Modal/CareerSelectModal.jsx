@@ -21,6 +21,11 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
     setSelectedRole(null);
   };
 
+  const selectHandler = () => {
+    setRoleValue(selectedRole);
+    onClose(false);
+  };
+
   const roles =
     careerData.find((c) => c.category === selectedCategory)?.roles || [];
 
@@ -84,7 +89,7 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
           shape="bar"
           color="violet"
           className="w-20 text-nowrap sm:w-28"
-          onClick={() => setRoleValue(selectedRole)}
+          onClick={selectHandler}
           disabled={!selectedRole}
         >
           선택
