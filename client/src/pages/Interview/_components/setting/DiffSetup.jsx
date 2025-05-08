@@ -118,7 +118,7 @@ const DiffSetup = () => {
 
       {/* <div class="relative bottom-0 mt-5 flex justify-center gap-15 2xl:!absolute 2xl:!bottom-10"> */}
       {/* <div class="absolute bottom-16 flex justify-center gap-15"> */}
-      <div class="absolute bottom-10 flex justify-center gap-15">
+      <div className="absolute bottom-10 flex justify-center gap-15">
         <Button color="gray" onClick={handlePrevious}>
           이전
         </Button>

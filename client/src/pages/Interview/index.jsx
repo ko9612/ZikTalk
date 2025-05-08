@@ -1,4 +1,3 @@
-// example
 import React, { useEffect } from "react";
 import { useSetupNavigationStore } from "@/store/store";
 import DeviceSetup from "./_components/setting/DeviceSetup";
@@ -21,7 +20,7 @@ const index = () => {
     return () => {
       resetNavigation();
     };
-  }, resetNavigation);
+  }, [resetNavigation]);
 
   // 컴포넌트 맵핑 객체
   const COMPONENTS = {
