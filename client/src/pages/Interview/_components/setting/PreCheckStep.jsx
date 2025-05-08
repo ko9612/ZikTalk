@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useBeforeUnload } from "react-router-dom";
 import Button from "@/components/common/Button";
 import pencil from "@/assets/images/pencil.svg";
 // import task from "@/assets/images/task.svg";
@@ -15,7 +14,7 @@ const listWrap =
   "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
 const imageWrap =
   "w-[clamp(60px,15vw,150px)] h-[clamp(60px,15vw,150px)] bg-[#ECEBFF] rounded-[50%] flex items-center justify-center border-[4px] border-zik-main/50";
-const imageSize = "w-[clamp(30px,8vw,100px)] h-[clamp(30px,8vw,100px)]";
+const imageSize = "w-[clamp(30px,8vw,80px)] h-[clamp(30px,8vw,80px)]";
 const textWrap =
   "md:mt-7 flex flex-col items-center justify-center flex items-start md:items-center whitespace-nowrap text-lg text-zik-text";
 
@@ -44,10 +43,13 @@ const PreCheckStep = () => {
   };
 
   const increase = () => {
-    if (count < 20) setCount(count + 1);
+    if (count < 10) setCount(count + 1);
   };
   return (
-    <div className="mx-auto flex w-full flex-col items-center px-4 py-8">
+    <div
+      className="mx-auto flex w-full flex-col items-center justify-center px-4 py-8"
+      style={{ height: "calc(100vh - 18rem)" }}
+    >
       <div className="text-zik-text mt-9 mb-8 text-2xl font-bold 2xl:mt-18">
         사전 체크
       </div>

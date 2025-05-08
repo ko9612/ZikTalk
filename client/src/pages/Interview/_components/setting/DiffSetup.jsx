@@ -54,7 +54,10 @@ const DiffSetup = () => {
   const [selected, setSelected] = useState("신입");
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center px-4 py-4 2xl:py-8">
+    <div
+      className="w- mx-auto flex w-full flex-col items-center justify-center px-4 py-4 2xl:py-8"
+      style={{ height: "calc(100vh - 14rem)" }}
+    >
       <div className="text-zik-text mt-4 mb-8 text-2xl font-bold">
         질문 난이도를 설정하세요
       </div>
@@ -68,7 +71,7 @@ const DiffSetup = () => {
               key={level.label}
               onClick={() => setSelected(level.label)}
               className={clsx(
-                "border-zik-border flex h-20 cursor-pointer flex-col justify-center rounded-xl border px-6 py-4 transition-all",
+                "border-zik-border flex h-20 cursor-pointer flex-col justify-center overflow-hidden rounded-xl border px-6 py-4 transition-all duration-300 ease-in-out",
                 {
                   "bg-zik-main/30 h-30 text-[#291B9A] duration-300 2xl:h-36":
                     isSelected,
@@ -106,11 +109,20 @@ const DiffSetup = () => {
                 </div>
               </div>
 
-              {isSelected && level.description && (
-                <p className="mt-2 px-14 text-sm leading-relaxed whitespace-pre-wrap text-[#291B9A] 2xl:text-base">
-                  {level.description}
-                </p>
-              )}
+              <div
+                className={clsx(
+                  "transform transition-all duration-300 ease-in-out",
+                  isSelected
+                    ? "max-h-40 translate-y-0 opacity-100"
+                    : "max-h-0 translate-y-[-10px] opacity-0",
+                )}
+              >
+                {level.description && (
+                  <p className="mt-2 px-14 text-sm leading-relaxed whitespace-pre-wrap text-[#291B9A] 2xl:text-base">
+                    {level.description}
+                  </p>
+                )}
+              </div>
             </li>
           );
         })}
