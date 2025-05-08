@@ -11,7 +11,17 @@ export const useInterviewTabStore = create((set) => ({
 }));
 
 export const useSetupNavigationStore = create((set) => ({
-  currentComponent: "DeviceSetup", // 초기 컴포넌트
+  currentComponent: "DeviceSetup",
   navigateTo: (componentName) => set({ currentComponent: componentName }),
   resetNavigation: () => set({ currentComponent: "DeviceSetup" }),
+}));
+
+export const useInterviewStateStore = create((set) => ({
+  interviewState: "question",
+  setInterviewState: (str) => set({ interviewState: str }),
+}));
+
+export const useLoadingStateStore = create((set) => ({
+  isLoading: true,
+  setIsLoading: (bool) => set({ isLoading: bool }),
 }));
