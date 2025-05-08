@@ -82,7 +82,7 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
           shape="bar"
           color="violet"
           className="w-20 text-nowrap sm:w-28"
-          onClick={() => {}}
+          onClick={onClose}
           disabled={!selectedRole}
         >
           선택
