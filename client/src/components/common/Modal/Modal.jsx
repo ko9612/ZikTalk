@@ -2,7 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import { twMerge } from "tailwind-merge";
 
-const Modal = ({ isOpen, onClose, children, className = "", dimmed }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  children,
+  className = "",
+  dimmed = true,
+}) => {
   const modalRef = useRef(null);
   const modalOutsideClick = (e) => {
     if (modalRef.current === e.target) {

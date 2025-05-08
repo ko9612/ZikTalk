@@ -5,6 +5,7 @@ import Interview from "../pages/Interview";
 import Test from "../pages/Test";
 import InterviewLayout from "@/pages/Interview/InterViewLayout";
 import Signin from "@/pages/Signin";
+import InterviewResult from "@/pages/Interview-result";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/interview-result/:resultId",
-        element: "",
+        element: <InterviewResult />,
       },
       {
         path: "/interview",

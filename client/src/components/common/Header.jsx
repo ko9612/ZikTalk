@@ -26,12 +26,14 @@ const Header = () => {
                 면접 연습
               </Link>
             </li>
-            <Button
-              color="white"
-              className="!px-4 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
-            >
-              로그인
-            </Button>
+            <Link to="/signin">
+              <Button
+                color="white"
+                className="!px-4 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
+              >
+                로그인
+              </Button>
+            </Link>
           </ul>
         </nav>
       </div>
