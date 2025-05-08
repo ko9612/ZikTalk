@@ -2,10 +2,12 @@ import Modal from "@/components/common/Modal/Modal";
 import React, { useState } from "react";
 import { careerData } from "@/data/carrerData";
 import Button from "@/components/common/Button";
+import { useRoleStore } from "@/store/store";
 
 const CareerSelectModal = ({ isOpen, onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
+  const setRoleValue = useRoleStore((state) => state.setRoleValue);
 
   const categrySelectHandler = (categ) => {
     if (selectedCategory !== categ) {
@@ -82,7 +84,7 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
           shape="bar"
           color="violet"
           className="w-20 text-nowrap sm:w-28"
-          onClick={onClose}
+          onClick={() => setRoleValue(selectedRole)}
           disabled={!selectedRole}
         >
           선택
