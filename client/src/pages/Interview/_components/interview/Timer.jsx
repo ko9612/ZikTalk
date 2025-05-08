@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
-// import { useSmoothValue } from "@/hooks/useSmoothValue";
+// import { useSmoothValue } from "@/hooks/useSmoothvalue";
 
 const Timer = () => {
   const isLoading = useLoadingStateStore((state) => state.isLoading);
