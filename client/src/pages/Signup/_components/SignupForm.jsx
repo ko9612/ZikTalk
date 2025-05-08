@@ -193,7 +193,7 @@ const SignupForm = () => {
                 required
                 value={career || "직무를 선택해 주세요."}
                 labelClassName="text-sm md:text-base"
-                inputClassName="text-left leading-2 cursor-pointer"
+                inputClassName="text-left cursor-pointer"
               >
                 직무
               </Input>
@@ -212,7 +212,7 @@ const SignupForm = () => {
                   name="experience"
                   value={selected}
                   required
-                  className="border-zik-border text-zik-text placeholder:text-zik-border h-[clamp(32px,5vw,55px)] min-h-[32px] w-full cursor-pointer appearance-none truncate rounded-[10px] border px-3 pr-3 text-sm leading-[1.2] font-medium focus:outline-0"
+                  className="border-zik-border text-zik-text placeholder:text-zik-border min-h-[46px] w-full cursor-pointer appearance-none truncate rounded-[10px] border px-3 pr-3 text-sm font-medium focus:outline-0"
                 >
                   <option value="" disabled>
                     경력을 선택해주세요.
