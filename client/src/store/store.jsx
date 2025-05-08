@@ -30,3 +30,8 @@ export const useReplyingStore = create((set) => ({
   isReplying: false,
   setIsReplying: (bool) => set({ isReplying: bool }),
 }));
+
+export const useRoleStore = create((set) => ({
+  roleValue: null,
+  setRoleValue: (str) => set({ roleValue: str }),
+}));

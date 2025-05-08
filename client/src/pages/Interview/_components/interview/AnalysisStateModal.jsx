@@ -1,5 +1,5 @@
 // 분석 관련 모달
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import AnalysisCompleteIcon from "./AnalysisCompleteIcon";
 import MainLogo from "@/assets/images/logo.svg";
@@ -7,9 +7,16 @@ import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import Button from "@/components/common/Button";
 
-const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
+const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   // 임시
-  const [isLoading, setIsLoading] = useState(!true);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 임시
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="w-md" dimmed={dimmed}>
@@ -33,7 +40,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
             <p className="text-center text-base font-semibold sm:text-xl">
               User님의 답변 분석이 완료되었습니다!
             </p>
-            <Link to="">
+            <Link to={`/interview-result/${id}`}>
               <Button shape="bar" className="px-8">
                 분석 결과 페이지로 이동
               </Button>

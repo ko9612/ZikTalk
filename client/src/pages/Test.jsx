@@ -39,15 +39,15 @@ const Test = () => {
         click
       </button>
       {isOpenModal && (
-        <CommonModal
-          isOpen={isOpenModal}
-          onClose={modalHandler}
-          title={"페이지를 나가시겠습니까?"}
-          subText={
-            "현재 페이지를 벗어나시면 메인 페이지로 돌아가며 모든 설정이 초기화됩니다"
-          }
-          btnText={"나가기"}
-        />
+        // <CommonModal
+        //   isOpen={isOpenModal}
+        //   onClose={modalHandler}
+        //   title={"페이지를 나가시겠습니까?"}
+        //   subText={
+        //     "현재 페이지를 벗어나시면 메인 페이지로 돌아가며 모든 설정이 초기화됩니다"
+        //   }
+        //   btnText={"나가기"}
+        // />
 
         // <AnalysisStateModal
         //   isOpen={isOpenModal}
@@ -55,7 +55,7 @@ const Test = () => {
         //   dimmed={true}
         // />
 
-        // <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
+        <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
       )}
       <div>
         {/* FaqItem 테스트 */}

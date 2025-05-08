@@ -91,7 +91,7 @@ const DragProgressBar = () => {
 
           {/* 드래그 핸들 - 원형 */}
           <div
-            className="absolute top-1/2 z-10 -translate-y-1/2"
+            className="absolute top-1/2 z-10 -translate-y-1/2 transition-all duration-200 ease-in-out"
             style={{ left: `${rightValue}%` }}
             onMouseDown={handleDragStart}
             onTouchStart={handleDragStart}
@@ -101,7 +101,7 @@ const DragProgressBar = () => {
 
           {/* 컬러 인디케이터 */}
           <div
-            className="bg-zik-main absolute inset-y-0 left-0 rounded-l-full"
+            className="bg-zik-main absolute inset-y-0 left-0 rounded-l-full transition-all duration-200 ease-in-out"
             style={{ width: `${rightValue}%` }}
           ></div>
         </div>

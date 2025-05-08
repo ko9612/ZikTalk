@@ -1,7 +1,8 @@
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 
-const RecordingAnimation = () => {
-  const bars = Array.from({ length: 15 }, (_, i) => i);
+const RecordingAnimation = React.memo(() => {
+  const bars = useMemo(() => Array.from({ length: 15 }, (_, i) => i));
 
   const generateRandomHeight = () => Math.floor(Math.random() * 40);
 
@@ -30,6 +31,6 @@ const RecordingAnimation = () => {
       <span className="z-10 font-semibold text-[#FE607D]">녹음 중...</span>
     </div>
   );
-};
+});
 
 export default RecordingAnimation;

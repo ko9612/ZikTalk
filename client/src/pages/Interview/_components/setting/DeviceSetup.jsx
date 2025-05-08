@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import Button from "@/components/common/Button";
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
 
-const xlTextWrap =
-  "text-zik-text/75 mb-1 2xl:mb-2 text-lg 2xl:text-xl font-bold";
-const smTextWrap = "list-disc space-y-2 pl-5 text-xs/2 2xl:text-sm/3.5";
+const xlTextWrap = "text-zik-text/75 mb-2 text-lg font-bold";
+const smTextWrap = "list-disc space-y-2 pl-5 text-sm";
 
 const DeviceSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -19,14 +18,14 @@ const DeviceSetup = () => {
   };
 
   return (
-    <div className="mx-auto flex w-[92%] flex-col items-center px-4 py-4 2xl:py-8">
+    <div className="mx-auto flex w-full flex-col items-center justify-center py-6">
       <div className="text-zik-text mt-3 mb-5 text-2xl font-bold">
         연결된 기기를 확인하세요
       </div>
 
-      <div className="flex h-[400px] w-full flex-col gap-4 md:flex-row 2xl:h-11/12">
+      <div className="flex w-full gap-4">
         {/* Left side - Device guides */}
-        <div className="border-zik-border w-full rounded-lg border p-5 md:w-4/7">
+        <div className="border-zik-border w-4/7 rounded-xl border p-5">
           <div className="mb-4">
             <div className={xlTextWrap}>마이크 / 카메라 가이드</div>
             <ul className={smTextWrap}>
@@ -35,9 +34,7 @@ const DeviceSetup = () => {
               <li>영상은 녹화되어 분석결과 페이지에서 확인하실 수 있습니다.</li>
             </ul>
           </div>
-
           <hr className="border-zik-border mb-2 border-t" />
-
           <div className="mb-4">
             <div className={xlTextWrap}>소음</div>
             <ul className={smTextWrap}>
@@ -49,9 +46,7 @@ const DeviceSetup = () => {
               <li>다른 사람의 음성이 녹음되지 않도록 해주세요.</li>
             </ul>
           </div>
-
           <hr className="border-zik-border mb-2 border-t" />
-
           <div className="mb-4">
             <div className={xlTextWrap}>오류를 일으키는 주요원인</div>
             <ul className={smTextWrap}>
@@ -63,9 +58,7 @@ const DeviceSetup = () => {
               <li>음성 전달에 영향을 미치는 마스크를 착용하지 말아 주세요.</li>
             </ul>
           </div>
-
           <hr className="border-zik-border mb-2 border-t" />
-
           <div>
             <div className={xlTextWrap}>답변 주의사항</div>
             <ul className={smTextWrap}>
@@ -81,45 +74,34 @@ const DeviceSetup = () => {
         </div>
 
         {/* Right side - Camera Preview */}
-        <div className="border-zik-border w-full rounded-lg border p-5 md:w-3/7">
-          <div className="bg-zik-border/50 mb-4 flex h-80 items-center justify-center rounded-lg 2xl:mb-8 2xl:h-96">
+        <div className="border-zik-border relative flex w-3/7 flex-col items-center rounded-xl border p-5">
+          <div className="bg-zik-border/50 mb-4 flex aspect-square w-[80%] items-center justify-center rounded-xl">
             <p className="text-zik-text/70 text-xl">카메라 상태</p>
           </div>
 
-          <div className="relative">
-            <div className="flex items-center">
-              <span className="text-zik-text/75 mx-2 text-xl font-bold">
+          <div className="flex w-full items-center justify-between">
+            <div className="flex w-4/6 items-center gap-3">
+              <span className="text-zik-text/75 text-xl font-bold text-nowrap">
                 마이크
               </span>
-              <div className="border-zik-border mx-3 h-8 w-48 rounded-md border px-4 py-2"></div>
+              <div className="border-zik-border h-12 w-full rounded-md border px-4 py-2"></div>
             </div>
-            <div className="absolute top-2 right-2 flex items-center">
-              <div className="mr-2 h-3 w-3 rounded-full bg-red-500"></div>
-              <span className="text-xs">연결실패</span>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-red-500"></div>
+              <span className="text-sm">연결실패</span>
             </div>
           </div>
+          <div className="absolute bottom-6 flex justify-center gap-15">
+            <Button
+              color="gray"
+              disabled
+              className="pointer-events-none cursor-default"
+            >
+              이전
+            </Button>
+            <Button onClick={handleNext}>다음</Button>
+          </div>
         </div>
-      </div>
-      {/* <div className="mt-5 flex gap-15">
-        <Button
-          color="gray"
-          disabled
-          className="pointer-events-none cursor-default"
-        >
-          이전
-        </Button>
-        <Button onClick={handleNext}>다음</Button>
-      </div> */}
-
-      <div className="absolute bottom-10 flex justify-center gap-15">
-        <Button
-          color="gray"
-          disabled
-          className="pointer-events-none cursor-default"
-        >
-          이전
-        </Button>
-        <Button onClick={handleNext}>다음</Button>
       </div>
     </div>
   );
