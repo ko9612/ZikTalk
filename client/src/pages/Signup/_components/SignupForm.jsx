@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useRoleStore } from "@/store/store";
 import { useEffect } from "react";
+import Arrow from "@/assets/images/arrow.svg";
 const inputWrapStyle = "mb-3 md:mb-5";
 
 const SignupForm = () => {
@@ -246,7 +247,7 @@ const SignupForm = () => {
                     className="text-zik-text font-semibold"
                   >
                     <img
-                      src="/src/assets/images/arrow.svg"
+                      src={Arrow}
                       alt="이용약관 펼치기 화살표"
                       className={`h-4 w-4 transition duration-200 ${termsOpen ? "rotate-180" : "rotate-0"}`}
                     />

@@ -3,6 +3,9 @@ import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { React, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "@/assets/images/ziktalk_typo.svg";
+import Kakao from "@/assets/images/kakao.svg";
+import Google from "@/assets/images/google.svg";
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
@@ -40,7 +43,7 @@ const SigninForm = () => {
       <div className="mx-auto my-0 mb-7 w-[70vw] md:w-[445px]">
         <div className="flex flex-col items-center">
           <img
-            src="/src/assets/images/ziktalk_typo.svg"
+            src={Logo}
             alt="zik talk 로고"
             className="w-[120px] md:w-[150px]"
           ></img>
@@ -114,7 +117,7 @@ const SigninForm = () => {
                   <div className="mx-auto my-0 w-[80vw] md:w-[445px]">
                     <div className="mb-7 flex flex-col items-center justify-center">
                       <img
-                        src="/src/assets/images/ziktalk_typo.svg"
+                        src={Logo}
                         alt="zik talk 로고"
                         className="mb-7 w-[120px] md:w-[150px]"
                       ></img>
@@ -205,7 +208,7 @@ const SigninForm = () => {
               className={`${snsButtonStyle} bg-[#FFD900] hover:bg-[#ffd000]`}
             >
               <img
-                src="/src/assets/images/kakao.svg"
+                src={Kakao}
                 alt="카카오로 로그인 하기"
                 className={"h-[8vw] max-h-[40px] w-[6vw] max-w-[38px]"}
               ></img>
@@ -219,7 +222,7 @@ const SigninForm = () => {
               className={`${snsButtonStyle} border border-gray-200 bg-white hover:bg-[#F5F4FF]`}
             >
               <img
-                src="/src/assets/images/google.svg"
+                src={Google}
                 alt="구글로 로그인 하기"
                 className={"h-[8vw] max-h-[40px] w-[6vw] max-w-[38px]"}
               ></img>

@@ -1,6 +1,7 @@
 // 한재우
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import Q from "@/assets/images/Q.svg";
 
 const faqList = [
   {
@@ -77,7 +78,7 @@ const GuideSection = () => {
               >
                 <div className="flex items-center px-4 py-4 sm:px-7 sm:py-5">
                   <img
-                    src="/src/assets/images/Q.svg"
+                    src={Q}
                     alt="Q"
                     className="mr-2 h-4 w-4 sm:mr-3 sm:h-5 sm:w-5"
                   />
