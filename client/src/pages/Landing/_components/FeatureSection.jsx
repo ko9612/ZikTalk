@@ -5,7 +5,7 @@ import { FaAngleUp } from "react-icons/fa";
 import AnalysisPageImg from "@/assets/images/analysisPage_example.svg";
 import { jobData, levels, savedQuestions } from "@/data/landingData";
 import { motion, useInView } from "framer-motion";
-import JobCard from "@/pages/Landing/_components/card/jobCard";
+import JobCard from "@/pages/Landing/_components/card/JobCard";
 import { twMerge } from "tailwind-merge";
 
 const FeatureSection = () => {
