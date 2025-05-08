@@ -1,7 +1,11 @@
 import Button from "@/components/common/Button";
 import Graph from "@/components/common/Graph";
 import LoadingIcon from "@/components/common/LoadingIcon";
-import { useInterviewStateStore, useLoadingStateStore } from "@/store/store";
+import {
+  useInterviewStateStore,
+  useLoadingStateStore,
+  useReplyingStore,
+} from "@/store/store";
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
@@ -12,7 +16,7 @@ const Timer = () => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
-  const [isReplying, setIsReplying] = useState(false);
+  const { isReplying, setIsReplying } = useReplyingStore();
 
   // 임시
   const [timeLeft, setTimeLeft] = useState(30);
@@ -39,8 +43,10 @@ const Timer = () => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
           if (isReplying) {
-            setIsReplying(false);
-            setInterviewState("answer");
+            setTimeout(() => {
+              setIsReplying(false);
+              setInterviewState("answer");
+            }, 1000);
           } else {
             setTimeout(() => {
               setIsReplying(true);
@@ -78,7 +84,7 @@ const Timer = () => {
           <RecordingAnimation />
         </div>
       )}
-      <div className="relative mt-20 w-fit">
+      <div className="relative mt-16 w-fit">
         <Graph
           value={isLoading ? 0 : percentage}
           size={300}
