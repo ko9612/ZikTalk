@@ -32,7 +32,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const [starredItems, setStarredItems] = useState(getBookmarkedIds());
   const [showJobDropdown, setShowJobDropdown] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  
+
   // 무한 스크롤 관련 상태 추가
   const [page, setPage] = useState(0);
   const [visibleResults, setVisibleResults] = useState([]);
@@ -40,7 +40,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const [loading, setLoading] = useState(false);
   const [userScrolled, setUserScrolled] = useState(false);
   const observer = useRef();
-  
+
   const toggleBookmark = (id) => {
     const updated = starredItems.includes(id)
       ? starredItems.filter((bid) => bid !== id)
@@ -64,10 +64,16 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   // 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (jobDropdownRef.current && !jobDropdownRef.current.contains(e.target)) {
+      if (
+        jobDropdownRef.current &&
+        !jobDropdownRef.current.contains(e.target)
+      ) {
         setShowJobDropdown(false);
       }
-      if (typeDropdownRef.current && !typeDropdownRef.current.contains(e.target)) {
+      if (
+        typeDropdownRef.current &&
+        !typeDropdownRef.current.contains(e.target)
+      ) {
         setShowTypeDropdown(false);
       }
     };
@@ -84,7 +90,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
             // 1. 직무(job) 필터링
             const careerMatch = job === "직군·직무" || item.job === job;
             // 2. 질문유형 필터링
-            const typeMatch = questionType === "질문유형" || item.type === questionType;
+            const typeMatch =
+              questionType === "질문유형" || item.type === questionType;
             // 3. 기존 type '일반' 제외 필터링
             const notGeneral = item.type !== "일반";
             return careerMatch && typeMatch && notGeneral;
@@ -96,24 +103,30 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   };
 
   // 마지막 요소 참조 콜백 함수
-  const lastResultElementRef = useCallback(node => {
-    // 사용자가 스크롤하지 않았거나 로딩 중이면 관찰하지 않음
-    if (loading || !userScrolled) return;
-    
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && userScrolled) {
-        loadMoreResults();
-      }
-    }, {
-      root: null,
-      rootMargin: '0px 0px 50px 0px',
-      threshold: 0.5
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, userScrolled]);
+  const lastResultElementRef = useCallback(
+    (node) => {
+      // 사용자가 스크롤하지 않았거나 로딩 중이면 관찰하지 않음
+      if (loading || !userScrolled) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore && userScrolled) {
+            loadMoreResults();
+          }
+        },
+        {
+          root: null,
+          rootMargin: "0px 0px 50px 0px",
+          threshold: 0.5,
+        },
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, userScrolled],
+  );
 
   // 스크롤 이벤트 처리
   useEffect(() => {
@@ -121,26 +134,27 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     let prevScrollY = window.scrollY;
     let scrolledDown = false;
     let scrollTimeout;
-    
+
     const handleScroll = () => {
       // 사용자 스크롤 상태를 true로 설정
       if (!userScrolled) {
         setUserScrolled(true);
       }
-      
+
       // 스크롤 디바운싱 (스크롤 이벤트가 너무 자주 발생하는 것 방지)
       clearTimeout(scrollTimeout);
-      
+
       scrollTimeout = setTimeout(() => {
         // 사용자가 아래로 스크롤 했는지 확인
         const currentScrollY = window.scrollY;
         scrolledDown = currentScrollY > prevScrollY;
         prevScrollY = currentScrollY;
-        
+
         // 아래로 스크롤했을 때만 로드하고, 충분히 아래로 내려갔을 때만 트리거
         if (
           scrolledDown &&
-          window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
+          window.innerHeight + window.scrollY >=
+            document.body.offsetHeight - 200 &&
           !loading &&
           hasMore
         ) {
@@ -149,9 +163,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }, 100); // 디바운싱 시간
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
     };
   }, [loading, hasMore, userScrolled]);
@@ -159,21 +173,24 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   // 추가 결과 로드 함수
   const loadMoreResults = () => {
     if (!hasMore || loading) return;
-    
+
     setLoading(true);
-    
+
     // 실제 API 호출 대신 지연 시간 추가 (시뮬레이션)
     setTimeout(() => {
       const filteredBookmarks = getFilteredBookmarks();
-      const nextPageResults = filteredBookmarks.slice((page + 1) * PAGE_SIZE, (page + 2) * PAGE_SIZE);
-      
+      const nextPageResults = filteredBookmarks.slice(
+        (page + 1) * PAGE_SIZE,
+        (page + 2) * PAGE_SIZE,
+      );
+
       if (nextPageResults.length === 0) {
         setHasMore(false);
       } else {
-        setVisibleResults(prev => [...prev, ...nextPageResults]);
-        setPage(prevPage => prevPage + 1);
+        setVisibleResults((prev) => [...prev, ...nextPageResults]);
+        setPage((prevPage) => prevPage + 1);
       }
-      
+
       setLoading(false);
     }, 300); // 로딩 시간
   };
@@ -223,7 +240,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                   aria-expanded={showJobDropdown}
                 >
                   {job}
-                  <span className={`ml-1 transition-transform duration-200 ${showJobDropdown ? "rotate-180" : ""}`}>
+                  <span
+                    className={`ml-1 transition-transform duration-200 ${showJobDropdown ? "rotate-180" : ""}`}
+                  >
                     <svg
                       width="10"
                       height="10"
@@ -251,14 +270,17 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                   <ul className="py-2" role="listbox">
                     {[
                       { value: "직군·직무", label: "직군·직무" },
-                      { value: "프론트엔드 개발자", label: "프론트엔드 개발자" },
-                      { value: "백엔드 개발자", label: "백엔드 개발자" }
+                      {
+                        value: "프론트엔드 개발자",
+                        label: "프론트엔드 개발자",
+                      },
+                      { value: "백엔드 개발자", label: "백엔드 개발자" },
                     ].map((option) => (
                       <li
                         key={option.value}
                         className={`cursor-pointer px-1 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
                           job === option.value
-                            ? "bg-gray-50 font-medium text-zik-main"
+                            ? "text-zik-main bg-gray-50 font-medium"
                             : "text-gray-700"
                         }`}
                         role="option"
@@ -284,7 +306,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                   aria-expanded={showTypeDropdown}
                 >
                   {questionType}
-                  <span className={`ml-1 transition-transform duration-200 ${showTypeDropdown ? "rotate-180" : ""}`}>
+                  <span
+                    className={`ml-1 transition-transform duration-200 ${showTypeDropdown ? "rotate-180" : ""}`}
+                  >
                     <svg
                       width="10"
                       height="10"
@@ -313,13 +337,13 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                     {[
                       { value: "질문유형", label: "질문유형" },
                       { value: "인성", label: "인성" },
-                      { value: "직무", label: "직무" }
+                      { value: "직무", label: "직무" },
                     ].map((option) => (
                       <li
                         key={option.value}
                         className={`cursor-pointer px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
                           questionType === option.value
-                            ? "bg-gray-50 font-medium text-zik-main"
+                            ? "text-zik-main bg-gray-50 font-medium"
                             : "text-gray-700"
                         }`}
                         role="option"
@@ -353,10 +377,12 @@ const QuestionBookmarkList = ({ testEmpty }) => {
           </div>
           {/* 데이터 */}
           {visibleResults.map((item, idx) => (
-            <div 
-              key={item.id} 
+            <div
+              key={item.id}
               className="mb-3"
-              ref={idx === visibleResults.length - 1 ? lastResultElementRef : null}
+              ref={
+                idx === visibleResults.length - 1 ? lastResultElementRef : null
+              }
             >
               <div className="relative mr-2 ml-1 overflow-hidden rounded-2xl border border-gray-300 bg-white shadow transition hover:shadow-lg">
                 {/* 버튼 그룹: 오른쪽 상단에 고정 (FaqItem 스타일) */}
@@ -401,7 +427,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                       className={`h-4 w-4 transition-colors duration-200 ease-in-out sm:h-5 sm:w-5 ${item.isBookmarked ? "text-zik-main" : "text-gray-200"}`}
                       style={{
                         transition: "all 0.3s ease-in-out",
-                        transform: item.isBookmarked ? "scale(1.1) rotate(0deg)" : "scale(1) rotate(0deg)",
+                        transform: item.isBookmarked
+                          ? "scale(1.1) rotate(0deg)"
+                          : "scale(1) rotate(0deg)",
                       }}
                     />
                   </button>
@@ -439,15 +467,19 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                       ? "max-h-[2000px] px-4 py-3 opacity-100 duration-500 sm:px-6 sm:py-4"
                       : "max-h-0 px-4 py-0 opacity-0 duration-300 sm:px-6"
                   }`}
-                  style={{ 
+                  style={{
                     willChange: "max-height, opacity, padding",
                     transitionProperty: "max-height, opacity, padding",
-                    transitionTimingFunction: "ease-in-out"
+                    transitionTimingFunction: "ease-in-out",
                   }}
                 >
-                  <div className={`transform transition-transform ${
-                    openIds.includes(item.id) ? "translate-y-0 duration-700" : "translate-y-10 duration-500"
-                  }`}>
+                  <div
+                    className={`transform transition-transform ${
+                      openIds.includes(item.id)
+                        ? "translate-y-0 duration-700"
+                        : "translate-y-10 duration-500"
+                    }`}
+                  >
                     {item.answer && (
                       <div className="mb-3 sm:mb-4">
                         <div className="mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base">
@@ -473,14 +505,14 @@ const QuestionBookmarkList = ({ testEmpty }) => {
               </div>
             </div>
           ))}
-          
+
           {/* 로딩 인디케이터 */}
           {loading && (
             <div className="mt-8 mb-8 flex justify-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+              <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-indigo-500"></div>
             </div>
           )}
-          
+
           {/* 스크롤 시 보여줄 "더 많은 콘텐츠 불러오는 중" 메시지 */}
           {hasMore && !loading && visibleResults.length > 0 && (
             <div className="mt-4 mb-8 text-center text-sm text-gray-400">
