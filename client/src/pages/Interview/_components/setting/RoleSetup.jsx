@@ -28,7 +28,10 @@ const RoleSetup = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center px-4 py-8">
+    <div
+      className="mx-auto flex w-full flex-col items-center justify-center px-4 py-8"
+      style={{ height: "calc(100vh - 18rem)" }}
+    >
       <div className="text-zik-text py-8 text-2xl font-bold 2xl:mb-2 2xl:py-16">
         질문 유형 비율을 설정하세요
       </div>
