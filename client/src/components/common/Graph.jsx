@@ -5,34 +5,37 @@ const Graph = ({
   size = 150, // 전체 크기
   strokeWidth = 10, // 도넛 굵기
   color = "var(--color-zik-main)",
+  className,
 }) => {
   const radius = (size - strokeWidth) / 2; // 반지름
   const circumference = 2 * Math.PI * radius; // 둘레
   const offset = circumference * (1 - value / 100);
 
   return (
-    <svg width={size} height={size} className="block">
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke="var(--color-zik-border)"
-        strokeWidth={strokeWidth}
-        fill="none"
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke={color}
-        strokeWidth={strokeWidth}
-        fill="none"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
-    </svg>
+    <div className={className}>
+      <svg width={size} height={size} className="block">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="var(--color-zik-border)"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+    </div>
   );
 };
 
