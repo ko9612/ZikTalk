@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
+import Input from "@/components/common/input";
 
 const MyInfo = () => {
   const [form, setForm] = useState({
@@ -59,7 +60,7 @@ const MyInfo = () => {
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
               비밀번호 재설정
             </label>
-            <input
+            <Input
               type="password"
               name="password"
               value={form.password}
@@ -72,7 +73,7 @@ const MyInfo = () => {
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
               비밀번호 확인
             </label>
-            <input
+            <Input
               type="password"
               name="passwordCheck"
               value={form.passwordCheck}
