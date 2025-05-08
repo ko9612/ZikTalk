@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
-import Input from "@/components/common/input";
+import Input from "@/components/common/Input";
 
 const MyInfo = () => {
   const [form, setForm] = useState({
