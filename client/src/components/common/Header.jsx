@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "./Button";
+import Logo from "@/assets/images/ziktalk_typo.svg";
 import { Link, useLocation } from "react-router-dom";
 
 const Header = () => {
@@ -10,7 +11,7 @@ const Header = () => {
         <h1 className="logo">
           <Link href="/">
             <img
-              src="/src/assets/images/ziktalk_typo.svg"
+              src={Logo}
               alt="로고"
               className="h-[clamp(30px,5vw,39px)] w-[clamp(100px,15vw,150px)] align-middle"
             />
