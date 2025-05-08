@@ -32,6 +32,11 @@ const FaqItem = ({
   const isExpanded =
     propIsExpanded !== undefined ? propIsExpanded : localIsExpanded;
 
+  const textColors = {
+    normal: "text-gray-700",
+    accent: "text-zik-main",
+  };
+
   /**
    * 토글 핸들러 - 외부 제어 또는 내부 상태 변경
    */
@@ -55,8 +60,8 @@ const FaqItem = ({
 
   return (
     <div className="mb-4">
-      <div 
-        className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300 cursor-pointer"
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300"
         onClick={handleToggle}
       >
         {/* 버튼 그룹: 오른쪽 상단에 고정 */}
@@ -96,7 +101,7 @@ const FaqItem = ({
             aria-label={isStarred ? "즐겨찾기 해제" : "즐겨찾기 추가"}
           >
             <FaStar
-              className={`h-4 w-4 transition-colors duration-300 ease-in-out sm:h-5 sm:w-5 ${isStarred ? "text-zik-main" : "text-gray-200"}`}
+              className={`h-4 w-4 transition-colors duration-300 ease-in-out sm:h-5 sm:w-5 ${isStarred ? textColors.accent : "text-gray-200"}`}
               style={{
                 transform: isStarred ? "scale(1.2)" : "scale(1)",
                 transition:
@@ -110,23 +115,30 @@ const FaqItem = ({
           {/* badge row */}
           <div className="flex min-w-0 items-center">
             <span
-              className={`text-xs font-bold text-gray-400 sm:text-sm ${isExpanded ? "text-zik-main font-medium" : ""}`}
+              className={`text-zik-text text-xs font-bold sm:text-sm ${isExpanded ? `${textColors.accent} font-medium` : ""}`}
             >
               {id}
             </span>
             {career && (
-              <div className="mr-2 ml-1 w-auto rounded-full px-1 py-0.5 text-center text-xs font-bold whitespace-nowrap text-gray-700 sm:mr-4 sm:ml-2 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base">
+              <div
+                className={`mr-2 ml-1 w-auto rounded-full px-1 py-0.5 text-center text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-4 sm:ml-2 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
+              >
                 {career}
               </div>
             )}
             {type && (
-              <div className="ml-1 w-auto rounded-full px-1 py-0.5 text-center text-xs font-bold text-gray-700 sm:ml-2 sm:w-[60px] sm:px-2 sm:py-1 sm:text-base">
+              <div
+                className={`ml-1 w-auto rounded-full px-1 py-0.5 text-center text-xs font-bold ${textColors.normal} sm:ml-2 sm:w-[60px] sm:px-2 sm:py-1 sm:text-base`}
+              >
                 {type}
               </div>
             )}
           </div>
-          {/* question */}
-          <div className="mt-1 min-w-0 flex-1 text-sm font-medium break-words whitespace-normal text-gray-900 sm:mt-0 sm:ml-2 sm:text-base">
+          <div
+            className={`mt-1 min-w-0 flex-1 text-sm font-medium break-words whitespace-normal text-gray-900 sm:mt-0 sm:ml-2 sm:text-base transition-all duration-500 ease-in-out ${
+              isExpanded ? "max-h-0 opacity-0" : "max-h-[1000px] opacity-100"
+            }`}
+          >
             {question}
           </div>
         </div>
@@ -140,13 +152,26 @@ const FaqItem = ({
           style={{ willChange: "max-height, opacity, padding" }}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* 추가된 부분: 질문 섹션 */}
+          <div className="mb-3 sm:mb-4">
+            <div className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}>
+              질문
+            </div>
+            <div className={`rounded-2xl  bg-gray-50  p-3 text-sm text-gray-800 sm:p-4 sm:text-base`}>
+              {question}
+            </div>
+          </div>
           {/* 답변 섹션 */}
           {answer && (
             <div className="mb-3 sm:mb-4">
-              <div className="mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base">
+              <div
+                className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+              >
                 내 답변
               </div>
-              <div className="rounded-2xl bg-gray-50 p-3 text-sm text-gray-800 sm:p-4 sm:text-base">
+              <div
+                className={`rounded-2xl bg-gray-50 p-3 text-sm text-gray-800 sm:p-4 sm:text-base`}
+              >
                 {answer}
               </div>
             </div>
@@ -154,10 +179,14 @@ const FaqItem = ({
           {/* 추천 답변 섹션 */}
           {recommendation && (
             <div className="mb-3 sm:mb-4">
-              <div className="mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base">
+              <div
+                className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+              >
                 추천 답변
               </div>
-              <div className="rounded-2xl bg-gray-50 p-3 text-sm text-gray-800 sm:p-4 sm:text-base">
+              <div
+                className={`rounded-2xl bg-gray-50 p-3 text-sm text-gray-800 sm:p-4 sm:text-base`}
+              >
                 {recommendation}
               </div>
             </div>
