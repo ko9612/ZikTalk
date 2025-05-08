@@ -111,7 +111,7 @@ const DeviceSetup = () => {
         <Button onClick={handleNext}>다음</Button>
       </div> */}
 
-      <div class="absolute bottom-10 flex justify-center gap-15">
+      <div className="absolute bottom-10 flex justify-center gap-15">
         <Button
           color="gray"
           disabled
