@@ -46,11 +46,11 @@ const Timer = () => {
             setTimeout(() => {
               setIsReplying(false);
               setInterviewState("answer");
-            }, 1000);
+            }, 500);
           } else {
             setTimeout(() => {
               setIsReplying(true);
-            }, 1000);
+            }, 500);
           }
           return 0;
         }
