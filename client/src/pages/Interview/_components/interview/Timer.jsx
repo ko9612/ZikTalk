@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
-// import { useSmoothValue } from "@/hooks/useSmoothvalue";
+import { useSmoothValue } from "@/hooks/useSmoothvalue";
 
 const Timer = () => {
   const isLoading = useLoadingStateStore((state) => state.isLoading);
@@ -75,7 +75,14 @@ const Timer = () => {
 
   // 임시
   const percentage = (timeLeft / (isReplying ? 120 : 30)) * 100;
-  // const smoothValue = useSmoothValue(percentage);
+  // resetKey를 isReplying 상태가 변경될 때마다 변경되도록
+  // isReplying 값이 바뀔 때마다 resetKey를 증가시켜 useSmoothValue가 초기화되도록 합니다.
+  const [resetKey, setResetKey] = useState(0);
+  useEffect(() => {
+    setResetKey((prev) => prev + 1);
+  }, [isReplying]);
+
+  const smoothValue = useSmoothValue(percentage, 0.02, resetKey);
 
   return (
     <div className="relative flex flex-col items-center justify-center">
@@ -86,7 +93,7 @@ const Timer = () => {
       )}
       <div className="relative mt-16 w-fit">
         <Graph
-          value={isLoading ? 0 : percentage}
+          value={isLoading ? 0 : smoothValue}
           size={300}
           strokeWidth={15}
           color={isReplying ? "#FE607D" : "var(--color-zik-main)"}

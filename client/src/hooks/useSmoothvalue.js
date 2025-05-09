@@ -1,9 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 
-export const useSmoothValue = (targetValue, speed = 0.02) => {
+export const useSmoothValue = (targetValue, speed = 0.02, resetKey = null) => {
   const [displayValue, setDisplayValue] = useState(targetValue);
   const rafRef = useRef(null);
   const prevValue = useRef(displayValue);
+
+  useEffect(() => {
+    // resetKey가 바뀌면 바로 targetValue로 리셋
+    prevValue.current = targetValue;
+    setDisplayValue(targetValue);
+  }, [resetKey]);
 
   useEffect(() => {
     const animate = () => {
@@ -19,7 +25,6 @@ export const useSmoothValue = (targetValue, speed = 0.02) => {
     };
 
     rafRef.current = requestAnimationFrame(animate);
-
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
