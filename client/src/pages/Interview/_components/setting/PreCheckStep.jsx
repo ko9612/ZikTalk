@@ -3,8 +3,8 @@ import Button from "@/components/common/Button";
 import Pencil from "@/assets/images/pencil.svg";
 // import task from "@/assets/images/task.svg";
 import Task2 from "@/assets/images/task2.png";
-import Timebulb from "@/assets/images/time-bulb.svg";
-import Interactivesession from "@/assets/images/interactive-session.svg";
+import Timebulb from "@/assets/images/time-bulb.png";
+import Interactivesession from "@/assets/images/interactive-session.png";
 import Minus from "@/assets/images/minus.svg";
 import Plus from "@/assets/images/plus.svg";
 
