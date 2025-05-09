@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Button from "@/components/common/Button";
+import Input from "@/components/common/Input";
 import DragProgressBar from "./DragProgressBar";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
-import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
+import {
+  useInterviewTabStore,
+  useSetupNavigationStore,
+  useRoleStore,
+} from "@/store/store";
 
 const RoleSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -21,11 +26,27 @@ const RoleSetup = () => {
     setTabSelect("사전 체크");
   };
 
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [careerModal, setCareerModal] = useState(false);
+  const [selected, setSelected] = useState("");
+  const [career, setCareer] = useState("");
+  const roleValue = useRoleStore((state) => state.roleValue);
 
-  const modalHandler = () => {
-    setIsOpenModal(!isOpenModal);
+  // 직무 선택 모달창
+  const careerModalHandler = () => {
+    setCareerModal(!careerModal);
   };
+
+  //  직무 선택 값
+  useEffect(() => {
+    setCareer(roleValue);
+    setCareerModal(false);
+  }, [roleValue]);
+
+  // const [isOpenModal, setIsOpenModal] = useState(false);
+
+  // const modalHandler = () => {
+  //   setIsOpenModal(!isOpenModal);
+  // };
 
   return (
     <div
@@ -39,7 +60,18 @@ const RoleSetup = () => {
       <div className="text-zik-text mt-8 mb-8 text-2xl font-bold 2xl:mt-12 2xl:mb-12">
         직무를 선택하세요
       </div>
-      <div
+      <Input
+        type="button"
+        name="career"
+        className="border-zik-border text-zik-text/80 w-[37.5rem] cursor-pointer rounded-lg border px-8 py-3 text-left"
+        onClick={careerModalHandler}
+        required
+        value={career || "직군 · 직무를 선택하세요"}
+      ></Input>
+      {careerModal && (
+        <CareerSelectModal isOpen={careerModal} onClose={careerModalHandler} />
+      )}
+      {/* <div
         className="border-zik-border text-zik-border w-[37.5rem] cursor-pointer rounded-lg border px-4 py-3"
         onClick={modalHandler}
       >
@@ -47,7 +79,7 @@ const RoleSetup = () => {
       </div>
       {isOpenModal && (
         <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
-      )}
+      )} */}
       {/* <div className="mt-5 flex gap-15">
         <Button color="gray" onClick={handlePrevious}>
           이전
