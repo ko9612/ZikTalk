@@ -155,6 +155,7 @@ const SignupForm = () => {
                 인증 번호
               </Input>
             )}
+
             <p className={inputWrapStyle}>
               <Input
                 type="password"
@@ -299,7 +300,7 @@ const SignupForm = () => {
               type="submit"
               shape="bar"
               color="lightViolet"
-              className={"h-[clamp(32px,5vw,55px)] w-full"}
+              className="w-full"
             >
               회원가입
             </Button>
