@@ -23,7 +23,13 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className="w-md" dimmed={dimmed}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="w-md"
+      dimmed={dimmed}
+      isDelete={false}
+    >
       <div className="flex flex-col items-center gap-4 sm:gap-6">
         {isOpen && isLoading ? (
           <>
