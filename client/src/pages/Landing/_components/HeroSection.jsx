@@ -1,6 +1,7 @@
 // 김세준
 import React from "react";
 import hero_section_video from "@/assets/videos/hero_section_video.mp4";
+import hero_section_videoWebm from "@/assets/videos/hero_section_video.webm";
 import Button from "@/components/common/Button";
 import { Link } from "react-router-dom";
 
@@ -18,6 +19,7 @@ const HeroSection = () => {
         playsInline
         className="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover"
       >
+        <source src={hero_section_videoWebm} type="video/webm" />
         <source src={hero_section_video} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
