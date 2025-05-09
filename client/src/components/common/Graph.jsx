@@ -1,6 +1,7 @@
 import React from "react";
 
 const Graph = ({
+  text = "",
   value = 75, // 값 (%)
   size = 150, // 전체 크기
   strokeWidth = 10, // 도넛 굵기
@@ -34,6 +35,18 @@ const Graph = ({
           strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
+
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={size * 0.2}
+          fill={color}
+          fontWeight="bold"
+        >
+          {text}
+        </text>
       </svg>
     </div>
   );
