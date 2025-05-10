@@ -1,13 +1,14 @@
 // Landing page component
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import QuestionList from "./_components/QuestionList";
-import QuestionBookmarkList from './_components/QuestionBookmarkList';
-import EmptyQuestionList from '@/pages/myPage/_components/EmptyQuestionList';
-import EmptyBookmarkList from '@/pages/myPage/_components/EmptyBookmarkList';
-import MyInfo from './_components/MyInfo';
+import LoadingPage from "@/components/common/LoadingPage";
 
-
+// 지연 로딩할 컴포넌트들
+const QuestionList = lazy(() => import("@/pages/myPage/_components/question/QuestionList"));
+const QuestionBookmarkList = lazy(() => import('@/pages/myPage/_components/bookmark/QuestionBookmarkList'));
+const EmptyQuestionList = lazy(() => import('@/pages/myPage/_components/question/EmptyQuestionList'));
+const EmptyBookmarkList = lazy(() => import('@/pages/myPage/_components/bookmark/EmptyBookmarkList'));
+const MyInfo = lazy(() => import('@/pages/myPage/_components/info/MyInfo'));
 
 const tabs = [
   { name: "분석결과 리스트", path: "/mypage/result-list" },
@@ -15,29 +16,29 @@ const tabs = [
   { name: "내 정보 관리", path: "/mypage/info" },
 ];
 
-// 분석결과 리스트 컴포넌트
-const ResultList = () => {
-  return (
-    <div>
-      <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">분석결과 리스트</h2>
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-gray-500">아직 분석 결과가 없습니다.</p>
-      </div>
-    </div>
-  );
-};
+// // 분석결과 리스트 컴포넌트
+// const ResultList = () => {
+//   return (
+//     <div>
+//       <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">분석결과 리스트</h2>
+//       <div className="rounded-lg border border-gray-200 bg-white p-4">
+//         <p className="text-gray-500">아직 분석 결과가 없습니다.</p>
+//       </div>
+//     </div>
+//   );
+// };
 
-// 북마크 컴포넌트
-const Bookmark = () => {
-  return (
-    <div>
-      <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">질문 북마크</h2>
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
-        <p className="text-gray-500">북마크한 질문이 없습니다.</p>
-      </div>
-    </div>
-  );
-};
+// // 북마크 컴포넌트
+// const Bookmark = () => {
+//   return (
+//     <div>
+//       <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">질문 북마크</h2>
+//       <div className="rounded-lg border border-gray-200 bg-white p-4">
+//         <p className="text-gray-500">북마크한 질문이 없습니다.</p>
+//       </div>
+//     </div>
+//   );
+// };
 
 const MyPage = () => {
   const location = useLocation();
@@ -47,20 +48,44 @@ const MyPage = () => {
   const renderContent = () => {
     switch (currentPath) {
       case "result-list":
-        return <QuestionList />;
+        return (
+          <Suspense fallback={<LoadingPage />}>
+            <QuestionList />
+          </Suspense>
+        );
       case "bookmark":
-        return <QuestionBookmarkList />;
+        return (
+          <Suspense fallback={<LoadingPage />}>
+            <QuestionBookmarkList />
+          </Suspense>
+        );
       case "info":
-        return <MyInfo />;
+        return (
+          <Suspense fallback={<LoadingPage />}>
+            <MyInfo />
+          </Suspense>
+        );
       case "empty":
         if (location.pathname.includes("bookmark")) {
-          return <EmptyBookmarkList />;
+          return (
+            <Suspense fallback={<LoadingPage />}>
+              <EmptyBookmarkList />
+            </Suspense>
+          );
         } else if (location.pathname.includes("result-list")) {
-          return <EmptyQuestionList />;
+          return (
+            <Suspense fallback={<LoadingPage />}>
+              <EmptyQuestionList />
+            </Suspense>
+          );
         }
         return null;
       default:
-        return <QuestionList />;
+        return (
+          <Suspense fallback={<LoadingPage />}>
+            <QuestionList />
+          </Suspense>
+        );
     }
   };
 

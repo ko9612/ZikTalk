@@ -21,9 +21,7 @@ const LoadingAnimation = () => {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    // 등장: 마지막 글자까지 등장 + 유지시간(0.5초) 후 사라짐
-    const appearDuration = (letters.length - 1) * 120 + 300 + 1000; // ms
-    // 사라짐: 마지막 글자부터 첫 글자까지 사라지는 시간
+    const appearDuration = (letters.length - 1) * 120 + 300 + 1000;
     const disappearDuration = letters.length * 120 + 500;
     const timer = setTimeout(() => setShow((prev) => !prev), show ? appearDuration : disappearDuration);
     return () => clearTimeout(timer);
