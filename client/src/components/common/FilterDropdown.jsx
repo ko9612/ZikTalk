@@ -60,10 +60,10 @@ const FilterDropdown = ({
   const hasStarOption = options.some((opt) => opt.value === "별");
 
   return (
-    <div className={`relative w-25 ${className}`} ref={ref}>
+    <div className={`relative ${className}`} ref={ref}>
       <button
         type="button"
-        className={`flex items-center justify-between rounded-full border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none ${open ? "ring-zik-main ring-2" : ""} whitespace-nowrap overflow-hidden text-ellipsis`}
+        className={`border-zik-border text-zik-text hover:bg-zik-border/10 flex w-36 items-center justify-between rounded-full border bg-white px-3 py-2 text-sm font-medium focus:outline-none ${open ? "ring-zik-main ring-2" : ""} overflow-hidden text-ellipsis whitespace-nowrap`}
         onClick={() => setOpen(!open)}
         aria-haspopup="listbox"
         aria-expanded={open}

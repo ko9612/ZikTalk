@@ -1,14 +1,11 @@
 // Landing page component
-import React, { lazy, Suspense } from "react";
+import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import LoadingPage from "@/components/common/LoadingPage";
-
-// 지연 로딩할 컴포넌트들
-const QuestionList = lazy(() => import("@/pages/myPage/_components/question/QuestionList"));
-const QuestionBookmarkList = lazy(() => import('@/pages/myPage/_components/bookmark/QuestionBookmarkList'));
-const EmptyQuestionList = lazy(() => import('@/pages/myPage/_components/question/EmptyQuestionList'));
-const EmptyBookmarkList = lazy(() => import('@/pages/myPage/_components/bookmark/EmptyBookmarkList'));
-const MyInfo = lazy(() => import('@/pages/myPage/_components/info/MyInfo'));
+import QuestionList from "@/pages/myPage/_components/question/QuestionList";
+import QuestionBookmarkList from "@/pages/myPage/_components/bookmark/QuestionBookmarkList";
+import EmptyQuestionList from "@/pages/myPage/_components/question/EmptyQuestionList";
+import EmptyBookmarkList from "@/pages/myPage/_components/bookmark/EmptyBookmarkList";
+import MyInfo from "@/pages/myPage/_components/info/MyInfo";
 
 const tabs = [
   { name: "분석결과 리스트", path: "/mypage/result-list" },
@@ -20,7 +17,9 @@ const tabs = [
 // const ResultList = () => {
 //   return (
 //     <div>
-//       <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">분석결과 리스트</h2>
+//       <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
+//         분석결과 리스트
+//       </h2>
 //       <div className="rounded-lg border border-gray-200 bg-white p-4">
 //         <p className="text-gray-500">아직 분석 결과가 없습니다.</p>
 //       </div>
@@ -32,7 +31,9 @@ const tabs = [
 // const Bookmark = () => {
 //   return (
 //     <div>
-//       <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-center text-zik-text">질문 북마크</h2>
+//       <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
+//         질문 북마크
+//       </h2>
 //       <div className="rounded-lg border border-gray-200 bg-white p-4">
 //         <p className="text-gray-500">북마크한 질문이 없습니다.</p>
 //       </div>
@@ -48,56 +49,32 @@ const MyPage = () => {
   const renderContent = () => {
     switch (currentPath) {
       case "result-list":
-        return (
-          <Suspense fallback={<LoadingPage />}>
-            <QuestionList />
-          </Suspense>
-        );
+        return <QuestionList />;
       case "bookmark":
-        return (
-          <Suspense fallback={<LoadingPage />}>
-            <QuestionBookmarkList />
-          </Suspense>
-        );
+        return <QuestionBookmarkList />;
       case "info":
-        return (
-          <Suspense fallback={<LoadingPage />}>
-            <MyInfo />
-          </Suspense>
-        );
+        return <MyInfo />;
       case "empty":
         if (location.pathname.includes("bookmark")) {
-          return (
-            <Suspense fallback={<LoadingPage />}>
-              <EmptyBookmarkList />
-            </Suspense>
-          );
+          return <EmptyBookmarkList />;
         } else if (location.pathname.includes("result-list")) {
-          return (
-            <Suspense fallback={<LoadingPage />}>
-              <EmptyQuestionList />
-            </Suspense>
-          );
+          return <EmptyQuestionList />;
         }
         return null;
       default:
-        return (
-          <Suspense fallback={<LoadingPage />}>
-            <QuestionList />
-          </Suspense>
-        );
+        return <QuestionList />;
     }
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl py-8 px-2 sm:px-0">
-      <nav className="mb-8 flex flex-wrap gap-4 sm:gap-8 justify-start">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      <nav className="mb-8 flex flex-wrap justify-center gap-4 sm:justify-start sm:gap-8">
         {tabs.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              "px-3 py-2 text-sm sm:text-lg font-medium sm:font-semibold" +
+              "px-3 py-2 text-sm font-medium sm:text-lg sm:font-semibold" +
               (isActive
                 ? " border-b-2 border-indigo-400 text-indigo-500"
                 : " text-gray-400")

@@ -45,7 +45,7 @@ const FaqItem = ({
         className="relative cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300"
         onClick={handleToggle}
       >
-        <div className="absolute top-3 right-4 z-10 justify-center flex flex-row items-center gap-2">
+        <div className="absolute top-3 right-4 z-10 flex flex-row items-center justify-center gap-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -101,7 +101,7 @@ const FaqItem = ({
             </span>
             {career && (
               <div
-                className={`mr-2 ml-1 w-auto rounded-full px-1 py-0.5 text-center text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-4 sm:ml-2 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
+                className={`mr-2 ml-1 w-24 rounded-full px-1 py-0.5 text-center text-start text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-4 sm:ml-2 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
               >
                 {career}
               </div>
@@ -115,7 +115,7 @@ const FaqItem = ({
             )}
           </div>
           <div
-            className={`mt-1 min-w-0 flex-1 text-sm font-medium break-words whitespace-normal ${textColors.normal} sm:mt-0 sm:ml-2 sm:text-base transition-all duration-500 ease-in-out ${
+            className={`mt-1 min-w-0 flex-1 text-sm font-medium break-words whitespace-normal ${textColors.normal} transition-all duration-500 ease-in-out sm:mt-0 sm:ml-2 sm:text-base ${
               isExpanded ? "max-h-0 opacity-0" : "max-h-[1000px] opacity-100"
             }`}
           >
@@ -131,10 +131,14 @@ const FaqItem = ({
           style={{ willChange: "max-height, opacity, padding" }}
         >
           <div className="mb-3 sm:mb-4">
-            <div className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}>
+            <div
+              className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+            >
               질문
             </div>
-            <div className={`rounded-2xl  bg-gray-50  p-3 text-sm text-gray-800 sm:p-4 sm:text-base`}>
+            <div
+              className={`rounded-2xl bg-gray-50 p-3 text-sm text-gray-800 sm:p-4 sm:text-base`}
+            >
               {question}
             </div>
           </div>

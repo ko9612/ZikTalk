@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * 질문 목록 테이블 헤더 컴포넌트
@@ -21,7 +22,7 @@ export const QuestionTableHeader = () => (
 export const ResultsTableHeader = () => (
   <div className="mb-3 hidden grid-cols-12 items-center border-t-2 border-b-2 border-t-gray-500 border-b-gray-200 px-4 py-2 text-sm font-semibold tracking-wide text-gray-400 sm:grid">
     <div className="col-span-1 text-center">No</div>
-    <div className="col-span-4 text-left pl-4">제목</div>
+    <div className="col-span-4 pl-4 text-left">제목</div>
     <div className="col-span-2 text-center">점수</div>
     <div className="col-span-3 text-center">날짜</div>
     <div className="col-span-1 text-center">조회</div>
@@ -32,34 +33,35 @@ export const ResultsTableHeader = () => (
 /**
  * 북마크 및 분석 결과가 없을 때 사용하는 공통 컴포넌트
  */
-export const EmptyStateContainer = ({ 
-  icon, 
-  title, 
-  description, 
-  subDescription, 
-  buttonText, 
-  buttonLink 
-}) => (
-  <div className="flex flex-col items-center text-gray-400 mt-8">
-    <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
-      {icon}
+export const EmptyStateContainer = ({
+  icon,
+  title,
+  description,
+  subDescription,
+  buttonText,
+  buttonLink,
+}) => {
+  const navigate = useNavigate();
+  return (
+    <div className="mt-8 flex flex-col items-center text-gray-400">
+      <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+        {icon}
+      </div>
+      <span>{title}</span>
+      <span className="mt-2 text-sm">{description}</span>
+      {subDescription && <span className="text-sm">{subDescription}</span>}
+      <button
+        className="mt-4 rounded-md bg-indigo-500 px-4 py-2 text-white transition-colors hover:bg-indigo-600"
+        onClick={() => navigate(buttonLink)}
+      >
+        {buttonText}
+      </button>
     </div>
-    <span>{title}</span>
-    <span className="mt-2 text-sm">
-      {description}
-    </span>
-    {subDescription && <span className="text-sm">{subDescription}</span>}
-    <button
-      className="mt-4 rounded-md bg-indigo-500 px-4 py-2 text-white transition-colors hover:bg-indigo-600"
-      onClick={() => (window.location.href = buttonLink)}
-    >
-      {buttonText}
-    </button>
-  </div>
-);
+  );
+};
 
 export default {
   QuestionTableHeader,
   ResultsTableHeader,
-  EmptyStateContainer
-}; 
+  EmptyStateContainer,
+};
