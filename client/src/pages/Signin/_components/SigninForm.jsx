@@ -60,6 +60,7 @@ const SigninForm = () => {
             <Input
               type="email"
               name="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

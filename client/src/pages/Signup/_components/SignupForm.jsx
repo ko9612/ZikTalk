@@ -113,6 +113,7 @@ const SignupForm = () => {
           <form onSubmit={handleSignup}>
             <p className={inputWrapStyle}>
               <Input
+                autoComplete="name"
                 type="text"
                 name="name"
                 // value={name}
@@ -126,6 +127,7 @@ const SignupForm = () => {
             </p>
             <p className={`${inputWrapStyle} flex items-end justify-between`}>
               <Input
+                autoComplete="email"
                 type="email"
                 name="email"
                 // value={email}
@@ -234,6 +236,7 @@ const SignupForm = () => {
                 <div className="mr-2 ml-2 flex justify-between">
                   <label>
                     <input
+                      id="agree"
                       type="checkbox"
                       checked={allCheck}
                       onChange={handleAllCheck}

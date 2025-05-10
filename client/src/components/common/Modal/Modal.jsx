@@ -36,7 +36,7 @@ const Modal = ({
   return (
     <div
       ref={modalRef}
-      onClick={isDelete && modalOutsideClick}
+      onClick={isDelete ? modalOutsideClick : () => {}}
       className={twMerge(
         "fixed inset-0 z-50 flex h-full w-full items-center justify-center",
         dimmed && "bg-black/60",
