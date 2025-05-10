@@ -29,7 +29,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: withSuspense(Landing),
+        element: <Landing />,
       },
       {
         path: "/signup",
