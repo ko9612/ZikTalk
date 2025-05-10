@@ -1,13 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 
-// 드롭다운에 표시될 옵션 목록 정의
-const options = [
-  { value: "최신순", label: "최신순" },
-  { value: "즐겨찾기", label: "즐겨찾기" },
-  { value: "조회수", label: "조회수" },
-];
-
 const StarRating = ({ rating, onRatingChange }) => {
   const handleStarClick = (starValue) => {
     onRatingChange(starValue);
@@ -31,57 +24,52 @@ const StarRating = ({ rating, onRatingChange }) => {
 };
 
 const FilterDropdown = ({
-  value = { type: "최신순", rating: 0 },
+  value = "최신순",
   onChange,
+  options = [
+    { value: "최신순", label: "최신순" },
+    { value: "즐겨찾기", label: "즐겨찾기" },
+  ],
+  className = "",
+  ...props
 }) => {
-  // 드롭다운 열림/닫힘 상태 관리
   const [open, setOpen] = useState(false);
-  // 드롭다운 컴포넌트의 DOM 요소 참조를 위한 ref
+  const [rating, setRating] = useState(0);
   const ref = useRef(null);
 
-  // value가 null이면 '최신순'을 기본값으로 사용
-  const displayValue =
-    !value || !value.type ? { type: "최신순", rating: 0 } : value;
+  const getSelectedLabel = () => {
+    const selectedOption = options.find((opt) => opt.value === value);
+    return selectedOption ? selectedOption.label : value;
+  };
 
-  // 외부 클릭 감지를 위한 이벤트 리스너 설정
   useEffect(() => {
-    // 드롭다운 외부 클릭 시 드롭다운을 닫는 함수
     const handleClickOutside = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
         setOpen(false);
       }
     };
-    // 마우스 클릭 이벤트 리스너 등록
     document.addEventListener("mousedown", handleClickOutside);
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거 (메모리 누수 방지)
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 옵션 선택 시 실행되는 함수
   const handleSelect = (val) => {
-    if (val === "별") {
-      onChange({ type: "별", rating: value.rating });
-    } else {
-      onChange({ type: val, rating: 0 });
-      setOpen(false);
-    }
+    onChange(val);
+    setOpen(false);
   };
 
-  const handleStarRatingChange = (rating) => {
-    onChange({ type: "별", rating });
-  };
+  const hasStarOption = options.some((opt) => opt.value === "별");
 
   return (
-    <div className="relative w-48" ref={ref}>
-      {/* 드롭다운 토글 버튼 */}
+    <div className={`relative w-25 ${className}`} ref={ref}>
       <button
         type="button"
-        className={`flex items-center justify-between rounded-full border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none ${open ? "ring-zik-main ring-2" : ""}`}
+        className={`flex items-center justify-between rounded-full border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 focus:outline-none ${open ? "ring-zik-main ring-2" : ""} whitespace-nowrap overflow-hidden text-ellipsis`}
         onClick={() => setOpen(!open)}
-        aria-haspopup="listbox" // 접근성: 팝업 목록이 있음을 표시
-        aria-expanded={open} // 접근성: 현재 드롭다운 상태 표시
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        {...props}
       >
-        {displayValue.type} {/* 현재 선택된 값 표시 */}
+        {getSelectedLabel()}
         <span
           className={`ml-2 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         >
@@ -101,7 +89,6 @@ const FilterDropdown = ({
           </svg>
         </span>
       </button>
-      {/* 드롭다운 옵션 목록 - 애니메이션 적용 */}
       <div
         className={`absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
           open
@@ -111,34 +98,33 @@ const FilterDropdown = ({
         onClick={(e) => e.stopPropagation()}
       >
         <ul className="py-1" role="listbox">
-          {" "}
-          {/* 접근성: 목록 역할 지정 */}
-          {/* 옵션 목록을 순회하며 각 항목 렌더링 */}
           {options.map((opt) => (
             <li
-              key={opt.value} // React 리스트 렌더링을 위한 고유 키
+              key={opt.value}
               className={`cursor-pointer px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-100 ${
-                displayValue.type === opt.value
+                value === opt.value
                   ? "text-zik-main bg-gray-50 font-medium"
                   : "text-gray-700"
               }`}
-              role="option" // 접근성: 옵션 역할 지정
-              aria-selected={displayValue.type === opt.value} // 접근성: 현재 선택된 항목 표시
+              role="option"
+              aria-selected={value === opt.value}
               onClick={(e) => {
-                e.stopPropagation(); // 이벤트 버블링 방지
+                e.stopPropagation();
                 handleSelect(opt.value);
-              }} // 클릭 시 해당 옵션 선택
+              }}
             >
-              {opt.label} {/* 옵션 텍스트 표시 */}
-              {opt.value === "별" && displayValue.type === "별" && (
+              {opt.label}
+              {opt.value === "별" && value === "별" && (
                 <div
                   className="mt-2"
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.preventDefault()}
                 >
                   <StarRating
-                    rating={displayValue.rating}
-                    onRatingChange={handleStarRatingChange}
+                    rating={rating}
+                    onRatingChange={(newRating) => {
+                      setRating(newRating);
+                    }}
                   />
                 </div>
               )}
