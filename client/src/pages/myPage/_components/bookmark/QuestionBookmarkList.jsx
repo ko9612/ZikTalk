@@ -5,15 +5,15 @@ import EmptyBookmarkList from "./EmptyBookmarkList";
 import { useInfiniteScroll } from "../common/useInfiniteScroll";
 import { useBookmark } from "../common/useBookmark";
 import { useFilter } from "../common/useFilter";
-import { 
-  PAGE_SIZE, 
-  TEXT_COLORS, 
-  convertToBookmarkData, 
+import {
+  PAGE_SIZE,
+  TEXT_COLORS,
+  convertToBookmarkData,
   filterBookmarks,
   FilterComponent,
   TableHeader,
   LoadingIndicator,
-  ScrollPrompt
+  ScrollPrompt,
 } from "./settings";
 
 const QuestionBookmarkList = ({ testEmpty }) => {
@@ -28,12 +28,18 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const { starredItems, toggleBookmark } = useBookmark();
   const { filters, updateFilter } = useFilter({
     job: "직군·직무",
-    questionType: "질문유형"
+    questionType: "질문유형",
   });
 
   // 필터링 함수
   const getFilteredBookmarksByFilters = (jobFilter, typeFilter) => {
-    return filterBookmarks(faqData, jobFilter, typeFilter, starredItems, testEmpty);
+    return filterBookmarks(
+      faqData,
+      jobFilter,
+      typeFilter,
+      starredItems,
+      testEmpty,
+    );
   };
 
   const getFilteredBookmarks = () => {
@@ -47,7 +53,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       const filteredData = getFilteredBookmarks();
       const nextPage = page + 1;
       const newResults = filteredData.slice(0, (nextPage + 1) * PAGE_SIZE);
-      
+
       setVisibleResults(newResults);
       setPage(nextPage);
       setHasMore(newResults.length < filteredData.length);
@@ -56,11 +62,12 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   };
 
   // 무한 스크롤 훅
-  const { lastElementRef, userScrolled, setUserScrolled, debounceScrollAction } = useInfiniteScroll(
-    loadMoreResults,
-    hasMore,
-    loading
-  );
+  const {
+    lastElementRef,
+    userScrolled,
+    setUserScrolled,
+    debounceScrollAction,
+  } = useInfiniteScroll(loadMoreResults, hasMore, loading);
 
   // 아이템 토글 함수
   const toggleOpen = (id) => {
@@ -76,12 +83,12 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
   // 필터 변경 핸들러
   const handleJobFilterChange = (value) => {
-    updateFilter('job', value);
+    updateFilter("job", value);
     resetAndFilterResults(value, filters.questionType);
   };
 
   const handleTypeFilterChange = (value) => {
-    updateFilter('questionType', value);
+    updateFilter("questionType", value);
     resetAndFilterResults(filters.job, value);
   };
 
@@ -106,15 +113,15 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
         질문 북마크
       </h2>
-      
-      <FilterComponent 
-        filters={filters} 
-        onJobFilterChange={handleJobFilterChange} 
-        onTypeFilterChange={handleTypeFilterChange} 
+
+      <FilterComponent
+        filters={filters}
+        onJobFilterChange={handleJobFilterChange}
+        onTypeFilterChange={handleTypeFilterChange}
       />
-      
+
       {visibleResults.length === 0 ? (
-        <EmptyBookmarkList 
+        <EmptyBookmarkList
           job={filters.job}
           setJob={handleJobFilterChange}
           type={filters.questionType}
@@ -125,8 +132,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       ) : (
         <>
           <TableHeader />
-          
-          <div className="h-full overflow-y-hidden rounded-lg mb-4 pr-2">
+
+          <div className="mb-4 h-full overflow-y-hidden rounded-lg">
             {visibleResults.map((item, idx) => (
               <div
                 key={item.id}
@@ -150,10 +157,12 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                 />
               </div>
             ))}
-            
+
             {loading && <LoadingIndicator />}
-            
-            {hasMore && !loading && visibleResults.length > 0 && <ScrollPrompt />}
+
+            {hasMore && !loading && visibleResults.length > 0 && (
+              <ScrollPrompt />
+            )}
           </div>
         </>
       )}
@@ -161,4 +170,4 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   );
 };
 
-export default QuestionBookmarkList; 
+export default QuestionBookmarkList;

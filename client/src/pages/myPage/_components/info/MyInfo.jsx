@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import Input from "@/components/common/Input";
 import FilterDropdown from "@/components/common/FilterDropdown";
+import Button from "@/components/common/Button";
 
 const MyInfo = () => {
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: "아무개",
+    email: "ammmuucase123@naver.com",
     password: "",
     passwordCheck: "",
     job: "",
@@ -41,44 +42,68 @@ const MyInfo = () => {
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-4">
           <div>
-            <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <label
+              htmlFor="name"
+              className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+            >
               이름
-            </div>
-            <div className="text-zik-text flex h-10 w-full max-w-[483px] items-center rounded-lg border border-gray-200 bg-[#F6F3FF] px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base">
-              아무개
-            </div>
+            </label>
+            <Input
+              type="text"
+              id="name"
+              autoComplete="name"
+              value={form.name}
+              onChange={handleChange}
+              inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
+              disabled
+            />
           </div>
           <div>
-            <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <label
+              htmlFor="email"
+              className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+            >
               이메일
-            </div>
-            <div className="text-zik-text flex h-10 w-full max-w-[483px] items-center rounded-lg border border-gray-200 bg-[#F6F3FF] px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base">
-              ammmuucase123@naver.com
-            </div>
+            </label>
+            <Input
+              type="email"
+              id="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={handleChange}
+              inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
+              disabled
+            />
           </div>
           <div>
-            <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <label
+              htmlFor="password"
+              className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+            >
               비밀번호 재설정
             </label>
             <Input
               type="password"
-              name="password"
+              id="password"
               value={form.password}
               onChange={handleChange}
-              className="h-10 w-full max-w-[483px] rounded-lg border border-gray-200 px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base"
+              inputClassName="h-10 w-full sm:h-12 text-sm"
               placeholder="영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
             />
           </div>
           <div>
-            <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <label
+              htmlFor="passwordCheck"
+              className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+            >
               비밀번호 확인
             </label>
             <Input
               type="password"
-              name="passwordCheck"
+              id="passwordCheck"
               value={form.passwordCheck}
               onChange={handleChange}
-              className="h-10 w-full max-w-[483px] rounded-lg border border-gray-200 px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base"
+              inputClassName="h-10 w-full sm:h-12 text-sm"
               placeholder="비밀번호를 입력해 주세요."
             />
             {form.password !== form.passwordCheck && form.passwordCheck && (
@@ -88,9 +113,9 @@ const MyInfo = () => {
             )}
           </div>
           <div>
-            <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
               직무
-            </label>
+            </div>
             <button
               type="button"
               className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
@@ -109,25 +134,22 @@ const MyInfo = () => {
             )}
           </div>
           <div>
-            <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+            <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
               경력
-            </label>
+            </div>
             <div className="relative">
               <FilterDropdown
                 value={form.career}
                 onChange={(career) => setForm({ ...form, career })}
                 options={careerOptions}
-                className="w-full rounded-lg text-gray-500 hover:bg-gray-50"
+                className="w-36 rounded-lg text-gray-500"
               />
             </div>
           </div>
           <div className="relative mt-4 flex flex-col items-center justify-end gap-2 sm:mt-2 sm:flex-row sm:gap-0">
-            <button
-              type="submit"
-              className="bg-zik-main h-12 w-full rounded-lg text-base font-bold text-white shadow-sm transition hover:bg-[#8F7CEC] sm:h-14"
-            >
+            <Button type="submit" shape="bar" className="w-full">
               수정 완료
-            </button>
+            </Button>
             <button
               type="button"
               className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"

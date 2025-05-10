@@ -61,6 +61,7 @@ const Answer = ({ end, text }) => {
           ) : (
             <div className="border-zik-main/50 mt-2 flex h-40 w-full items-center rounded-3xl rounded-br-none border-3">
               <textarea
+                id="answer"
                 onChange={(e) => setAnswer(e.target.value)}
                 value={answer}
                 required
