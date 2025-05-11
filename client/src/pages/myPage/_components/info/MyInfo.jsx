@@ -41,7 +41,14 @@ const MyInfo = () => {
         </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-4">
           <div>
+<<<<<<< Updated upstream
             <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <label
+              htmlFor="name"
+              className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm"
+            >
+>>>>>>> Stashed changes
               이름
             </div>
             <div className="text-zik-text flex h-10 w-full max-w-[483px] items-center rounded-lg border border-gray-200 bg-[#F6F3FF] px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base">
@@ -49,7 +56,14 @@ const MyInfo = () => {
             </div>
           </div>
           <div>
+<<<<<<< Updated upstream
             <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <label
+              htmlFor="email"
+              className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm"
+            >
+>>>>>>> Stashed changes
               이메일
             </div>
             <div className="text-zik-text flex h-10 w-full max-w-[483px] items-center rounded-lg border border-gray-200 bg-[#F6F3FF] px-3 py-0 text-sm placeholder-[#BDB8D9] placeholder:text-xs focus:ring-2 focus:ring-indigo-200 focus:outline-none sm:h-12 sm:px-4 sm:text-base sm:placeholder:text-base">
@@ -57,7 +71,14 @@ const MyInfo = () => {
             </div>
           </div>
           <div>
+<<<<<<< Updated upstream
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <label
+              htmlFor="password"
+              className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm"
+            >
+>>>>>>> Stashed changes
               비밀번호 재설정
             </label>
             <Input
@@ -70,7 +91,14 @@ const MyInfo = () => {
             />
           </div>
           <div>
+<<<<<<< Updated upstream
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <label
+              htmlFor="passwordCheck"
+              className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm"
+            >
+>>>>>>> Stashed changes
               비밀번호 확인
             </label>
             <Input
@@ -88,12 +116,16 @@ const MyInfo = () => {
             )}
           </div>
           <div>
+<<<<<<< Updated upstream
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <div className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm">
+>>>>>>> Stashed changes
               직무
             </label>
             <button
               type="button"
-              className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+              className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-zik-text hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
               onClick={() => setCareerModalOpen(true)}
               role="listbox"
               aria-haspopup="listbox"
@@ -109,7 +141,11 @@ const MyInfo = () => {
             )}
           </div>
           <div>
+<<<<<<< Updated upstream
             <label className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+=======
+            <div className="mb-0.5 block text-xs font-medium text-zik-text sm:mb-1 sm:text-sm">
+>>>>>>> Stashed changes
               경력
             </label>
             <div className="relative">
@@ -117,7 +153,11 @@ const MyInfo = () => {
                 value={form.career}
                 onChange={(career) => setForm({ ...form, career })}
                 options={careerOptions}
+<<<<<<< Updated upstream
                 className="w-full rounded-lg text-gray-500 hover:bg-gray-50"
+=======
+                className="w-36 rounded-lg text-zik-text"
+>>>>>>> Stashed changes
               />
             </div>
           </div>

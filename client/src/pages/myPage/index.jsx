@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 // Landing page component
 import React, { lazy, Suspense } from "react";
+=======
+import React from "react";
+>>>>>>> Stashed changes
 import { NavLink, useLocation } from "react-router-dom";
 import LoadingPage from "@/components/common/LoadingPage";
 
@@ -16,6 +20,7 @@ const tabs = [
   { name: "내 정보 관리", path: "/mypage/info" },
 ];
 
+<<<<<<< Updated upstream
 // // 분석결과 리스트 컴포넌트
 // const ResultList = () => {
 //   return (
@@ -39,12 +44,14 @@ const tabs = [
 //     </div>
 //   );
 // };
+=======
+
+>>>>>>> Stashed changes
 
 const MyPage = () => {
   const location = useLocation();
   const currentPath = location.pathname.split("/").pop() || "result-list";
 
-  // 현재 경로에 따라 컴포넌트 렌더링
   const renderContent = () => {
     switch (currentPath) {
       case "result-list":

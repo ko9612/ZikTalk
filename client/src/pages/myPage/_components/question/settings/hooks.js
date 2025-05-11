@@ -1,9 +1,8 @@
 import { useReducer, useCallback, useMemo } from 'react';
 import { ACTIONS, PAGE_SIZE } from './constants';
 import { prepareInitialData, filterAndSortResults } from './utils';
-import { SORT_OPTIONS } from "../../common/useFilter";
+import { SORT_OPTIONS } from "@/components/common/useFilter";
 
-// 초기 상태
 const initialState = {
   results: [],
   page: 0,
@@ -14,7 +13,6 @@ const initialState = {
   isDeleteMode: false
 };
 
-// 리듀서 함수
 function reducer(state, action) {
   switch (action.type) {
     case ACTIONS.SET_PAGE:
@@ -57,25 +55,17 @@ function reducer(state, action) {
   }
 }
 
-/**
- * 질문 목록 상태 관리 훅
- */
 export function useQuestionListState(props) {
-  // 초기 데이터 준비
   const initialResults = useMemo(() => props?.results ?? prepareInitialData(), [props?.results]);
-  
-  // 리듀서 설정
   const [state, dispatch] = useReducer(reducer, {
     ...initialState,
     results: initialResults
   });
   
-  // 정렬 및 필터링 함수
   const getSortedResultsByType = useCallback((type, starredItems) => {
     return filterAndSortResults(state.results, type, starredItems);
   }, [state.results]);
 
-  // 상태 변경 함수들
   const setLoading = useCallback((isLoading) => {
     dispatch({ type: ACTIONS.SET_LOADING, payload: isLoading });
   }, []);
