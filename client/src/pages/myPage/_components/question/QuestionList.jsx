@@ -1,36 +1,29 @@
 import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteScroll } from "../common/useInfiniteScroll";
-import { useBookmark } from "../common/useBookmark";
-import { useFilter } from "../common/useFilter";
+import { useInfiniteScroll } from "@/components/common/useInfiniteScroll";
+import { useBookmark } from "@/components/common/useBookmark";
+import { useFilter } from "@/components/common/useFilter";
 import EmptyQuestionList from "./EmptyQuestionList";
 import {
-  // 상수
   PAGE_SIZE,
-  // 컴포넌트
   Header,
   FilterBar,
   ResultGrid,
   LoadingIndicator,
   ScrollPrompt,
-  // 유틸리티
   prepareInitialData,
-  // 훅
   useQuestionListState,
 } from "./settings";
 
-// 메인 QuestionList 컴포넌트
 const QuestionList = (props) => {
   const navigate = useNavigate();
 
-  // 북마크 및 필터 상태 관리
   const { starredItems, toggleBookmark } = useBookmark();
   const { filters, updateFilter } = useFilter({
     type: "최신순",
     rating: 0,
   });
 
-  // 질문 목록 상태 관리
   const {
     state,
     getSortedResultsByType,
@@ -42,11 +35,9 @@ const QuestionList = (props) => {
     loadMoreItems,
   } = useQuestionListState(props);
 
-  // 비구조화 할당으로 상태 값 추출
   const { page, visibleResults, hasMore, loading, selected, isDeleteMode } =
     state;
 
-  // 무한 스크롤 처리
   const loadMoreResults = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
@@ -70,13 +61,11 @@ const QuestionList = (props) => {
     debounceScrollAction,
   } = useInfiniteScroll(loadMoreResults, hasMore, loading, setLoading);
 
-  // 이벤트 핸들러
   const handleFilterChange = useCallback(
     (type) => {
       updateFilter("type", type);
       setUserScrolled(false);
 
-      // 필터 변경 시 페이지네이션 리셋
       const sortedData = getSortedResultsByType(type, starredItems);
       resetPagination(sortedData);
     },
@@ -124,13 +113,11 @@ const QuestionList = (props) => {
     }
   }, [isDeleteMode, deleteSelectedItems, toggleDeleteMode]);
 
-  // 초기 데이터 로드 및 필터 변경 시 데이터 업데이트
   useEffect(() => {
     const sortedData = getSortedResultsByType(filters.type, starredItems);
     resetPagination(sortedData);
   }, [filters.type, starredItems, getSortedResultsByType, resetPagination]);
 
-  // 삭제 모드에서 ESC 키 처리
   useEffect(() => {
     if (!isDeleteMode) return;
 
@@ -146,14 +133,16 @@ const QuestionList = (props) => {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-2 pt-6 sm:px-4">
-      <Header />
+      <Header showDescription={visibleResults.length > 0} />
 
-      <FilterBar
-        filterValue={filters.type}
-        onFilterChange={handleFilterChange}
-        isDeleteMode={isDeleteMode}
-        onDeleteToggle={handleDeleteItems}
-      />
+      {visibleResults.length > 0 && (
+        <FilterBar
+          filterValue={filters.type}
+          onFilterChange={handleFilterChange}
+          isDeleteMode={isDeleteMode}
+          onDeleteToggle={handleDeleteItems}
+        />
+      )}
 
       {visibleResults.length === 0 ? (
         <EmptyQuestionList />

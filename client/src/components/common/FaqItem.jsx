@@ -12,16 +12,15 @@ const FaqItem = ({
   onToggle,
   isStarred,
   onStarToggle,
+  textColors = {
+    normal: "text-gray-500",
+    accent: "text-zik-main",
+  }
 }) => {
   const [localIsExpanded, setLocalIsExpanded] = useState(false);
 
   const isExpanded =
     propIsExpanded !== undefined ? propIsExpanded : localIsExpanded;
-
-  const textColors = {
-    normal: "text-gray-500",
-    accent: "text-zik-main",
-  };
 
   const handleToggle = () => {
     if (onToggle) {
@@ -132,7 +131,7 @@ const FaqItem = ({
         >
           <div className="mb-3 sm:mb-4">
             <div
-              className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+              className={`mb-1 text-sm font-medium ${textColors.normal} sm:mb-2 sm:text-base`}
             >
               질문
             </div>
@@ -145,7 +144,7 @@ const FaqItem = ({
           {answer && (
             <div className="mb-3 sm:mb-4">
               <div
-                className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+                className={`mb-1 text-sm font-medium ${textColors.normal} sm:mb-2 sm:text-base`}
               >
                 내 답변
               </div>
@@ -159,7 +158,7 @@ const FaqItem = ({
           {recommendation && (
             <div className="mb-3 sm:mb-4">
               <div
-                className={`mb-1 text-sm font-medium text-gray-500 sm:mb-2 sm:text-base`}
+                className={`mb-1 text-sm font-medium ${textColors.normal} sm:mb-2 sm:text-base`}
               >
                 추천 답변
               </div>

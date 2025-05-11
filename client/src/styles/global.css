@@ -36,6 +36,11 @@
     @apply outline-none;
   }
 
+  /* button:focus 테두리 제거 */
+  button:focus {
+    @apply outline-none;
+  }
+
   /* table 테두리 이중으로 들어가는 것 방지-하나로 중첩*/
   table {
     @apply border-collapse;

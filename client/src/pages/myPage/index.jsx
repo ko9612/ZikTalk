@@ -1,4 +1,3 @@
-// Landing page component
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import QuestionList from "@/pages/myPage/_components/question/QuestionList";
@@ -13,39 +12,12 @@ const tabs = [
   { name: "내 정보 관리", path: "/mypage/info" },
 ];
 
-// // 분석결과 리스트 컴포넌트
-// const ResultList = () => {
-//   return (
-//     <div>
-//       <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
-//         분석결과 리스트
-//       </h2>
-//       <div className="rounded-lg border border-gray-200 bg-white p-4">
-//         <p className="text-gray-500">아직 분석 결과가 없습니다.</p>
-//       </div>
-//     </div>
-//   );
-// };
 
-// // 북마크 컴포넌트
-// const Bookmark = () => {
-//   return (
-//     <div>
-//       <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
-//         질문 북마크
-//       </h2>
-//       <div className="rounded-lg border border-gray-200 bg-white p-4">
-//         <p className="text-gray-500">북마크한 질문이 없습니다.</p>
-//       </div>
-//     </div>
-//   );
-// };
 
 const MyPage = () => {
   const location = useLocation();
   const currentPath = location.pathname.split("/").pop() || "result-list";
 
-  // 현재 경로에 따라 컴포넌트 렌더링
   const renderContent = () => {
     switch (currentPath) {
       case "result-list":

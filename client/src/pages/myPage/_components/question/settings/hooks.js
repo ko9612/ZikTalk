@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useMemo } from 'react';
 import { ACTIONS, PAGE_SIZE } from './constants';
 import { prepareInitialData, filterAndSortResults } from './utils';
-import { SORT_OPTIONS } from "../../common/useFilter";
+import { SORT_OPTIONS } from "@/components/common/useFilter";
 
 // 초기 상태
 const initialState = {

@@ -1,13 +1,13 @@
 import Button from "@/components/common/Button";
-import { FaTrash } from "react-icons/fa";
 import { IoDocumentTextSharp } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { TEXT_COLORS } from "./settings/constants";
 
 const EmptyQuestionList = () => {
   const navigate = useNavigate();
   return (
     <div className="mx-auto w-full max-w-5xl py-4">
-      <div className="mt-10 flex flex-col items-center gap-5 text-gray-400">
+      <div className={`mt-33 flex flex-col items-center gap-5 ${TEXT_COLORS.normal}`}>
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
           <IoDocumentTextSharp className="text-5xl" />
         </div>
