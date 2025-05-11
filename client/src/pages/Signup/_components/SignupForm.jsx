@@ -8,6 +8,7 @@ import { useRoleStore } from "@/store/store";
 import { useEffect } from "react";
 import Arrow from "@/assets/images/arrow.svg";
 const inputWrapStyle = "mb-3 md:mb-5";
+import { AnimatePresence, motion } from "framer-motion";
 
 const SignupForm = () => {
   const [careerModal, setCareerModal] = useState(false);
@@ -103,7 +104,7 @@ const SignupForm = () => {
   }, [roleValue]);
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center">
       <div className="mx-auto my-0 w-fit text-lg font-bold sm:mb-4 sm:text-3xl md:mb-6">
         <p>환영합니다!</p>
         <p>직톡에서 취업 준비의 모든 과정을 경험해보세요.</p>
@@ -148,15 +149,26 @@ const SignupForm = () => {
                 {verification ? "인증확인" : "인증요청"}
               </Button>
             </p>
-            {verification && (
-              <Input
-                placeholder="인증 번호를 입력해 주세요."
-                required
-                labelClassName="text-sm md:text-base flex-3 mb-3 md:mb-5"
-              >
-                인증 번호
-              </Input>
-            )}
+
+            <AnimatePresence>
+              {verification && (
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: "auto" }}
+                  transition={{ duration: 0.5 }}
+                  exit={{ height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <Input
+                    placeholder="인증 번호를 입력해 주세요."
+                    required
+                    labelClassName="text-sm md:text-base flex-3 mb-3 md:mb-5"
+                  >
+                    인증 번호
+                  </Input>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <p className={inputWrapStyle}>
               <Input
@@ -253,50 +265,66 @@ const SignupForm = () => {
                     <img
                       src={Arrow}
                       alt="이용약관 펼치기 화살표"
-                      className={`h-4 w-4 transition duration-200 ${termsOpen ? "rotate-180" : "rotate-0"}`}
+                      className={`h-4 w-4 transition duration-300 ${
+                        termsOpen ? "rotate-180" : "rotate-0"
+                      }`}
                     />
                   </button>
                 </div>
               </div>
-              {termsOpen && (
-                <div className="eease-in-out mr-2 ml-2">
-                  <div className="mb-2 flex justify-between">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={serviceAgreement}
-                        onChange={() => handleCheck("serviceAgreement")}
-                      />
-                      <span className="ml-2">서비스 이용약관 동의 (필수)</span>
-                    </label>
-                    <span className="cursor-pointer">자세히</span>
-                  </div>
-                  <div className="mb-2 flex justify-between">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={personalAgreement}
-                        onChange={() => handleCheck("personalAgreement")}
-                      />
-                      <span className="ml-2">
-                        개인정보 수집 및 이용 동의 (필수)
-                      </span>
-                    </label>
-                    <span className="cursor-pointer">자세히</span>
-                  </div>
-                  <div className="mb-2 flex justify-between">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={marketingAgreement}
-                        onChange={() => handleCheck("marketingAgreement")}
-                      />
-                      <span className="ml-2">마케팅 정보 수신 동의 (선택)</span>
-                    </label>
-                    <span className="cursor-pointer">자세히</span>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {termsOpen && (
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: "auto" }}
+                    transition={{ duration: 0.5 }}
+                    exit={{ height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="eease-in-out mr-2 ml-2">
+                      <div className="mb-2 flex justify-between">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={serviceAgreement}
+                            onChange={() => handleCheck("serviceAgreement")}
+                          />
+                          <span className="ml-2">
+                            서비스 이용약관 동의 (필수)
+                          </span>
+                        </label>
+                        <span className="cursor-pointer">자세히</span>
+                      </div>
+                      <div className="mb-2 flex justify-between">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={personalAgreement}
+                            onChange={() => handleCheck("personalAgreement")}
+                          />
+                          <span className="ml-2">
+                            개인정보 수집 및 이용 동의 (필수)
+                          </span>
+                        </label>
+                        <span className="cursor-pointer">자세히</span>
+                      </div>
+                      <div className="mb-2 flex justify-between">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={marketingAgreement}
+                            onChange={() => handleCheck("marketingAgreement")}
+                          />
+                          <span className="ml-2">
+                            마케팅 정보 수신 동의 (선택)
+                          </span>
+                        </label>
+                        <span className="cursor-pointer">자세히</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <Button

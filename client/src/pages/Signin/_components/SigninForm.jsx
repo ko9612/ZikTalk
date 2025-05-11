@@ -40,7 +40,7 @@ const SigninForm = () => {
 
   return (
     <div className="flex h-screen items-center">
-      <div className="mx-auto my-0 mb-7 w-[70vw] md:w-[445px]">
+      <div className="mx-auto my-0 w-[70vw] md:w-[445px]">
         <div className="flex flex-col items-center">
           <img
             src={Logo}
@@ -114,7 +114,7 @@ const SigninForm = () => {
             {/* 비밀번호 재설정 모달 */}
             {isOpenModal && (
               <Modal isOpen={isOpenModal} onClose={modalHandler}>
-                <div className="flex h-[75vh] items-center">
+                <div className="flex h-[60vh] items-center">
                   <div className="mx-auto my-0 w-[80vw] md:w-[445px]">
                     <div className="mb-7 flex flex-col items-center justify-center">
                       <img
