@@ -126,7 +126,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
               <LoadingIndicator />
             ) : (
               <>
-                <div className="min-h-[350px]">
+                <div className="min-h-[350px] p-2">
                   {visibleResults.map((item) => (
                     <div key={item.id}>
                       <FaqItem
@@ -147,13 +147,11 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                 </div>
 
                 <div className="h-20">
-                  {totalPages > 1 && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
-                  )}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </>
             )}

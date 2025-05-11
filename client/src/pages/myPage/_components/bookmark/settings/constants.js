@@ -1,4 +1,4 @@
-export const PAGE_SIZE = 4;
+export const PAGE_SIZE = 10;
 
 export const GRID_TEMPLATE = "34px 118px 50px 1fr 80px";
 
