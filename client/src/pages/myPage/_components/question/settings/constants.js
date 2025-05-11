@@ -7,7 +7,8 @@ export const GRID_TEMPLATE = "1fr 6rem 5rem";
 // 텍스트 색상 설정
 export const TEXT_COLORS = {
   normal: "text-gray-500",
-  accent: "text-zik-main"
+  accent: "text-zik-main",
+  description: "text-zik-text/80",
 };
 
 // 리듀서 액션 타입

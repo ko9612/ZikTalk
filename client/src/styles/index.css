@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @import "./global.css";
+
+*:focus {
+  outline: none !important;
+}

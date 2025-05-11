@@ -1,11 +1,8 @@
 import React from "react";
-import { GRID_TEMPLATE } from "./constants";
+import { GRID_TEMPLATE, TEXT_COLORS } from "./constants";
 import FilterDropdown from "@/components/common/FilterDropdown";
-import { JOB_OPTIONS, TYPE_OPTIONS } from "../../common/useFilter";
+import { JOB_OPTIONS, TYPE_OPTIONS } from "@/components/common/useFilter";
 
-/**
- * 필터 컴포넌트
- */
 export const FilterComponent = ({
   filters,
   onJobFilterChange,
@@ -29,12 +26,9 @@ export const FilterComponent = ({
   </div>
 );
 
-/**
- * 테이블 헤더 컴포넌트
- */
 export const TableHeader = () => (
   <div
-    className="mb-3 hidden items-center border-t-2 border-b-2 border-t-gray-500 border-b-gray-200 px-1 py-2 text-xs font-semibold tracking-wide text-gray-400 sm:grid sm:px-2 sm:text-sm md:px-4 md:text-base"
+    className={`mb-3 hidden items-center border-t-2 border-b-2 border-t-gray-500 border-b-gray-200 px-1 py-2 ${TEXT_COLORS.header} tracking-wide sm:grid sm:px-2 sm:text-sm md:px-4 md:text-base`}
     style={{ gridTemplateColumns: GRID_TEMPLATE }}
   >
     <div className="text-start">No</div>
@@ -45,20 +39,9 @@ export const TableHeader = () => (
   </div>
 );
 
-/**
- * 로딩 인디케이터 컴포넌트
- */
 export const LoadingIndicator = () => (
   <div className="my-6 flex justify-center">
     <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-indigo-500"></div>
   </div>
 );
 
-/**
- * 더 불러오기 안내 컴포넌트
- */
-export const ScrollPrompt = () => (
-  <div className="my-4 rounded-lg py-2 text-center text-sm text-gray-400">
-    스크롤하여 더 많은 북마크를 확인하세요 ▼
-  </div>
-);
