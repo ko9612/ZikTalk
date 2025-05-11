@@ -105,7 +105,7 @@ const SignupForm = () => {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center">
-      <div className="mx-auto my-0 w-fit text-lg font-bold sm:mb-4 sm:text-3xl md:mb-6">
+      <div className="mx-auto my-0 w-fit p-4 text-lg font-bold text-wrap break-keep sm:mb-4 sm:text-3xl md:mb-6">
         <p>환영합니다!</p>
         <p>직톡에서 취업 준비의 모든 과정을 경험해보세요.</p>
       </div>
@@ -135,7 +135,7 @@ const SignupForm = () => {
                 // onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="example@example.com"
-                labelClassName="text-sm md:text-base flex-3"
+                labelClassName="text-sm md:text-base w-3/4"
               >
                 이메일
               </Input>
@@ -143,7 +143,7 @@ const SignupForm = () => {
                 onClick={handleVerification}
                 shape="bar"
                 className={
-                  "ml-2 max-w-[164px] flex-1 text-xs leading-5 sm:ml-4 sm:text-base"
+                  "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
                 }
               >
                 {verification ? "인증확인" : "인증요청"}
@@ -155,7 +155,7 @@ const SignupForm = () => {
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: "auto" }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.3 }}
                   exit={{ height: 0 }}
                   className="overflow-hidden"
                 >
@@ -277,7 +277,7 @@ const SignupForm = () => {
                   <motion.div
                     initial={{ height: 0 }}
                     animate={{ height: "auto" }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.3 }}
                     exit={{ height: 0 }}
                     className="overflow-hidden"
                   >
