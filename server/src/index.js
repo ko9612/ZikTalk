@@ -1,8 +1,8 @@
 // 기본 모듈 로드
-const express = require("express");
-const dotenv = require("dotenv");
-const rootRouter = require("./routes/root.route");
-const cors = require("cors");
+import express from "express";
+import dotenv from "dotenv";
+import rootRouter from "./routes/root.route.js";
+import cors from "cors";
 
 // 환경 변수 설정
 dotenv.config();
