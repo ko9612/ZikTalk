@@ -7,6 +7,7 @@ import starEmpty from "@/assets/images/star-empty.svg";
 import Button from "@/components/common/Button";
 import clsx from "clsx";
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
+import { useInterviewLevelStore } from "@/store/interviewSetupStore";
 
 const levels = [
   {
@@ -39,6 +40,9 @@ const DiffSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
   const { navigateTo } = useSetupNavigationStore((state) => state);
 
+  // 상태 불러오기
+  const { level, setLevel } = useInterviewLevelStore();
+
   useEffect(() => {
     setTabSelect("설정");
   }, []);
@@ -51,8 +55,6 @@ const DiffSetup = () => {
     navigateTo("RoleSetup");
   };
 
-  const [selected, setSelected] = useState("신입");
-
   return (
     <div
       className="w- mx-auto flex w-full flex-col items-center justify-center px-4 py-4 2xl:py-8"
@@ -63,13 +65,13 @@ const DiffSetup = () => {
       </div>
 
       <ul className="w-2xl space-y-4">
-        {levels.map((level) => {
-          const isSelected = selected === level.label;
+        {levels.map((levelOption) => {
+          const isSelected = level === levelOption.label;
 
           return (
             <li
-              key={level.label}
-              onClick={() => setSelected(level.label)}
+              key={levelOption.label}
+              onClick={() => setLevel(levelOption.label)}
               className={clsx(
                 "border-zik-border flex h-20 cursor-pointer flex-col justify-center overflow-hidden rounded-xl border px-6 py-4 transition-all duration-300 ease-in-out",
                 {
@@ -81,9 +83,10 @@ const DiffSetup = () => {
               <div
                 className={clsx("flex items-center justify-start gap-7", {
                   "px-7": !isSelected,
+                  "gap-14": isSelected,
                 })}
               >
-                <div className="flex min-w-[160px] items-center gap-2">
+                <div className="flex min-w-[190px] items-center gap-2">
                   {isSelected && (
                     <img
                       src={checkedCircle}
@@ -92,11 +95,11 @@ const DiffSetup = () => {
                     />
                   )}
                   <strong className="px-7 text-lg 2xl:text-xl">
-                    {level.label}
+                    {levelOption.label}
                   </strong>
                 </div>
                 <div className="flex gap-1">
-                  {Array(level.stars)
+                  {Array(levelOption.stars)
                     .fill(0)
                     .map((_, idx) => (
                       <img
@@ -117,9 +120,9 @@ const DiffSetup = () => {
                     : "max-h-0 translate-y-[-10px] opacity-0",
                 )}
               >
-                {level.description && (
+                {levelOption.description && (
                   <p className="mt-2 px-14 text-sm leading-relaxed whitespace-pre-wrap text-[#291B9A] 2xl:text-base">
-                    {level.description}
+                    {levelOption.description}
                   </p>
                 )}
               </div>

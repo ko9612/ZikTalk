@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
+// import { useLocation } from "react-router-dom";
 import { useSetupNavigationStore } from "@/store/store";
+import {
+  useInterviewLevelStore,
+  useInterviewRatioStore,
+  useInterviewQCountStore,
+} from "@/store/interviewSetupStore";
 import DeviceSetup from "./_components/setting/DeviceSetup";
 import DiffSetup from "./_components/setting/DiffSetup";
 import RoleSetup from "./_components/setting/RoleSetup";
@@ -7,20 +13,30 @@ import PreCheckStep from "./_components/setting/PreCheckStep";
 import InterviewSection from "./_components/interview/InterviewSection";
 
 const index = () => {
+  // const location = useLocation();
+  const resetLevel = useInterviewLevelStore((state) => state.resetLevel);
+  const resetRatio = useInterviewRatioStore((state) => state.resetRatio);
+  const resetQCount = useInterviewQCountStore((state) => state.resetQCount);
+
   const { currentComponent, resetNavigation } = useSetupNavigationStore(
     (state) => state,
   );
 
   // 컴포넌트 마운트 시 상태 초기화
   useEffect(() => {
-    // 페이지에 들어올 때 상태 초기화
-    // resetNavigation();
+    // const isInInterviewFlow = location.pathname.startsWith("/interview");
+    // if (!isInInterviewFlow) {
+    // resetLevel();
+    // }
 
     // 컴포넌트 언마운트(페이지 이탈) 시 초기화
     return () => {
       resetNavigation();
+      resetLevel();
+      resetRatio();
+      resetQCount();
     };
-  }, [resetNavigation]);
+  }, [resetNavigation, resetLevel, resetRatio, resetQCount]);
 
   // 컴포넌트 맵핑 객체
   const COMPONENTS = {

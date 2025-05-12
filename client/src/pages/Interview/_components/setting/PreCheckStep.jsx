@@ -9,6 +9,7 @@ import Minus from "@/assets/images/minus.svg";
 import Plus from "@/assets/images/plus.svg";
 
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
+import { useInterviewQCountStore } from "@/store/interviewSetupStore";
 
 const listWrap =
   "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
@@ -23,6 +24,10 @@ const PreCheckStep = () => {
 
   useEffect(() => {
     setTabSelect("사전 체크");
+
+    // 이미지 preload
+    const preloadImage = new Image();
+    preloadImage.src = Timebulb;
   }, []);
 
   const handlePrevious = () => {
@@ -35,14 +40,14 @@ const PreCheckStep = () => {
     setTabSelect("모의 면접");
   };
 
-  const [count, setCount] = useState(10); // 초기 문항수
+  const { qCount, setQCount } = useInterviewQCountStore();
 
   const decrease = () => {
-    if (count > 1) setCount(count - 1);
+    if (qCount > 1) setQCount(qCount - 1);
   };
 
   const increase = () => {
-    if (count < 10) setCount(count + 1);
+    if (qCount < 10) setQCount(qCount + 1);
   };
   return (
     <div
@@ -80,7 +85,7 @@ const PreCheckStep = () => {
                   onClick={decrease}
                 />
                 <p className="text-zik-main w-20 text-center text-xl font-bold 2xl:text-2xl">
-                  <span className="underline">{count}</span>개
+                  <span className="underline">{qCount}</span>개
                 </p>
                 <img
                   src={Plus}
