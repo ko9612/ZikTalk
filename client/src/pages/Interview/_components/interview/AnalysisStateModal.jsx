@@ -22,6 +22,11 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
     };
   });
 
+  useLayoutEffect(() => {
+    const img = new Image();
+    img.src = MainLogo;
+  }, []);
+
   return (
     <Modal
       isOpen={isOpen}

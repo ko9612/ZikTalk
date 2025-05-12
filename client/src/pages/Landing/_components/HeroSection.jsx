@@ -17,6 +17,7 @@ const HeroSection = () => {
         loop
         muted
         playsInline
+        preload="auto"
         className="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover"
       >
         <source src={hero_section_videoWebm} type="video/webm" />

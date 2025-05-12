@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import Button from "@/components/common/Button";
 import Pencil from "@/assets/images/pencil.svg";
 // import task from "@/assets/images/task.svg";
@@ -24,10 +24,14 @@ const PreCheckStep = () => {
 
   useEffect(() => {
     setTabSelect("사전 체크");
+  }, []);
 
-    // 이미지 preload
-    const preloadImage = new Image();
-    preloadImage.src = Timebulb;
+  useLayoutEffect(() => {
+    const images = [Timebulb, Interactivesession, Task2];
+    images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }, []);
 
   const handlePrevious = () => {
