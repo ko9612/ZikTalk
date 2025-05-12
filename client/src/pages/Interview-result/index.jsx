@@ -217,7 +217,7 @@ const Index = () => {
           <h3 className={titleStyle}>질문</h3>
           <div>
             {qaList.map((item) => (
-              <FaqItem id={`showPdf${item.id}`} key={item.id} {...item} />
+              <FaqItem key={item.id} {...item} />
             ))}
           </div>
         </div>
