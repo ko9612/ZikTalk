@@ -91,7 +91,7 @@ const FaqItem = ({
             />
           </button>
         </div>
-        <div className="flex w-full flex-col items-baseline px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4">
+        <div className="flex w-full  flex-col items-baseline px-4 py-3 sm:flex-row sm:items-center sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center">
             <span
               className={`text-zik-text text-xs font-bold sm:text-sm ${isExpanded ? `${textColors.accent} font-medium` : ""}`}
@@ -100,7 +100,7 @@ const FaqItem = ({
             </span>
             {career && (
               <div
-                className={`mr-2 ml-1 w-24 rounded-full px-1 py-0.5 text-center text-start text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-4 sm:ml-2 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
+                className={`mr-2 ml-5 w-24 rounded-full px-2 py-0.5 text-start  text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-1 sm:ml-6 sm:w-[95px] sm:px-2 sm:py-1 sm:text-base`}
               >
                 {career}
               </div>

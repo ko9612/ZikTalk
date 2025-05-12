@@ -4,36 +4,30 @@
 
 // 아래는 예시코드 (gpt)
 import express from "express";
-import * as InterviewController from "../controllers/interviewController.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import * as interviewController from "../controllers/interview.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-// 인터뷰 생성
-router.post("/interview", authenticate, InterviewController.createInterview);
+// 모든 면접 조회
+router.get("/", interviewController.getAllInterviews);
 
-// 단일 인터뷰 조회
-router.get(
-  "/interview/:id",
-  authenticate,
-  InterviewController.getInterviewById
-);
+// ID로 면접 조회
+router.get("/:id", interviewController.getInterviewById);
 
-// 유저별 인터뷰 목록 조회
-router.get("/interview", authenticate, InterviewController.getInterviewsByUser);
+// 사용자 ID로 면접 조회
+router.get("/user/:userId", interviewController.getInterviewsByUserId);
 
-// 인터뷰 피드백 수정
-router.patch(
-  "/interview/:id",
-  authenticate,
-  InterviewController.updateInterviewFeedback
-);
+// 새 면접 생성
+router.post("/", interviewController.createInterview);
 
-// 인터뷰 삭제
-router.delete(
-  "/interview/:id",
-  authenticate,
-  InterviewController.deleteInterview
-);
+// 면접 업데이트
+router.put("/:id", interviewController.updateInterview);
+
+// 면접 삭제
+router.delete("/:id", interviewController.deleteInterview);
+
+// 북마크 토글
+router.patch("/:id/bookmark", interviewController.toggleBookmark);
 
 export default router;
