@@ -1,9 +1,8 @@
 import React, { useEffect, useLayoutEffect } from "react";
 import Button from "@/components/common/Button";
 import Pencil from "@/assets/images/pencil.svg";
-// import task from "@/assets/images/task.svg";
 import Task2 from "@/assets/images/task2.png";
-import Timebulb from "@/assets/images/time-bulb.png";
+// import Timebulb from "@/assets/images/time-bulb.png";
 import Interactivesession from "@/assets/images/interactive-session.png";
 import Minus from "@/assets/images/minus.svg";
 import Plus from "@/assets/images/plus.svg";
@@ -26,13 +25,13 @@ const PreCheckStep = () => {
     setTabSelect("사전 체크");
   }, []);
 
-  useLayoutEffect(() => {
-    const images = [Timebulb, Interactivesession, Task2];
-    images.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
+  // useLayoutEffect(() => {
+  //   const images = [Timebulb, Interactivesession, Task2];
+  //   images.forEach((src) => {
+  //     const img = new Image();
+  //     img.src = src;
+  //   });
+  // }, []);
 
   const handlePrevious = () => {
     navigateTo("RoleSetup");
@@ -105,7 +104,7 @@ const PreCheckStep = () => {
             <div className={imageWrap}>
               <img
                 loading="eager"
-                src={Timebulb}
+                src="/time-bulb.png"
                 alt="준비시간"
                 className="w-20"
               />

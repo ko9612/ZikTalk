@@ -22,10 +22,10 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
     };
   }, []);
 
-  useLayoutEffect(() => {
-    const img = new Image();
-    img.src = MainLogo;
-  }, []);
+  // useLayoutEffect(() => {
+  //   const img = new Image();
+  //   img.src = MainLogo;
+  // }, []);
 
   return (
     <Modal
@@ -39,7 +39,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
         {isOpen && isLoading ? (
           <>
             <i className="w-12">
-              <img loading="eager" src={MainLogo} alt="logo" />
+              <img loading="eager" src="/logo.svg" alt="logo" />
             </i>
             <p className="text-center text-base font-semibold sm:text-xl">
               모의면접이 완료되었습니다.
