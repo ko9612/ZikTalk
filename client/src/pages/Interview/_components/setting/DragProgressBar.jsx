@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useInterviewRatioStore } from "@/store/interviewSetupStore";
 
 const DragProgressBar = () => {
-  const [leftValue, setLeftValue] = useState(30);
-  const [rightValue, setRightValue] = useState(70);
   const [isDragging, setIsDragging] = useState(false);
   const progressBarRef = useRef(null);
+  const { ratio, setRatio } = useInterviewRatioStore();
+  const [leftValue, setLeftValue] = useState(100 - ratio);
 
   // 드래그 핸들러
   const handleDragStart = () => {
@@ -32,7 +33,7 @@ const DragProgressBar = () => {
       percent = Math.max(0, Math.min(100, percent));
 
       setLeftValue(100 - percent);
-      setRightValue(percent);
+      setRatio(percent);
     },
     [isDragging],
   );
@@ -44,20 +45,20 @@ const DragProgressBar = () => {
     const rect = progressBarRef.current.getBoundingClientRect();
     const barWidth = rect.width;
     const offsetX = e.clientX - rect.left;
-    const handlePositionX = (rightValue / 100) * barWidth;
+    const handlePositionX = (ratio / 100) * barWidth;
 
-    let newRightValue = rightValue;
+    let newRightValue = ratio;
 
     if (offsetX < handlePositionX) {
       // 핸들 왼쪽 클릭 → 왼쪽으로 10% 감소
-      newRightValue = Math.max(0, rightValue - 10);
+      newRightValue = Math.max(0, ratio - 10);
     } else if (offsetX > handlePositionX) {
       // 핸들 오른쪽 클릭 → 오른쪽으로 10% 증가
-      newRightValue = Math.min(100, rightValue + 10);
+      newRightValue = Math.min(100, ratio + 10);
     }
 
-    setRightValue(newRightValue);
     setLeftValue(100 - newRightValue);
+    setRatio(newRightValue);
   };
 
   // 전체 문서에서 마우스 이동 및 릴리스 이벤트를 추적
@@ -92,7 +93,7 @@ const DragProgressBar = () => {
           {/* 드래그 핸들 - 원형 */}
           <div
             className="absolute top-1/2 z-10 -translate-y-1/2 transition-all duration-200 ease-in-out"
-            style={{ left: `${rightValue}%` }}
+            style={{ left: `${ratio}%` }}
             onMouseDown={handleDragStart}
             onTouchStart={handleDragStart}
           >
@@ -102,13 +103,13 @@ const DragProgressBar = () => {
           {/* 컬러 인디케이터 */}
           <div
             className="bg-zik-main absolute inset-y-0 left-0 rounded-l-full transition-all duration-200 ease-in-out"
-            style={{ width: `${rightValue}%` }}
+            style={{ width: `${ratio}%` }}
           ></div>
         </div>
 
         <div className="w-20 text-center">
           <div className="text-zik-text text-xl font-medium">직무</div>
-          <div className="text-zik-main text-2xl font-bold">{rightValue}%</div>
+          <div className="text-zik-main text-2xl font-bold">{ratio}%</div>
         </div>
       </div>
     </div>
