@@ -33,7 +33,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       filters.job,
       filters.questionType,
       starredItems,
-      testEmpty
+      testEmpty,
     );
   }, [filters.job, filters.questionType, starredItems, testEmpty]);
 
@@ -41,26 +41,32 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     return Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
   }, [filteredData.length]);
 
-  const loadPageData = useCallback((page) => {
-    setLoading(true);
-    
-    const startIndex = (page - 1) * PAGE_SIZE;
-    const endIndex = startIndex + PAGE_SIZE;
-    const pageData = filteredData.slice(startIndex, endIndex);
-    
-    setVisibleResults(pageData);
-    setLoading(false);
-  }, [filteredData]);
+  const loadPageData = useCallback(
+    (page) => {
+      setLoading(true);
 
-  const handlePageChange = useCallback((newPage) => {
-    setCurrentPage(newPage);
-    loadPageData(newPage);
-    
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, [loadPageData]);
+      const startIndex = (page - 1) * PAGE_SIZE;
+      const endIndex = startIndex + PAGE_SIZE;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      setVisibleResults(pageData);
+      setLoading(false);
+    },
+    [filteredData],
+  );
+
+  const handlePageChange = useCallback(
+    (newPage) => {
+      setCurrentPage(newPage);
+      loadPageData(newPage);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    },
+    [loadPageData],
+  );
 
   const toggleOpen = useCallback((id) => {
     setOpenIds((prev) => {
@@ -72,19 +78,28 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     });
   }, []);
 
-  const handleJobFilterChange = useCallback((value) => {
-    updateFilter("job", value);
-    setCurrentPage(1);
-  }, [updateFilter]);
+  const handleJobFilterChange = useCallback(
+    (value) => {
+      updateFilter("job", value);
+      setCurrentPage(1);
+    },
+    [updateFilter],
+  );
 
-  const handleTypeFilterChange = useCallback((value) => {
-    updateFilter("questionType", value);
-    setCurrentPage(1);
-  }, [updateFilter]);
+  const handleTypeFilterChange = useCallback(
+    (value) => {
+      updateFilter("questionType", value);
+      setCurrentPage(1);
+    },
+    [updateFilter],
+  );
 
-  const handleBookmarkToggle = useCallback((id) => {
-    toggleBookmark(id);
-  }, [toggleBookmark]);
+  const handleBookmarkToggle = useCallback(
+    (id) => {
+      toggleBookmark(id);
+    },
+    [toggleBookmark],
+  );
 
   useEffect(() => {
     loadPageData(currentPage);
@@ -98,7 +113,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
   return (
     <div className="mx-auto w-full pt-6">
-      <h2 className={`mb-6 text-center text-2xl font-bold sm:text-3xl ${TEXT_COLORS.title}`}>
+      <h2
+        className={`mb-6 text-center text-2xl font-bold sm:text-3xl ${TEXT_COLORS.title}`}
+      >
         질문 북마크
       </h2>
 

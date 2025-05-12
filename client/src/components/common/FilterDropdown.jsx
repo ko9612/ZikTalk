@@ -90,7 +90,7 @@ const FilterDropdown = ({
         </span>
       </button>
       <div
-        className={`absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
+        className={`absolute z-11 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
           open
             ? "max-h-60 scale-100 transform opacity-100"
             : "pointer-events-none max-h-0 scale-95 transform opacity-0"
