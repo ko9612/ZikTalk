@@ -14,68 +14,141 @@
 
 // 아래는 예시코드
 
-import prisma from "../utils/prisma.js";
+import { PrismaClient } from '@prisma/client';
 
-// 인터뷰 생성
-export const createInterview = async ({ userId, question, answer }) => {
-  if (!userId || !question || !answer) {
-    throw new Error("모든 필드가 필요합니다.");
-  }
+const prisma = new PrismaClient();
 
-  const interview = await prisma.interview.create({
-    data: { userId, question, answer },
+// 모든 면접 조회
+export const getAllInterviews = async () => {
+  return await prisma.interview.findMany({
+    include: {
+      user: true,
+      questions: true
+    }
   });
-
-  return { id: interview.id, question: interview.question, answer: interview.answer };
 };
 
-// 인터뷰 조회 (단일)
-export const getInterviewById = async (interviewId) => {
-  const interview = await prisma.interview.findUnique({
-    where: { id: interviewId },
-    include: { user: { select: { email: true } } },
+// ID로 면접 조회
+export const getInterviewById = async (id) => {
+  return await prisma.interview.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      questions: {
+        orderBy: { order: 'asc' }
+      }
+    }
   });
-
-  if (!interview) throw new Error("해당 인터뷰를 찾을 수 없습니다.");
-
-  return interview;
 };
 
-// 인터뷰 목록 조회 (유저별)
-export const getInterviewsByUser = async (userId) => {
-  const interviews = await prisma.interview.findMany({
+// 사용자 ID로 면접 조회
+export const getInterviewsByUserId = async (userId) => {
+  return await prisma.interview.findMany({
     where: { userId },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      question: true,
-      answer: true,
-      feedback: true,
-      createdAt: true,
+    include: {
+      questions: true
     },
+    orderBy: { createdAt: 'desc' }
   });
-
-  return interviews;
 };
 
-// 인터뷰 수정 (피드백 추가)
-export const updateInterviewFeedback = async (interviewId, feedback) => {
-  if (!feedback) throw new Error("피드백이 필요합니다.");
-
-  const interview = await prisma.interview.update({
-    where: { id: interviewId },
-    data: { feedback },
+// 새 면접 생성
+export const createInterview = async (data) => {
+  const { questions, ...interviewData } = data;
+  
+  return await prisma.$transaction(async (tx) => {
+    // 1. 면접 생성
+    const interview = await tx.interview.create({
+      data: interviewData
+    });
+    
+    // 2. 질문이 있으면 질문들도 생성
+    if (questions && questions.length > 0) {
+      const questionsWithInterviewId = questions.map((question, index) => ({
+        ...question,
+        interviewId: interview.id,
+        order: index + 1
+      }));
+      
+      await tx.question.createMany({
+        data: questionsWithInterviewId
+      });
+    }
+    
+    // 3. 생성된 면접과 질문들 함께 반환
+    return await tx.interview.findUnique({
+      where: { id: interview.id },
+      include: {
+        questions: {
+          orderBy: { order: 'asc' }
+        }
+      }
+    });
   });
-
-  return interview;
 };
 
-// 인터뷰 삭제
-export const deleteInterview = async (interviewId) => {
-  await prisma.interview.delete({
-    where: { id: interviewId },
+// 면접 업데이트
+export const updateInterview = async (id, data) => {
+  return await prisma.interview.update({
+    where: { id },
+    data,
+    include: {
+      questions: true
+    }
   });
+};
 
-  return { message: "인터뷰가 삭제되었습니다." };
+// 면접 삭제
+export const deleteInterview = async (id) => {
+  // 트랜잭션을 사용하여 면접과 관련된 질문들을 함께 삭제
+  return await prisma.$transaction(async (tx) => {
+    // 1. 관련된 질문 삭제
+    await tx.question.deleteMany({
+      where: { interviewId: id }
+    });
+    
+    // 2. 면접 삭제
+    return await tx.interview.delete({
+      where: { id }
+    });
+  });
+};
+
+// 북마크 토글
+export const toggleBookmark = async (id) => {
+  const interview = await prisma.interview.findUnique({
+    where: { id }
+  });
+  
+  if (!interview) return null;
+  
+  return await prisma.interview.update({
+    where: { id },
+    data: { bookmarked: !interview.bookmarked }
+  });
+};
+
+// 직무별 면접 조회
+export const getInterviewsByRole = async (role) => {
+  return await prisma.interview.findMany({
+    where: { role },
+    include: {
+      user: true,
+      questions: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+};
+
+// 북마크된 면접 조회
+export const getBookmarkedInterviews = async () => {
+  return await prisma.interview.findMany({
+    where: { bookmarked: true },
+    include: {
+      user: true,
+      questions: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 };
 

@@ -1,4 +1,7 @@
 import express from "express";
+import questionRouter from './question.route.js';
+import interviewRouter from './interview.route.js';
+import mypageRouter from './mypage.route.js';
 
 const router = express.Router();
 
@@ -6,5 +9,14 @@ const router = express.Router();
 router.get("/api", (req, res) => {
   res.json({ message: "✅ API is working!" });
 });
+
+// 질문 라우터 연결
+router.use('/api/questions', questionRouter);
+
+// 면접 라우터 연결
+router.use('/api/interviews', interviewRouter);
+
+// 마이페이지 라우터 연결
+router.use('/api/mypage', mypageRouter);
 
 export default router;
