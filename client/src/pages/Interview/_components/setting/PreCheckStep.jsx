@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useEffect, useLayoutEffect } from "react";
 import Button from "@/components/common/Button";
 import Pencil from "@/assets/images/pencil.svg";
 // import task from "@/assets/images/task.svg";
@@ -74,6 +74,7 @@ const PreCheckStep = () => {
           <li className={listWrap}>
             <div className={imageWrap}>
               <img
+                loading="eager"
                 src={Task2}
                 alt="문항"
                 className={`w-20 translate-x-1 -translate-y-1.5`}
@@ -102,7 +103,12 @@ const PreCheckStep = () => {
           </li>
           <li className={listWrap}>
             <div className={imageWrap}>
-              <img src={Timebulb} alt="준비시간" className="w-20" />
+              <img
+                loading="eager"
+                src={Timebulb}
+                alt="준비시간"
+                className="w-20"
+              />
             </div>
             <div className={textWrap}>
               <strong>답변 준비 시간</strong>
@@ -113,7 +119,12 @@ const PreCheckStep = () => {
           </li>
           <li className={listWrap}>
             <div className={imageWrap}>
-              <img src={Interactivesession} alt="답변" className="w-20" />
+              <img
+                loading="eager"
+                src={Interactivesession}
+                alt="답변"
+                className="w-20"
+              />
             </div>
             <div className={textWrap}>
               <strong>대답시간</strong>
