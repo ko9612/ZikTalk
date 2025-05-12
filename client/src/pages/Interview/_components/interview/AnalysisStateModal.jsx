@@ -1,5 +1,5 @@
 // 분석 관련 모달
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import AnalysisCompleteIcon from "./AnalysisCompleteIcon";
 import MainLogo from "@/assets/images/logo.svg";
