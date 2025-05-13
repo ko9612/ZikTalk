@@ -13,7 +13,9 @@ export const Header = React.memo(({ showDescription = true }) => (
       분석 결과 리스트
     </h2>
     {showDescription && (
-      <div className={`mb-8 text-center text-sm ${TEXT_COLORS.description} sm:text-base`}>
+      <div
+        className={`mb-8 text-center text-sm ${TEXT_COLORS.description} sm:text-base`}
+      >
         응시한 모의면접 결과를 한눈에 확인하고,
         <br className="hidden md:block" />
         점수와 피드백을 기반으로 부족한 부분을 보완해보세요.
@@ -63,7 +65,7 @@ export const ResultGrid = React.memo(
     handleCardClick,
     starredItems,
   }) => (
-    <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2 sm:gap-6 sm:pt-4 lg:grid-cols-3">
+    <div className="grid min-h-[360px] grid-cols-1 gap-4 pt-2 sm:grid-cols-2 sm:gap-6 sm:pt-4 lg:grid-cols-3">
       {visibleResults.map((item, idx) => (
         <div
           key={item.id}
@@ -92,7 +94,9 @@ export const LoadingIndicator = () => (
 );
 
 export const ScrollPrompt = () => (
-  <div className={`my-4 rounded-lg py-2 text-center text-sm ${TEXT_COLORS.description}`}>
+  <div
+    className={`my-4 rounded-lg py-2 text-center text-sm ${TEXT_COLORS.description}`}
+  >
     스크롤하여 더 많은 결과를 확인하세요 ▼
   </div>
 );

@@ -4,6 +4,7 @@ import EmptyBookmarkList from "./EmptyBookmarkList";
 import { useBookmark } from "@/components/common/useBookmark";
 import { useFilter } from "@/components/common/useFilter";
 import Pagination from "@/components/common/Pagination";
+import { myPageApi } from "@/api/myPageApi";
 import axios from "axios";
 import {
   PAGE_SIZE,
@@ -50,8 +51,9 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       const formattedQuestions = Array.isArray(response.data.questions)
-        ? response.data.questions.map(q => ({
-            id: q.id,
+        ? response.data.questions.map((q, index) => ({
+            id: index + 1,
+            originalId: q.id,
             career: q.interview?.role || "미분류",
             type: q.type === "JOB" ? "직무" : "인성",
             question: q.content,
@@ -72,43 +74,44 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   }, [testEmpty]);
 
   const handleBookmarkToggle = useCallback(
-    async (id) => {
+    async (clientId) => {
       try {
-        setQuestions(prev => {
-          const index = prev.findIndex(q => q.id === id);
-          if (index === -1) return prev;
-        
-          const updated = [...prev];
-          updated[index] = { ...updated[index], bookmarked: !updated[index].bookmarked };
-          return updated;
-        });
-        toggleBookmark(id);
+        const targetQuestion = questions.find((q) => q.id === clientId);
+        if (!targetQuestion) return;
+
+        const realId = targetQuestion.originalId;
+
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === clientId ? { ...q, bookmarked: !q.bookmarked } : q,
+          ),
+        );
+
+        toggleBookmark(realId);
 
         try {
-          await axios.patch(`${API_URL}/questions/${id}/bookmark`);
+          await axios.patch(`${API_URL}/questions/${realId}/bookmark`);
         } catch (err) {
           setError(`북마크 토글 실패: ${err.message || "네트워크 문제"}`);
           setQuestions((prev) =>
             prev.map((q) =>
-              q.id === id ? { ...q, bookmarked: !q.bookmarked } : q
-            )
+              q.id === clientId ? { ...q, bookmarked: !q.bookmarked } : q,
+            ),
           );
-          toggleBookmark(id);
+          toggleBookmark(realId); // 롤백
         }
       } catch (err) {
         setError(`북마크 토글 오류: ${err.message || "알 수 없는 오류"}`);
       }
     },
-    [toggleBookmark]
+    [questions, toggleBookmark],
   );
-
   const filteredData = useMemo(() => {
     // 먼저 id 오름차순으로 정렬
     const sortedQuestions = [...questions].sort((a, b) => a.id - b.id);
-    
+
     return sortedQuestions.filter((q) => {
-      const jobMatch =
-        filters.job === "직군·직무" || q.career === filters.job;
+      const jobMatch = filters.job === "직군·직무" || q.career === filters.job;
       const typeMatch =
         filters.questionType === "질문유형" || q.type === filters.questionType;
       return jobMatch && typeMatch;
@@ -127,7 +130,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       setVisibleResults(filteredData.slice(startIndex, endIndex));
       setLoading(false);
     },
-    [filteredData]
+    [filteredData],
   );
 
   const handlePageChange = useCallback(
@@ -136,14 +139,14 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       loadPageData(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
     },
-    [loadPageData]
+    [loadPageData],
   );
 
   const toggleOpen = useCallback((id) => {
     setOpenIds((prev) =>
       prev.includes(id)
         ? prev.filter((openId) => openId !== id)
-        : [...prev, id]
+        : [...prev, id],
     );
   }, []);
 
@@ -152,7 +155,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       updateFilter("job", value);
       setCurrentPage(1);
     },
-    [updateFilter]
+    [updateFilter],
   );
 
   const handleTypeFilterChange = useCallback(
@@ -160,7 +163,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       updateFilter("questionType", value);
       setCurrentPage(1);
     },
-    [updateFilter]
+    [updateFilter],
   );
 
   useEffect(() => {

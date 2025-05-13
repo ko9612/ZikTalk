@@ -7,12 +7,14 @@ import { TableHeader, TEXT_COLORS } from "./settings";
 
 const EmptyBookmarkList = ({ job, setJob, type, setType }) => {
   const navigate = useNavigate();
-  
+
   return (
     <div className="mx-auto w-full">
       <TableHeader />
-      
-      <div className={`flex flex-col items-center ${TEXT_COLORS.description} mt-10`}>
+
+      <div
+        className={`flex flex-col items-center ${TEXT_COLORS.description} mt-10 min-h-[400px]`}
+      >
         <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
           <FiSearch className={`text-5xl ${TEXT_COLORS.description}`} />
         </div>
