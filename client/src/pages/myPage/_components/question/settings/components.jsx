@@ -63,7 +63,6 @@ export const ResultGrid = React.memo(
     handleSelectToggle,
     handleBookmarkToggle,
     handleCardClick,
-    starredItems,
   }) => (
     <div className="grid min-h-[360px] grid-cols-1 gap-4 pt-2 sm:grid-cols-2 sm:gap-6 sm:pt-4 lg:grid-cols-3">
       {visibleResults.map((item, idx) => (
@@ -79,7 +78,6 @@ export const ResultGrid = React.memo(
             handleSelectToggle={handleSelectToggle}
             handleBookmarkToggle={handleBookmarkToggle}
             handleCardClick={handleCardClick}
-            starredItems={starredItems}
           />
         </div>
       ))}

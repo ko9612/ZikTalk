@@ -22,8 +22,8 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading)
         },
         {
           root: null,
-          rootMargin: "0px 0px 50px 0px",
-          threshold: 0.5,
+          rootMargin: "0px 0px 100px 0px",
+          threshold: 0.1,
         }
       );
 
