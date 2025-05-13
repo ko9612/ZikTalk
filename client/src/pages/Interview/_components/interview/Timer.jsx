@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
+import { getTextConverter } from "@/api/interviewApi";
 
 const Timer = () => {
   const isLoading = useLoadingStateStore((state) => state.isLoading);
@@ -17,19 +18,72 @@ const Timer = () => {
     (state) => state.setInterviewState,
   );
   const { isReplying, setIsReplying } = useReplyingStore();
-
-  // 임시
+  const [transcripts, setTranscripts] = useState([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const timerRef = useRef(null);
+  const recorderRef = useRef(null);
+  const streamRef = useRef(null);
 
-  // 임시
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // 임시
+  // 녹음 중단
+  const stopRecording = () => {
+    // if (recorderRef.current) {
+    //   recorderRef.current.stop();
+    //   recorderRef.current = null;
+    // }
+    // if (streamRef.current) {
+    //   streamRef.current.getTracks().forEach((track) => track.stop());
+    //   streamRef.current = null;
+    // }
+    // setIsReplying(false);
+    // setInterviewState("answer");
+  };
+
+  useEffect(() => {
+    if (isReplying) {
+      const handleTranscription = async () => {
+        try {
+          // 마이크 입력 캡처
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          streamRef.current = stream;
+          const mediaRecorder = new MediaRecorder(stream);
+          recorderRef.current = mediaRecorder;
+
+          mediaRecorder.ondataavailable = async (event) => {
+            try {
+              const transcript = await getTextConverter(event.data);
+              setTranscripts((prev) => [...prev, transcript]);
+            } catch (error) {
+              console.error("Transcription Error:", error);
+            }
+          };
+
+          mediaRecorder.start();
+
+          setTimeout(() => {
+            stopRecording();
+          }, 120000);
+        } catch (error) {
+          console.error("Mic Error:", error);
+          alert("마이크 접근에 실패했습니다.");
+        }
+      };
+
+      handleTranscription();
+    }
+
+    return () => {
+      stopRecording();
+    };
+  }, []);
+
   useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -42,16 +96,7 @@ const Timer = () => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
-          if (isReplying) {
-            setTimeout(() => {
-              setIsReplying(false);
-              setInterviewState("answer");
-            }, 500);
-          } else {
-            setTimeout(() => {
-              setIsReplying(true);
-            }, 500);
-          }
+          stopRecording();
           return 0;
         }
         return prev - 1;
@@ -63,20 +108,15 @@ const Timer = () => {
     };
   }, [isReplying]);
 
-  // 임시
   const buttonHandler = () => {
     if (isReplying) {
-      setIsReplying(false);
-      setInterviewState("answer");
+      stopRecording();
     } else {
       setIsReplying(true);
     }
   };
 
-  // 임시
   const percentage = (timeLeft / (isReplying ? 120 : 30)) * 100;
-  // resetKey를 isReplying 상태가 변경될 때마다 변경되도록
-  // isReplying 값이 바뀔 때마다 resetKey를 증가시켜 useSmoothValue가 초기화되도록 합니다.
   const [resetKey, setResetKey] = useState(0);
   useEffect(() => {
     setResetKey((prev) => prev + 1);
@@ -132,6 +172,9 @@ const Timer = () => {
           )}
         </div>
       </div>
+      {transcripts.map((line, idx) => (
+        <p key={idx}>{line}</p>
+      ))}
     </div>
   );
 };

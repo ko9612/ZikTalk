@@ -35,3 +35,34 @@ export const useRoleStore = create((set) => ({
   roleValue: null,
   setRoleValue: (str) => set({ roleValue: str }),
 }));
+
+export const useQuestionStore = create((set) => ({
+  curNum: 1,
+  questions: [],
+  answers: [],
+  video: [],
+  skillCnt: 0,
+  setCurNum: (num) => set({ curNum: num }),
+  setSkillCnt: (num) => set({ skillCnt: num }),
+  addQuestion: (str) =>
+    set((state) => ({
+      questions: [...state.questions, str],
+    })),
+
+  addAnswer: (str) =>
+    set((state) => ({
+      answers: [...state.answers, str],
+    })),
+
+  addVideo: (str) =>
+    set((state) => ({
+      video: [...state.video, str],
+    })),
+  resetInterview: () =>
+    set({
+      curNum: 0,
+      questions: [],
+      answers: [],
+      video: [],
+    }),
+}));

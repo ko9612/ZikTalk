@@ -12,143 +12,94 @@
 // 4. 에러 처리
 // 데이터베이스와의 상호작용 중 발생하는 에러를 명확하게 정의하여 컨트롤러로 전달
 
-// 아래는 예시코드
+import OpenAI from "openai";
+import dotenv from "dotenv";
 
-import { PrismaClient } from '@prisma/client';
+dotenv.config();
 
-const prisma = new PrismaClient();
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
-// 모든 면접 조회
-export const getAllInterviews = async () => {
-  return await prisma.interview.findMany({
-    include: {
-      user: true,
-      questions: true
+export const generateQuestion = async (
+  level,
+  qCount,
+  career,
+  ratio,
+  curNum,
+  preQuestion,
+  preAnswer,
+  skillCnt
+) => {
+  const skillCount = Math.floor(qCount * (ratio / 100));
+  const personalityCount = qCount - skillCount;
+  const remainingSkillQuestions = skillCount - skillCnt;
+  const currentStage = curNum === 1 ? "시작" : "진행 중";
+  const prompt = "";
+  const prompt1 = `
+  "${career}" 직무면접 준비를 위한 "${level}" 수준의 면접 질문을 생성한다. **질문은 무조건 1개만 제시한다.**
+  - 총 질문 수: ${qCount}개 (인성 질문 ${personalityCount}개, 직무 질문 ${skillCount}개)
+  - 현재 질문 번호: ${curNum} / ${qCount} (${currentStage})
+  - 남은 직무 질문: ${remainingSkillQuestions}개
+  - 남은 인성 질문: ${qCount - curNum - remainingSkillQuestions}개
+  - 질문 유형: 직무 또는 인성
+  - 직무 질문(hard skill):지원자의 직무 능력, 기술적 이해도, 문제 해결 능력을 평가하기 위한 질문
+  - 인성 질문 (soft skill):지원자의 성향, 커뮤니케이션 능력, 팀워크, 문제 해결 방식을 평가하기 위한 질문
+  - 무조건 경력에 적합한 질문이어야 함
+  - 질문 외 다른 문장은 포함하지 말 것
+  - **질문은 무조건 1개만 제시한다.*
+  ${
+    preQuestion && preAnswer
+      ? `- 이전 질문: "${preQuestion}"
+    - 이전 질문에 대한 답변: "${preAnswer}" => 이 답변에 대한 꼬리질문은 이어가도 좋고, 새로운 질문이어도 좋다. (꼬리질문 확률: 30%, 새로운 질문 확률: 70%)`
+      : ""
+  }
+  - 반환 형식 (JSON):
+    {
+      "type": "직무 또는 인성",
+      "question": "질문 내용"
     }
-  });
-};
-
-// ID로 면접 조회
-export const getInterviewById = async (id) => {
-  return await prisma.interview.findUnique({
-    where: { id },
-    include: {
-      user: true,
-      questions: {
-        orderBy: { order: 'asc' }
-      }
-    }
-  });
-};
-
-// 사용자 ID로 면접 조회
-export const getInterviewsByUserId = async (userId) => {
-  return await prisma.interview.findMany({
-    where: { userId },
-    include: {
-      questions: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-};
-
-// 새 면접 생성
-export const createInterview = async (data) => {
-  const { questions, ...interviewData } = data;
-  
-  return await prisma.$transaction(async (tx) => {
-    // 1. 면접 생성
-    const interview = await tx.interview.create({
-      data: interviewData
+  `;
+  try {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: [{ role: "user", content: prompt }],
     });
-    
-    // 2. 질문이 있으면 질문들도 생성
-    if (questions && questions.length > 0) {
-      const questionsWithInterviewId = questions.map((question, index) => ({
-        ...question,
-        interviewId: interview.id,
-        order: index + 1
-      }));
-      
-      await tx.question.createMany({
-        data: questionsWithInterviewId
+    console.log(res);
+    return res;
+  } catch (error) {
+    throw new Error("첫 질문 생성 실패");
+  }
+};
+
+export const dagloTextConverter = async (audioBlob) => {
+  try {
+    const { DagloAPI } = await import(
+      "https://actionpower.github.io/dagloapi-js-beta/lib/daglo-api.module.js"
+    );
+    const client = new DagloAPI({
+      apiToken: process.env.DAGLO_API_KEY,
+    });
+
+    const transcriber = client.stream.transcriber();
+
+    const transcript = await new Promise((resolve, reject) => {
+      transcriber.on("transcript", (data) => {
+        resolve(data.text);
       });
-    }
-    
-    // 3. 생성된 면접과 질문들 함께 반환
-    return await tx.interview.findUnique({
-      where: { id: interview.id },
-      include: {
-        questions: {
-          orderBy: { order: 'asc' }
-        }
-      }
+
+      transcriber.on("error", (err) => {
+        reject(err);
+      });
+
+      transcriber.connect(audioBlob);
     });
-  });
+    console.log(transcript);
+    return transcript;
+  } catch (error) {
+    console.error("Daglo API Error:", error);
+    throw new Error("음성 변환 실패");
+  }
 };
-
-// 면접 업데이트
-export const updateInterview = async (id, data) => {
-  return await prisma.interview.update({
-    where: { id },
-    data,
-    include: {
-      questions: true
-    }
-  });
-};
-
-// 면접 삭제
-export const deleteInterview = async (id) => {
-  // 트랜잭션을 사용하여 면접과 관련된 질문들을 함께 삭제
-  return await prisma.$transaction(async (tx) => {
-    // 1. 관련된 질문 삭제
-    await tx.question.deleteMany({
-      where: { interviewId: id }
-    });
-    
-    // 2. 면접 삭제
-    return await tx.interview.delete({
-      where: { id }
-    });
-  });
-};
-
-// 북마크 토글
-export const toggleBookmark = async (id) => {
-  const interview = await prisma.interview.findUnique({
-    where: { id }
-  });
-  
-  if (!interview) return null;
-  
-  return await prisma.interview.update({
-    where: { id },
-    data: { bookmarked: !interview.bookmarked }
-  });
-};
-
-// 직무별 면접 조회
-export const getInterviewsByRole = async (role) => {
-  return await prisma.interview.findMany({
-    where: { role },
-    include: {
-      user: true,
-      questions: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-};
-
-// 북마크된 면접 조회
-export const getBookmarkedInterviews = async () => {
-  return await prisma.interview.findMany({
-    where: { bookmarked: true },
-    include: {
-      user: true,
-      questions: true
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-};
-
