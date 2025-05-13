@@ -18,7 +18,7 @@ const corsOption = {
 app.use(cors(corsOption));
 
 // 라우터 설정
-app.use("/", rootRouter);
+app.use("/api", rootRouter);
 
 // 서버 포트 설정 및 시작
 const PORT = process.env.PORT || 5000;
