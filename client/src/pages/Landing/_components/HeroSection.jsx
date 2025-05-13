@@ -1,11 +1,16 @@
 // 김세준
-import React from "react";
-// import hero_section_video from "@/assets/videos/hero_section_video.mp4";
-// import hero_section_videoWebm from "@/assets/videos/hero_section_video.webm";
+import React, { useEffect } from "react";
+import hero_section_video from "@/assets/videos/hero_section_video.mp4";
+import hero_section_videoWebm from "@/assets/videos/hero_section_video.webm";
+import hero_section_poster from "@/assets/images/hero_section_video_poster.webp";
 import Button from "@/components/common/Button";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => {
+  useEffect(() => {
+    const img = new Image();
+    img.src = hero_section_poster;
+  }, []);
   return (
     <div
       className="relative overflow-hidden"
@@ -17,11 +22,11 @@ const HeroSection = () => {
         loop
         muted
         playsInline
-        preload="auto"
+        poster={hero_section_poster}
         className="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover"
       >
-        <source src="/hero_section_video.webm" type="video/webm" />
-        <source src="/hero_section_video.mp4" type="video/mp4" />
+        <source src={hero_section_videoWebm} type="video/webm" />
+        <source src={hero_section_video} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
