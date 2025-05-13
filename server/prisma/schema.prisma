@@ -19,7 +19,8 @@ model User {
   role       String                         // 직무 (예: 백엔드, 프론트엔드)
   career     Int                            // 경력 (연차)
   createdAt  DateTime @default(now())       // 생성일 (기본값으로 현재 시간)
-  interviews Interview[]                    // 사용자가 생성한 여러 면접 기록
+  interviews Interview[]                    // 사용자가 생성한 여러 면접 기록(관계설정)
+  questions  Question[]                     // 사용자는 여러 질문 목록을 가진다(관계설정)
 }
 
 // 면접 모델: 면접 정보 관리
@@ -38,22 +39,25 @@ model Interview {
   jobScore         Int      // 직무 점수
   jobEval          String   // 직무 평가
   createdAt      DateTime @default(now())    // 면접 생성일 (기본값 현재 시간)
-  bookmarked     Boolean
+  bookmarked     Boolean  // 인터뷰 즐겨찾기
 }
 
 
 // 질문 모델: 면접에서 사용될 질문 정보
 model Question {
   id             String   @id @default(cuid())  // 질문 고유 ID (문자열, 자동 생성)
+  userId         String   // 면접을 진행한 사용자 ID (User 모델의 외래 키)
+  user           User     @relation(fields: [userId], references: [id]) // User 모델과 연결된 관계
   interviewId    String  // 해당 질문이 속한 면접의 ID (Interview 모델의 외래 키)
   interview      Interview @relation(fields: [interviewId], references: [id])  // 면접과의 관계 설정
   order          Int  // 면접 내에서 질문의 순서
+  // role           String   // 직무 (예: 백엔드, 프론트엔드) - Interview에 있음
   type           QuestionType  // 질문 유형 (인성 or 직무)
   content        String   // 질문 내용
   myAnswer       String   // 사용자의 답변
   videoUrl       String?  // 답변하는 영상의 URL (옵셔널)
   recommended    String   // 추천 답변
-  bookmarked     Boolean
+  bookmarked     Boolean  // 질문 즐겨찾기
 }
 
 // 질문 유형(enum): 인성 또는 직무 질문 구분
