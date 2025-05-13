@@ -1,18 +1,19 @@
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
-import React from "react";
+import { React, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useRoleStore } from "@/store/store";
-import { useEffect } from "react";
 import Arrow from "@/assets/images/arrow.svg";
-const inputWrapStyle = "mb-3 md:mb-5";
 import { AnimatePresence, motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+
+const inputWrapStyle = "mb-3 md:mb-5";
+const errorStyle = "p-2 text-red-400";
 
 const SignupForm = () => {
   const [careerModal, setCareerModal] = useState(false);
-  const [selected, setSelected] = useState("");
+  const [experienceSelected, setExperienceSelected] = useState("");
   const [career, setCareer] = useState("");
   const [verification, setVerification] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false); // 이용 약관 토글
@@ -27,9 +28,44 @@ const SignupForm = () => {
 
   const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
 
+  const {
+    register, // onChange 등의 이벤트 객체 생성
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm();
+
+  const password = useRef();
+  password.current = watch("password");
+
   // 회원가입
-  const handleSignup = (e) => {
-    e.preventDefault();
+  const handleSignup = (data) => {
+    if (!career) {
+      setError("career", { message: "직무를 선택해 주세요." });
+      return;
+    }
+
+    if (!experienceSelected) {
+      setError("experience", { message: "경력을 선택해 주세요." });
+      return;
+    }
+
+    if (!serviceAgreement || !personalAgreement) {
+      setError("agreements", { message: "필수 약관에 모두 동의해 주세요." });
+
+      if (!termsOpen) {
+        setTermsOpen(true);
+      }
+
+      return;
+    }
+
+    console.log("회원가입 정보", data);
+
+    // 폼 제출 처리
     navigate("/");
   };
 
@@ -45,7 +81,8 @@ const SignupForm = () => {
 
   // 경력 선택
   const handleExperienceSelect = (e) => {
-    setSelected(e.target.value);
+    setExperienceSelected(e.target.value);
+    clearErrors("experience");
   };
 
   // 이용 약관 토글
@@ -100,8 +137,17 @@ const SignupForm = () => {
   //  직무 선택 값
   useEffect(() => {
     setCareer(roleValue);
+    setValue("career", roleValue);
+    clearErrors("career");
     setCareerModal(false);
-  }, [roleValue]);
+  }, [clearErrors, roleValue, setValue]);
+
+  // 필수 약관 동의 했을 때 에러 제거
+  useEffect(() => {
+    if (serviceAgreement && personalAgreement) {
+      clearErrors("agreements");
+    }
+  }, [serviceAgreement, personalAgreement, clearErrors]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center">
@@ -111,44 +157,54 @@ const SignupForm = () => {
       </div>
       <div className="mx-auto my-0 w-[70vw] md:w-[480px]">
         <div>
-          <form onSubmit={handleSignup}>
-            <p className={inputWrapStyle}>
+          <form onSubmit={handleSubmit(handleSignup)}>
+            <div className={inputWrapStyle}>
               <Input
-                autoComplete="name"
-                type="text"
-                name="name"
-                // value={name}
-                // onChange={(e) => setName(e.target.value)}
-                required
+                {...register("name", {
+                  required: "이름을 입력해 주세요.",
+                  minLength: {
+                    value: 2,
+                    message: "이름은 최소 2자 이상 작성해 주세요.",
+                  },
+                })}
                 placeholder="이름을 입력해 주세요."
                 labelClassName="text-sm md:text-base"
               >
                 이름
               </Input>
-            </p>
-            <p className={`${inputWrapStyle} flex items-end justify-between`}>
-              <Input
-                autoComplete="email"
-                type="email"
-                name="email"
-                // value={email}
-                // onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="example@example.com"
-                labelClassName="text-sm md:text-base w-3/4"
-              >
-                이메일
-              </Input>
-              <Button
-                onClick={handleVerification}
-                shape="bar"
-                className={
-                  "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
-                }
-              >
-                {verification ? "인증확인" : "인증요청"}
-              </Button>
-            </p>
+              {errors.name && (
+                <p className={errorStyle}>{errors.name.message}</p>
+              )}
+            </div>
+            <div className={inputWrapStyle}>
+              <div className="flex items-end justify-between">
+                <Input
+                  {...register("email", {
+                    required: "이메일을 입력해 주세요.",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "이메일 형식이 올바르지 않습니다.",
+                    },
+                  })}
+                  placeholder="example@example.com"
+                  labelClassName="text-sm md:text-base w-3/4"
+                >
+                  이메일
+                </Input>
+                <Button
+                  onClick={handleVerification}
+                  shape="bar"
+                  className={
+                    "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
+                  }
+                >
+                  {verification ? "인증확인" : "인증요청"}
+                </Button>
+              </div>
+              {errors.email && (
+                <p className={errorStyle}>{errors.email.message}</p>
+              )}
+            </div>
 
             <AnimatePresence>
               {verification && (
@@ -160,47 +216,62 @@ const SignupForm = () => {
                   className="overflow-hidden"
                 >
                   <Input
+                    {...register("emailCode", {
+                      required: "인증 번호를 입력해 주세요.",
+                    })}
                     placeholder="인증 번호를 입력해 주세요."
-                    required
                     labelClassName="text-sm md:text-base flex-3 mb-3 md:mb-5"
                   >
                     인증 번호
                   </Input>
+                  {errors.emailCode && (
+                    <p className={errorStyle}>{errors.emailCode.message}</p>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <p className={inputWrapStyle}>
+            <div className={inputWrapStyle}>
               <Input
                 type="password"
-                name="password"
-                // value={password}
-                // onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                maxLength={12}
-                placeholder="영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
+                {...register("password", {
+                  required: "비밀번호를 입력해 주세요.",
+                  pattern: {
+                    value:
+                      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+=-]).{8,12}$/,
+                    message:
+                      "영문, 숫자, 특수문자를 조합하여 8~12자의 비밀번호를 입력해 주세요.",
+                  },
+                })}
+                placeholder="영문, 숫자, 특수문자를 조합하여 8~12자의 비밀번호를 입력해 주세요."
                 labelClassName="text-sm md:text-base"
                 inputClassName="text-xs md:text-sm"
               >
                 비밀번호
               </Input>
-            </p>
-            <p className={inputWrapStyle}>
+              {errors.password && (
+                <p className={errorStyle}>{errors.password.message}</p>
+              )}
+            </div>
+            <div className={inputWrapStyle}>
               <Input
                 type="password"
-                name="passwordCheck"
-                // value={passwordCheck}
-                // onChange={(e) => setPasswordCheck(e.target.value)}
-                required
-                minLength={8}
-                maxLength={12}
-                placeholder="비밀번호를 입력해 주세요."
+                {...register("passwordCheck", {
+                  required: "비밀번호를 입력해 주세요.",
+                  validate: (value) => value === password.current,
+                })}
+                placeholder="비밀번호를 한 번 더 입력해 주세요."
                 labelClassName="text-sm md:text-base"
               >
                 비밀번호 확인
               </Input>
-            </p>
+              {errors?.passwordCheck?.type === "required" && (
+                <p className={errorStyle}>{errors.passwordCheck.message}</p>
+              )}
+              {errors?.passwordCheck?.type === "validate" && (
+                <p className={errorStyle}>비밀번호가 일치하지 않습니다.</p>
+              )}
+            </div>
             <div className={inputWrapStyle}>
               <Input
                 type="button"
@@ -213,6 +284,17 @@ const SignupForm = () => {
               >
                 직무
               </Input>
+              <input
+                type="hidden"
+                {...register("career", {
+                  required: "직무를 선택해 주세요.",
+                  validate: (value) => value !== "" || "직무를 선택해 주세요.",
+                })}
+                value={career || ""}
+              />
+              {errors.career && (
+                <p className={errorStyle}>{errors.career.message}</p>
+              )}
               {careerModal && (
                 <CareerSelectModal
                   isOpen={careerModal}
@@ -224,10 +306,11 @@ const SignupForm = () => {
               <label className="text-zik-text mb-2 block text-sm font-bold md:text-base">
                 경력
                 <select
+                  {...register("experience", {
+                    required: "경력을 선택해주세요.",
+                  })}
+                  value={experienceSelected}
                   onChange={handleExperienceSelect}
-                  name="experience"
-                  value={selected}
-                  required
                   className="border-zik-border text-zik-text placeholder:text-zik-border min-h-[46px] w-full cursor-pointer appearance-none truncate rounded-[10px] border px-3 pr-3 text-sm font-medium focus:outline-0"
                 >
                   <option value="" disabled>
@@ -240,6 +323,9 @@ const SignupForm = () => {
                   ))}
                 </select>
               </label>
+              {errors.experience && (
+                <p className={errorStyle}>{errors.experience.message}</p>
+              )}
             </div>
 
             {/* 이용 약관 */}
@@ -322,6 +408,9 @@ const SignupForm = () => {
                         <span className="cursor-pointer">자세히</span>
                       </div>
                     </div>
+                    {errors.agreements && (
+                      <p className={errorStyle}>{errors.agreements.message}</p>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
