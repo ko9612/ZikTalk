@@ -1,9 +1,13 @@
 import Button from "@/components/common/Button";
+import Modal from "@/components/common/Modal/Modal";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import { useState } from "react";
 
 // 페이지 나눌 때 잘림 현상 해결해야 됨
 const PdfDownload = ({ rootElementId, fileName }) => {
+  const [isOpenModal, setIsOpenModal] = useState(false);
+
   const downloadPdfDocument = async () => {
     const input = document.getElementById(rootElementId);
     if (!input) {
@@ -71,16 +75,50 @@ const PdfDownload = ({ rootElementId, fileName }) => {
       console.error("다운로드 중 오류 발생:", error);
       alert("다운로드 실패");
     } finally {
-      // 추후 모달창으로 변경
-      alert("다운로드 성공");
+      setIsOpenModal(!isOpenModal);
       document.body.removeChild(hiddenDiv);
     }
   };
 
   return (
-    <Button className={"mt-7 w-[300px]"} onClick={downloadPdfDocument}>
-      PDF 저장
-    </Button>
+    <>
+      <Button className={"mt-7 w-[300px]"} onClick={downloadPdfDocument}>
+        PDF 저장
+      </Button>
+      {isOpenModal && (
+        <Modal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)}>
+          <div className="flex flex-col items-center justify-center gap-4 pr-7 pl-7">
+            <i className="border-zik-main/50 flex h-14 w-14 items-center justify-center rounded-full border-2">
+              <svg
+                width="50"
+                height="50"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 50 50"
+              >
+                <polyline
+                  className="stroke-draw-check"
+                  stroke="oklch(0.63 0.2032 281.04)"
+                  points="14,27 22,34 36,16"
+                  strokeWidth="5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </i>
+            <div className="text-zik-text text-lg sm:text-xl">
+              PDF 다운로드가 완료되었습니다.
+            </div>
+            <Button
+              shape="bar"
+              className={"w-full"}
+              onClick={() => setIsOpenModal(false)}
+            >
+              닫기
+            </Button>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 };
 
