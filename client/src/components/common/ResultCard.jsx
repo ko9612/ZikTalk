@@ -37,7 +37,6 @@ export const ResultCard = ({
             selected={selected}
             handleSelectToggle={handleSelectToggle}
             handleBookmarkToggle={handleBookmarkToggle}
-            starredItems={starredItems}
           />
         </div>
         <div className="my-2 flex w-full flex-1 flex-row items-center justify-end pr-4">
@@ -81,7 +80,6 @@ export const ResultCard = ({
               selected={selected}
               handleSelectToggle={handleSelectToggle}
               handleBookmarkToggle={handleBookmarkToggle}
-              starredItems={starredItems}
               isBackside={true}
             />
           </div>
@@ -116,7 +114,6 @@ export const ActionButton = ({
   selected,
   handleSelectToggle,
   handleBookmarkToggle,
-  starredItems,
   isBackside = false,
 }) => {
   if (isDeleteMode) {
@@ -147,7 +144,7 @@ export const ActionButton = ({
     >
       <FaStar
         className={`h-5 w-5 transition-all duration-200 ease-in-out ${
-          starredItems.includes(String(item.id))
+          item.bookmarked
             ? "text-zik-main scale-110"
             : "hover:text-zik-main/80 text-zik-text/10"
         }`}

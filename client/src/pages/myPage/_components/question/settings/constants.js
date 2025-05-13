@@ -21,5 +21,9 @@ export const ACTIONS = {
   TOGGLE_DELETE_MODE: 'toggle_delete_mode',
   CLEAR_SELECTED: 'clear_selected',
   RESET_PAGINATION: 'reset_pagination',
-  DELETE_ITEMS: 'delete_items'
+  DELETE_ITEMS: 'delete_items',
+  MARK_AS_DELETED: 'mark_as_deleted',
+  SET_RESULTS: 'set_results',
+  SET_ERROR: 'set_error',
+  SET_TOTAL_COUNT: 'set_total_count'
 }; 
