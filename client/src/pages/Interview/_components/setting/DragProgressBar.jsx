@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useInterviewRatioStore } from "@/store/interviewSetupStore";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const DragProgressBar = () => {
   const [isDragging, setIsDragging] = useState(false);
   const progressBarRef = useRef(null);
-  const { ratio, setRatio } = useInterviewRatioStore();
+  const { ratio, setRatio } = useInterviewStore();
   const [leftValue, setLeftValue] = useState(100 - ratio);
 
   // 드래그 핸들러

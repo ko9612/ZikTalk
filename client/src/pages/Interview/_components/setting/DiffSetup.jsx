@@ -7,7 +7,7 @@ import starEmpty from "@/assets/images/star-empty.svg";
 import Button from "@/components/common/Button";
 import clsx from "clsx";
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
-import { useInterviewLevelStore } from "@/store/interviewSetupStore";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const levels = [
   {
@@ -41,7 +41,7 @@ const DiffSetup = () => {
   const { navigateTo } = useSetupNavigationStore((state) => state);
 
   // 상태 불러오기
-  const { level, setLevel } = useInterviewLevelStore();
+  const { level, setLevel } = useInterviewStore();
 
   useEffect(() => {
     setTabSelect("설정");

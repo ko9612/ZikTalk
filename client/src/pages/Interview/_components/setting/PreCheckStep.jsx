@@ -8,7 +8,7 @@ import Minus from "@/assets/images/minus.svg";
 import Plus from "@/assets/images/plus.svg";
 
 import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
-import { useInterviewQCountStore } from "@/store/interviewSetupStore";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const listWrap =
   "flex flex-1 min-w-0 flex-row justify-start gap-4 md:flex-col items-center md:justify-start";
@@ -40,7 +40,7 @@ const PreCheckStep = () => {
     setTabSelect("모의 면접");
   };
 
-  const { qCount, setQCount } = useInterviewQCountStore();
+  const { qCount, setQCount } = useInterviewStore();
 
   const decrease = () => {
     if (qCount > 1) setQCount(qCount - 1);

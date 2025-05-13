@@ -8,14 +8,25 @@ import {
   useSetupNavigationStore,
   useRoleStore,
 } from "@/store/store";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const RoleSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
   const { navigateTo } = useSetupNavigationStore((state) => state);
 
+  const { career, setCareer } = useInterviewStore(); // ✅ zustand 통합 store 사용
+  const roleValue = useRoleStore((state) => state.roleValue);
+  const [careerModal, setCareerModal] = useState(false);
+
   useEffect(() => {
     setTabSelect("설정");
   }, []);
+
+  useEffect(() => {
+    if (roleValue) {
+      setCareer(roleValue);
+    }
+  }, [roleValue, setCareer]);
 
   const handlePrevious = () => {
     navigateTo("DiffSetup");
@@ -26,27 +37,14 @@ const RoleSetup = () => {
     setTabSelect("사전 체크");
   };
 
-  const [careerModal, setCareerModal] = useState(false);
-  const [selected, setSelected] = useState("");
-  const [career, setCareer] = useState("");
-  const roleValue = useRoleStore((state) => state.roleValue);
-
-  // 직무 선택 모달창
   const careerModalHandler = () => {
     setCareerModal(!careerModal);
   };
 
-  //  직무 선택 값
-  useEffect(() => {
-    setCareer(roleValue);
+  const handleCareerSelect = (selectedCareer) => {
+    setCareer(selectedCareer);
     setCareerModal(false);
-  }, [roleValue]);
-
-  // const [isOpenModal, setIsOpenModal] = useState(false);
-
-  // const modalHandler = () => {
-  //   setIsOpenModal(!isOpenModal);
-  // };
+  };
 
   return (
     <div
@@ -67,27 +65,16 @@ const RoleSetup = () => {
         onClick={careerModalHandler}
         required
         value={career || "직군 · 직무를 선택하세요"}
-      ></Input>
+      />
+
       {careerModal && (
-        <CareerSelectModal isOpen={careerModal} onClose={careerModalHandler} />
+        <CareerSelectModal
+          isOpen={careerModal}
+          onClose={careerModalHandler}
+          onSelect={handleCareerSelect} // ✅ 선택 이벤트 연결
+        />
       )}
-      {/* <div
-        className="border-zik-border text-zik-border w-[37.5rem] cursor-pointer rounded-lg border px-4 py-3"
-        onClick={modalHandler}
-      >
-        직군 · 직무를 선택하세요
-      </div>
-      {isOpenModal && (
-        <CareerSelectModal isOpen={isOpenModal} onClose={modalHandler} />
-      )} */}
-      {/* <div className="mt-5 flex gap-15">
-        <Button color="gray" onClick={handlePrevious}>
-          이전
-        </Button>
-        <Button onClick={handleNext}>다음</Button>
-      </div> */}
-      {/* <div class="relative bottom-0 mt-5 flex justify-center gap-15 2xl:!absolute 2xl:!bottom-10"> */}
-      {/* <div class="absolute bottom-16 flex justify-center gap-15"> */}
+
       <div className="absolute bottom-10 flex justify-center gap-15">
         <Button color="gray" onClick={handlePrevious}>
           이전

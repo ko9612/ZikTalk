@@ -1,22 +1,27 @@
 import { create } from "zustand";
 
-// 인터뷰 질문 난이도 상태 관리
-export const useInterviewLevelStore = create((set) => ({
+import { useRoleStore } from "@/store/store";
+
+export const useInterviewStore = create((set) => ({
   level: "신입",
-  setLevel: (str) => set({ level: str }),
-  resetLevel: () => set({ level: "신입" }),
-}));
+  setLevel: (level) => set({ level }),
 
-// 인터뷰 직무 인성 중 직무 비율
-export const useInterviewRatioStore = create((set) => ({
   ratio: 70,
-  setRatio: (number) => set({ ratio: number }),
-  resetRatio: () => set({ ratio: 70 }),
-}));
+  setRatio: (ratio) => set({ ratio }),
 
-// 인터뷰 질문 개수 상태 관리
-export const useInterviewQCountStore = create((set) => ({
+  career: null,
+  setCareer: (career) => set({ career }),
+
   qCount: 10,
-  setQCount: (number) => set({ qCount: number }),
-  resetQCount: () => set({ qCount: 10 }),
+  setQCount: (qCount) => set({ qCount }),
+
+  resetAll: () => {
+    set({
+      level: "신입",
+      ratio: 70,
+      career: null,
+      qCount: 10,
+    });
+    useRoleStore.getState().setRoleValue(null);
+  },
 }));
