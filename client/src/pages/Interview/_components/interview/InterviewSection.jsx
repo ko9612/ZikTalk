@@ -8,6 +8,7 @@ import {
   useLoadingStateStore,
   useReplyingStore,
 } from "@/store/store";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -39,6 +40,8 @@ const InterviewSection = () => {
       setIsReplying(false);
     };
   }, [setTabSelect, setIsLoading, setInterviewState]);
+
+  const { level, ratio, career, qCount } = useInterviewStore();
 
   return (
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
