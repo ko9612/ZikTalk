@@ -10,10 +10,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
-import { getTextConverter } from "@/api/interviewApi";
+// import { getTextConverter } from "@/api/interviewApi";
 
-const Timer = () => {
-  const isLoading = useLoadingStateStore((state) => state.isLoading);
+const Timer = (qes) => {
+  const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
@@ -21,8 +21,8 @@ const Timer = () => {
   const [transcripts, setTranscripts] = useState([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const timerRef = useRef(null);
-  const recorderRef = useRef(null);
-  const streamRef = useRef(null);
+  // const recorderRef = useRef(null);
+  // const streamRef = useRef(null);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -40,79 +40,112 @@ const Timer = () => {
     //   streamRef.current.getTracks().forEach((track) => track.stop());
     //   streamRef.current = null;
     // }
+
+    setIsReplying(false);
+    setInterviewState("answer");
+
     // setIsReplying(false);
     // setInterviewState("answer");
   };
 
+  // useEffect(() => {
+  //   if (isReplying) {
+  //     const handleTranscription = async () => {
+  //       try {
+  //         // 마이크 입력 캡처
+  //         const stream = await navigator.mediaDevices.getUserMedia({
+  //           audio: true,
+  //         });
+  //         streamRef.current = stream;
+  //         const mediaRecorder = new MediaRecorder(stream);
+  //         recorderRef.current = mediaRecorder;
+
+  //         mediaRecorder.ondataavailable = async (event) => {
+  //           try {
+  //             const transcript = await getTextConverter(event.data);
+  //             setTranscripts((prev) => [...prev, transcript]);
+  //           } catch (error) {
+  //             console.error("Transcription Error:", error);
+  //           }
+  //         };
+
+  //         mediaRecorder.start();
+
+  //         setTimeout(() => {
+  //           stopRecording();
+  //         }, 120000);
+  //       } catch (error) {
+  //         console.error("Mic Error:", error);
+  //         alert("마이크 접근에 실패했습니다.");
+  //       }
+  //     };
+
+  //     handleTranscription();
+  //   }
+
+  //   return () => {
+  //     stopRecording();
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   if (timerRef.current) {
+  //     clearInterval(timerRef.current);
+  //   }
+
+  //   const initialTime = isReplying ? 120 : 30;
+  //   setTimeLeft(initialTime);
+
+  //   timerRef.current = setInterval(() => {
+  //     setTimeLeft((prev) => {
+  //       if (prev <= 1) {
+  //         clearInterval(timerRef.current);
+  //         stopRecording();
+  //         return 0;
+  //       }
+  //       return prev - 1;
+  //     });
+  //   }, 1000);
+
+  //   return () => {
+  //     if (timerRef.current) clearInterval(timerRef.current);
+  //   };
+  // }, [isReplying]);
+
   useEffect(() => {
-    if (isReplying) {
-      const handleTranscription = async () => {
-        try {
-          // 마이크 입력 캡처
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          streamRef.current = stream;
-          const mediaRecorder = new MediaRecorder(stream);
-          recorderRef.current = mediaRecorder;
-
-          mediaRecorder.ondataavailable = async (event) => {
-            try {
-              const transcript = await getTextConverter(event.data);
-              setTranscripts((prev) => [...prev, transcript]);
-            } catch (error) {
-              console.error("Transcription Error:", error);
-            }
-          };
-
-          mediaRecorder.start();
-
-          setTimeout(() => {
-            stopRecording();
-          }, 120000);
-        } catch (error) {
-          console.error("Mic Error:", error);
-          alert("마이크 접근에 실패했습니다.");
-        }
-      };
-
-      handleTranscription();
+    if (qes && !isLoading) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      const initialTime = isReplying ? 120 : 30;
+      setTimeLeft(initialTime);
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            setTimeout(() => {
+              buttonHandler();
+            }, 0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-
-    return () => {
-      stopRecording();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
-    const initialTime = isReplying ? 120 : 30;
-    setTimeLeft(initialTime);
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current);
-          stopRecording();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isReplying]);
+  }, [isReplying, qes]);
 
   const buttonHandler = () => {
     if (isReplying) {
       stopRecording();
     } else {
-      setIsReplying(true);
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsReplying(true);
+      }, 500);
     }
   };
 

@@ -46,6 +46,8 @@ const Answer = ({ end, text }) => {
     if (end) {
       completeHandler();
     } else {
+      setInterviewState("question");
+      // 새로운 질문 요청
     }
   };
   return (
@@ -87,7 +89,7 @@ const Answer = ({ end, text }) => {
             </p>
           </div>
           <Button onClick={buttonHanlder} color="violet">
-            {end ? "완료 하기" : "답변 제출"}
+            {end ? "완료 하기" : "다음 질문"}
           </Button>
           {showOpenModal && (
             <AnalysisStateModal

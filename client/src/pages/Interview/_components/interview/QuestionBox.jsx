@@ -15,7 +15,7 @@ const QuestionBox = ({ curNum, totalNum, qes, type }) => {
             <span>/</span>
             <span>{totalNum}</span>
           </div>
-          <span className="bg-zik-main h-7 w-14 rounded-xl text-center font-semibold text-white">
+          <span className="bg-zik-main flex h-8 w-14 items-center justify-center rounded-xl font-semibold text-white">
             {type}
           </span>
         </div>

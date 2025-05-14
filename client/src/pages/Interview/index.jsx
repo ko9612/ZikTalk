@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 // import { useLocation } from "react-router-dom";
-import { useSetupNavigationStore } from "@/store/store";
+import { useQuestionStore, useSetupNavigationStore } from "@/store/store";
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import DeviceSetup from "./_components/setting/DeviceSetup";
 import DiffSetup from "./_components/setting/DiffSetup";
@@ -11,7 +11,7 @@ import InterviewSection from "./_components/interview/InterviewSection";
 const index = () => {
   // const location = useLocation();
   const resetAll = useInterviewStore((state) => state.resetAll);
-
+  const resetInterview = useQuestionStore((state) => state.resetInterview);
   const { currentComponent, resetNavigation } = useSetupNavigationStore(
     (state) => state,
   );
@@ -27,6 +27,7 @@ const index = () => {
     return () => {
       resetNavigation();
       resetAll();
+      resetInterview();
     };
   }, [resetNavigation, resetAll]);
 

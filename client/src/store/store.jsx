@@ -41,9 +41,7 @@ export const useQuestionStore = create((set) => ({
   questions: [],
   answers: [],
   video: [],
-  skillCnt: 0,
   setCurNum: (num) => set({ curNum: num }),
-  setSkillCnt: (num) => set({ skillCnt: num }),
   addQuestion: (str) =>
     set((state) => ({
       questions: [...state.questions, str],
@@ -60,7 +58,7 @@ export const useQuestionStore = create((set) => ({
     })),
   resetInterview: () =>
     set({
-      curNum: 0,
+      curNum: 1,
       questions: [],
       answers: [],
       video: [],
