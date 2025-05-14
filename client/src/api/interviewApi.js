@@ -2,34 +2,17 @@
 import axios from "axios";
 
 // 일단 로컬로
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "http://localhost:5001/api";
 
-// gpt 첫 번째 질문 요청
-export const getInterviewQuestion = async (
-  level,
-  qCount,
-  career,
-  ratio,
-  curNum,
-  skillCnt,
-  preQuestion,
-  preAnswer,
-) => {
+// gpt 질문 요청
+export const getInterviewQuestion = async (level, qCount, career, ratio) => {
   try {
     const payload = {
       level,
       qCount,
       career,
       ratio,
-      curNum,
-      skillCnt,
     };
-
-    if (preQuestion && preAnswer) {
-      payload.preQuestion = preQuestion;
-      payload.preAnswer = preAnswer;
-    }
-
     const response = await axios.post(
       `${API_BASE_URL}/interview/gpt-question`,
       payload,

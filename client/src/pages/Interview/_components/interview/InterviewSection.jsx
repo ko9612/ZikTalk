@@ -17,52 +17,30 @@ const InterviewSection = () => {
   const { setInterviewState, interviewState } = useInterviewStateStore();
   const setIsLoading = useLoadingStateStore((state) => state.setIsLoading);
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
-  const {
-    questions,
-    answers,
-    resetInterview,
-    addQuestion,
-    curNum,
-    setCurNum,
-    skillCnt,
-    setSkillCnt,
-  } = useQuestionStore();
+  const { questions, answers, addQuestion, curNum, skillCnt } =
+    useQuestionStore();
   const { level, qCount, career, ratio } = useInterviewStore();
 
   const [question, setQuestion] = useState({
     qes: "",
-    totalNum: 0,
-    curNum: 0,
+    totalNum: qCount,
+    curNum: curNum,
   });
 
   useEffect(() => {
+    setTabSelect("모의 면접");
     const fetchFirstQuestion = async () => {
-      const preQuestion = curNum > 1 ? questions[curNum - 2] : undefined;
-      const preAnswer = curNum > 1 ? answers[curNum - 2] : undefined;
       try {
-        const data = await getInterviewQuestion(
-          level,
-          qCount,
-          career,
-          ratio,
-          curNum,
-          skillCnt,
-          preQuestion,
-          preAnswer,
-        );
-        if (data && data.question && data.type) {
+        const data = await getInterviewQuestion(level, qCount, career, ratio);
+        if (data && data[0].question && data[0].type) {
           setQuestion({
-            qes: data.question,
+            qes: data[0].question,
             totalNum: qCount,
             curNum: curNum,
-            type: data.type,
+            type: data[0].type,
           });
 
           addQuestion(data.question);
-          setCurNum(1);
-          if (data.type === "직무") {
-            setSkillCnt(skillCnt + 1);
-          }
           setIsLoading(false);
         }
       } catch (error) {
@@ -72,23 +50,13 @@ const InterviewSection = () => {
     fetchFirstQuestion();
   }, []);
 
-  useEffect(() => {
-    setTabSelect("모의 면접");
-    return () => {
-      setInterviewState("question");
-      setIsLoading(true);
-      setIsReplying(false);
-      resetInterview();
-    };
-  }, [setTabSelect, setIsLoading, setInterviewState, resetInterview]);
-
   return (
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
       <QuestionBox {...question} />
       {interviewState === "answer" ? (
         <Answer end={question.curNum === question.totalNum} text="예시 답변" />
       ) : (
-        <Timer />
+        <Timer qes={question.qes} />
       )}
     </section>
   );
