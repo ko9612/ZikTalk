@@ -10,6 +10,12 @@ router.get("/", (req, res) => {
   res.json({ message: "✅ API is working!" });
 });
 
+// 질문 라우터 연결
+router.use("/questions", questionRouter);
+
+// 마이페이지 라우터 연결
+router.use("/mypage", mypageRouter);
+
 // 면접 라우터 연결
 router.use("/interview", interviewRouter);
 
