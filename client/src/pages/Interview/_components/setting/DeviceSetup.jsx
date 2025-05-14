@@ -1,21 +1,23 @@
 import React, { useEffect } from "react";
 import Button from "@/components/common/Button";
-import { useInterviewTabStore, useSetupNavigationStore } from "@/store/store";
+import { useInterviewTabStore } from "@/store/store";
+import MediaDeviceSelector from "./MediaDeviceSelector";
 
 const xlTextWrap = "text-zik-text/75 mb-2 text-lg font-bold";
 const smTextWrap = "list-disc space-y-2 pl-5 text-sm";
 
 const DeviceSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
-  const { navigateTo } = useSetupNavigationStore((state) => state);
+  // const { navigateTo } = useSetupNavigationStore((state) => state);
 
   useEffect(() => {
     setTabSelect("설정");
   }, []);
 
-  const handleNext = () => {
-    navigateTo("DiffSetup");
-  };
+  // MediaDeviceSelector에서 처리되므로 주석 처리
+  // const handleNext = () => {
+  //   navigateTo("DiffSetup");
+  // };
 
   return (
     <div className="mx-auto flex w-full flex-col items-center justify-center py-6">
@@ -73,35 +75,7 @@ const DeviceSetup = () => {
           </div>
         </div>
 
-        {/* Right side - Camera Preview */}
-        <div className="border-zik-border relative flex w-3/7 flex-col items-center rounded-xl border p-5">
-          <div className="bg-zik-border/50 mb-4 flex aspect-square w-[80%] items-center justify-center rounded-xl">
-            <p className="text-zik-text/70 text-xl">카메라 상태</p>
-          </div>
-
-          <div className="flex w-full items-center justify-between">
-            <div className="flex w-4/6 items-center gap-3">
-              <span className="text-zik-text/75 text-xl font-bold text-nowrap">
-                마이크
-              </span>
-              <div className="border-zik-border h-12 w-full rounded-md border px-4 py-2"></div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-red-500"></div>
-              <span className="text-sm">연결실패</span>
-            </div>
-          </div>
-          <div className="absolute bottom-6 flex justify-center gap-15">
-            <Button
-              color="gray"
-              disabled
-              className="pointer-events-none cursor-default"
-            >
-              이전
-            </Button>
-            <Button onClick={handleNext}>다음</Button>
-          </div>
-        </div>
+        <MediaDeviceSelector />
       </div>
     </div>
   );
