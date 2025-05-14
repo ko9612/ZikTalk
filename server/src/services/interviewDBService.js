@@ -49,6 +49,24 @@ export const getInterviewsByUserId = async (userId) => {
 
 // 새 면접 생성
 export const createInterview = async (data) => {
+  /*
+  return await prisma.interview.create({
+    data,
+    //   : {
+    //   userId: "test", // 👉 여기에 실제 유저 ID 넣어야 함
+    //   role: "프론트엔드",
+    //   totalScore: 95,
+    //   summary: "전반적으로 매우 우수한 인터뷰",
+    //   strengths: "논리적인 설명, 기술 스택 이해도",
+    //   improvements: "협업 경험을 더 강조할 필요 있음",
+    //   personalityScore: 45,
+    //   personalityEval: "친절하고 명확하게 답변함",
+    //   jobScore: 50,
+    //   jobEval: "React, Zustand에 대한 이해가 뛰어남",
+    //   bookmarked: false,
+    // },
+  });
+  */
   const { questions, ...interviewData } = data;
 
   return await prisma.$transaction(async (tx) => {
