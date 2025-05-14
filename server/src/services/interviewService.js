@@ -17,8 +17,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// OpenAI API 키가 환경 변수에 없는 경우 기본값 설정 (테스트용)
+// 실제 사용 시에는 유효한 API 키로 교체해야 합니다
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "sk-your-api-key-here";
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 
