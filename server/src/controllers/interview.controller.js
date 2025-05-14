@@ -64,6 +64,17 @@ export const getAllInterviews = async (req, res) => {
   }
 };
 
+// 모든 면접 조회 (각 면접당 첫 번째 질문만 포함)
+export const getAllInterviewsWithFirstQuestion = async (req, res) => {
+  try {
+    const interviews = await interviewDBService.getAllInterviewsWithFirstQuestion();
+    res.status(200).json(interviews);
+  } catch (error) {
+    console.error("면접 조회 오류:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+
 // ID로 면접 조회
 export const getInterviewById = async (req, res) => {
   try {
@@ -127,6 +138,30 @@ export const deleteInterview = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error("면접 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+
+// 여러 면접 한 번에 삭제 (배치 삭제)
+export const batchDeleteInterviews = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "삭제할 면접 ID 목록이 필요합니다." });
+    }
+
+    console.log(`배치 삭제 요청: ${ids.length}개의 면접`, ids);
+    
+    const result = await interviewDBService.batchDeleteInterviews(ids);
+    
+    res.status(200).json({ 
+      message: `${result.deletedInterviews}개의 면접과 ${result.deletedQuestions}개의 질문이 삭제되었습니다.`,
+      deletedCount: result.deletedInterviews,
+      result
+    });
+  } catch (error) {
+    console.error("면접 배치 삭제 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };

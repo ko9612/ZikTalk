@@ -83,12 +83,27 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       // 정렬 로직 적용 (필터링 대신 우선순위 정렬)
       let sortedResults = [...formattedQuestions];
       
+      // 먼저 북마크 상태에 따라 정렬 (북마크된 항목이 맨 위에 오도록)
+      sortedResults.sort((a, b) => {
+        // 북마크 상태가 다르면 북마크된 것이 먼저 오도록
+        if (a.bookmarked !== b.bookmarked) {
+          return a.bookmarked ? -1 : 1;
+        }
+        // 북마크 상태가 같으면 ID 오름차순으로 정렬
+        return a.id - b.id;
+      });
+      
       // 직군·직무 필터에 따른 정렬
       if (filters.job !== "직군·직무") {
         const jobValue = filters.job.toLowerCase();
         
         // 정확한 일치, 부분 일치, 일치하지 않음 순으로 정렬
         sortedResults.sort((a, b) => {
+          // 북마크 상태가 다르면 북마크된 것이 먼저 오도록 (항상 최우선)
+          if (a.bookmarked !== b.bookmarked) {
+            return a.bookmarked ? -1 : 1;
+          }
+          
           const aCareer = (a.career || "").toLowerCase();
           const bCareer = (b.career || "").toLowerCase();
           
@@ -108,17 +123,25 @@ const QuestionBookmarkList = ({ testEmpty }) => {
           if (aPartialMatch && !bPartialMatch) return -1;
           if (!aPartialMatch && bPartialMatch) return 1;
           
-          return 0;
+          // 마지막으로 ID 오름차순
+          return a.id - b.id;
         });
       }
       
       // 질문 유형에 따른 정렬
       if (filters.questionType !== "질문유형") {
         sortedResults.sort((a, b) => {
+          // 북마크 상태가 다르면 북마크된 것이 먼저 오도록 (항상 최우선)
+          if (a.bookmarked !== b.bookmarked) {
+            return a.bookmarked ? -1 : 1;
+          }
+          
           // 정확한 일치가 우선
           if (a.type === filters.questionType && b.type !== filters.questionType) return -1;
           if (a.type !== filters.questionType && b.type === filters.questionType) return 1;
-          return 0;
+          
+          // 유형이 같으면 ID 오름차순
+          return a.id - b.id;
         });
       }
 
@@ -144,17 +167,35 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         const newBookmarkState = !targetQuestion.bookmarked;
 
         // UI 상태 업데이트 (북마크 토글)
-        setQuestions((prev) =>
-          prev.map((q) =>
+        setQuestions((prev) => {
+          const updatedQuestions = prev.map((q) =>
             q.id === clientId ? { ...q, bookmarked: newBookmarkState } : q
-          )
-        );
+          );
+          
+          // 북마크 상태에 따라 재정렬
+          return updatedQuestions.sort((a, b) => {
+            if (a.bookmarked !== b.bookmarked) {
+              return a.bookmarked ? -1 : 1;
+            }
+            // 북마크 상태가 같으면 ID 오름차순으로 정렬
+            return a.id - b.id;
+          });
+        });
         
-        setVisibleResults((prev) =>
-          prev.map((q) =>
+        setVisibleResults((prev) => {
+          const updatedResults = prev.map((q) =>
             q.id === clientId ? { ...q, bookmarked: newBookmarkState } : q
-          )
-        );
+          );
+          
+          // 북마크 상태에 따라 재정렬
+          return updatedResults.sort((a, b) => {
+            if (a.bookmarked !== b.bookmarked) {
+              return a.bookmarked ? -1 : 1;
+            }
+            // 북마크 상태가 같으면 ID 오름차순으로 정렬
+            return a.id - b.id;
+          });
+        });
 
         // 서버에 북마크 토글 요청
         try {
@@ -164,16 +205,35 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         } catch (err) {
           // 실패 시 원래 상태로 복원
           setError(`북마크 토글 실패: ${err.message || "네트워크 문제"}`);
-          setQuestions((prev) =>
-            prev.map((q) =>
+          setQuestions((prev) => {
+            const revertedQuestions = prev.map((q) =>
               q.id === clientId ? { ...q, bookmarked: !newBookmarkState } : q
-            )
-          );
-          setVisibleResults((prev) =>
-            prev.map((q) =>
+            );
+            
+            // 북마크 상태에 따라 재정렬
+            return revertedQuestions.sort((a, b) => {
+              if (a.bookmarked !== b.bookmarked) {
+                return a.bookmarked ? -1 : 1;
+              }
+              // 북마크 상태가 같으면 ID 오름차순으로 정렬
+              return a.id - b.id;
+            });
+          });
+          
+          setVisibleResults((prev) => {
+            const revertedResults = prev.map((q) =>
               q.id === clientId ? { ...q, bookmarked: !newBookmarkState } : q
-            )
-          );
+            );
+            
+            // 북마크 상태에 따라 재정렬
+            return revertedResults.sort((a, b) => {
+              if (a.bookmarked !== b.bookmarked) {
+                return a.bookmarked ? -1 : 1;
+              }
+              // 북마크 상태가 같으면 ID 오름차순으로 정렬
+              return a.id - b.id;
+            });
+          });
         }
       } catch (err) {
         setError(`북마크 토글 오류: ${err.message || "알 수 없는 오류"}`);

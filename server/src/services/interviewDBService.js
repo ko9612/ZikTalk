@@ -23,6 +23,19 @@ export const getAllInterviews = async () => {
   });
 };
 
+// 모든 면접을 조회하되, 각 면접마다 첫 번째 질문만 포함
+export const getAllInterviewsWithFirstQuestion = async () => {
+  // 모든 면접을 가져오되, 각 면접마다 첫 번째 질문만 포함
+  return await prisma.interview.findMany({
+    include: {
+      questions: {
+        take: 1,  // 각 면접당 첫 번째 질문만 가져옴
+        orderBy: { order: 'asc' }
+      }
+    }
+  });
+};
+
 // ID로 면접 조회
 export const getInterviewById = async (id) => {
   return await prisma.interview.findUnique({
@@ -124,6 +137,39 @@ export const deleteInterview = async (id) => {
     return await tx.interview.delete({
       where: { id },
     });
+  });
+};
+
+// 여러 면접 한 번에 삭제 (배치 삭제)
+export const batchDeleteInterviews = async (ids) => {
+  if (!ids || ids.length === 0) {
+    return { count: 0 };
+  }
+  
+  // 트랜잭션을 사용하여 모든 면접과 질문을 원자적으로 삭제
+  return await prisma.$transaction(async (tx) => {
+    // 1. 관련된 모든 질문 삭제
+    const deletedQuestions = await tx.question.deleteMany({
+      where: {
+        interviewId: {
+          in: ids
+        }
+      }
+    });
+    
+    // 2. 면접들 삭제
+    const deletedInterviews = await tx.interview.deleteMany({
+      where: {
+        id: {
+          in: ids
+        }
+      }
+    });
+    
+    return {
+      deletedInterviews: deletedInterviews.count,
+      deletedQuestions: deletedQuestions.count
+    };
   });
 };
 
