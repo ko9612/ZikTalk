@@ -4,16 +4,27 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading)
   const [userScrolled, setUserScrolled] = useState(false);
   const [isActionDebouncing, setIsActionDebouncing] = useState(false);
   const observer = useRef();
+  const prevDataRef = useRef([]);
+
+  // 디버깅: 상태 변경 시 로깅
+  useEffect(() => {
+    console.log(`[DEBUG] InfiniteScroll 상태 변경: hasMore=${hasMore}, loading=${loading}, userScrolled=${userScrolled}`);
+  }, [hasMore, loading, userScrolled]);
 
   const lastElementRef = useCallback(
     (node) => {
-      if (loading || !userScrolled) return;
+      // hasMore가 false면 더 이상 관찰하지 않음
+      if (loading || !userScrolled || !hasMore) {
+        console.log('[DEBUG] InfiniteScroll: 관찰 중단 - 로딩 중이거나 스크롤 안했거나 더 이상 데이터 없음');
+        return;
+      }
 
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasMore && userScrolled && !isActionDebouncing) {
+            console.log('[DEBUG] InfiniteScroll: 마지막 요소 감지됨, 추가 데이터 로드 시작');
             if (setLoading) setLoading(true);
             setTimeout(() => {
               loadMoreResults();
@@ -27,7 +38,10 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading)
         }
       );
 
-      if (node) observer.current.observe(node);
+      if (node) {
+        console.log('[DEBUG] InfiniteScroll: 새 마지막 요소 관찰 시작');
+        observer.current.observe(node);
+      }
     },
     [loading, hasMore, userScrolled, setLoading, isActionDebouncing]
   );
@@ -60,12 +74,19 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading)
   }, [userScrolled]);
 
   useEffect(() => {
+    // hasMore가 false면 스크롤 이벤트를 등록하지 않음
+    if (!hasMore) {
+      console.log('[DEBUG] InfiniteScroll: 더 이상 데이터가 없어 스크롤 이벤트 등록하지 않음');
+      return;
+    }
+
     let prevScrollY = window.scrollY;
     let scrolledDown = false;
     let scrollTimeout;
 
     const handleScroll = () => {
       if (isActionDebouncing) return; // 액션 디바운싱 중이면 스크롤 이벤트 무시
+      if (!hasMore) return; // 더 이상 데이터가 없으면 스크롤 이벤트 무시
       
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
@@ -82,20 +103,23 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading)
           !loading &&
           hasMore
         ) {
+          console.log('[DEBUG] InfiniteScroll: 스크롤 하단 감지, 추가 데이터 로드 시작');
           if (setLoading) setLoading(true);
           setTimeout(() => {
             loadMoreResults();
-          });
+          }, 200); // 더 짧은 시간으로 조정
         }
       }, 100);
     };
 
+    console.log('[DEBUG] InfiniteScroll: 스크롤 이벤트 리스너 등록');
     window.addEventListener("scroll", handleScroll);
     return () => {
+      console.log('[DEBUG] InfiniteScroll: 스크롤 이벤트 리스너 제거');
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, [loading, hasMore, userScrolled, setLoading, isActionDebouncing]);
+  }, [loading, hasMore, userScrolled, setLoading, isActionDebouncing, loadMoreResults]);
 
   return { lastElementRef, userScrolled, setUserScrolled, debounceScrollAction };
 }; 

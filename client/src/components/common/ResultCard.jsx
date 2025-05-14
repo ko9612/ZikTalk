@@ -35,8 +35,8 @@ export const ResultCard = ({
       }}
     >
       {/* 카드 앞면 */}
-      <div className="front relative">
-        <div className="bg-zik-main/10 flex flex-col rounded-xl p-4 shadow-lg">
+      <div className="front relative h-48">
+        <div className="bg-zik-main/10 flex h-full flex-col rounded-xl p-4 shadow-lg">
           <div className="mb-2 flex w-full items-start justify-between">
             <h3 className="text-zik-text w-4/5 truncate text-base font-semibold sm:text-lg">
               {item.title || "제목 없음"}
@@ -79,7 +79,7 @@ export const ResultCard = ({
       </div>
 
       {/* 카드 뒷면 */}
-      <div className="back absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-xl bg-[#B4B1FE] p-4 [backface-visibility:hidden]">
+      <div className="back absolute inset-0 h-48 w-full [transform:rotateY(180deg)] rounded-xl bg-[#B4B1FE] p-4 [backface-visibility:hidden]">
         <div className="flex h-full flex-col justify-between text-left text-[13px]">
           <div>
             <div className="mb-2 flex w-full items-start justify-between">
@@ -97,9 +97,11 @@ export const ResultCard = ({
             </div>
 
             {/* ✅ 첫 번째 질문만 출력 */}
-            <div className="pt-3 text-[14px] leading-tight text-white">
+            <div className="h-16 pt-3 text-[14px] leading-tight text-white overflow-hidden">
               {questions?.length > 0 ? (
-                <div>Q. {questions[0].content}</div>
+                <div className="line-clamp-3 overflow-ellipsis break-words whitespace-normal">
+                  {item.summary ? item.summary : questions[0].content}
+                </div>
               ) : (
                 <div className="text-white/70">질문 없음</div>
               )}
