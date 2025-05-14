@@ -79,7 +79,9 @@ const RoleSetup = () => {
         <Button color="gray" onClick={handlePrevious}>
           이전
         </Button>
-        <Button onClick={handleNext}>다음</Button>
+        <Button onClick={handleNext} disabled={!career}>
+          다음
+        </Button>
       </div>
     </div>
   );

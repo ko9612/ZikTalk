@@ -12,7 +12,7 @@ export const useInterviewStore = create((set) => ({
   career: null,
   setCareer: (career) => set({ career }),
 
-  qCount: 10,
+  qCount: 5,
   setQCount: (qCount) => set({ qCount }),
 
   resetAll: () => {
@@ -20,7 +20,7 @@ export const useInterviewStore = create((set) => ({
       level: "신입",
       ratio: 70,
       career: null,
-      qCount: 10,
+      qCount: 5,
     });
     useRoleStore.getState().setRoleValue(null);
   },
