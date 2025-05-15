@@ -4,7 +4,7 @@ import { careerData } from "@/data/carrerData";
 import Button from "@/components/common/Button";
 import { useRoleStore } from "@/store/store";
 
-const CareerSelectModal = ({ isOpen, onClose }) => {
+const CareerSelectModal = ({ isOpen, onClose, onSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const setRoleValue = useRoleStore((state) => state.setRoleValue);
@@ -23,6 +23,12 @@ const CareerSelectModal = ({ isOpen, onClose }) => {
 
   const selectHandler = () => {
     setRoleValue(selectedRole);
+    
+    // onSelect 함수가 전달된 경우 호출하여 선택된 직무를 부모 컴포넌트로 전달
+    if (typeof onSelect === 'function' && selectedRole) {
+      onSelect(selectedRole);
+    }
+    
     onClose(false);
   };
 

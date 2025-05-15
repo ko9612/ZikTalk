@@ -165,30 +165,36 @@ const QuestionList = () => {
     [navigate, visibleResults],
   );
 
+  // 삭제 모드 토글 핸들러
+  const handleDeleteModeToggle = useCallback(() => {
+    toggleDeleteMode();
+  }, [toggleDeleteMode]);
+
   // 항목 삭제 핸들러
   const handleDeleteItems = useCallback(() => {
-    if (isDeleteMode) {
-      // 선택된 항목 수 확인
-      const selectedCount = Object.values(selected).filter(Boolean).length;
+    // 선택된 항목 수 확인
+    const selectedCount = Object.values(selected).filter(Boolean).length;
 
-      if (selectedCount === 0) {
-        alert("삭제할 항목을 선택해주세요.");
-        return;
-      }
-
-      // 사용자 확인 요청
-      if (
-        window.confirm(
-          `선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
-        )
-      ) {
-        markAsDeleted(selected);
-        alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`);
-      }
-    } else {
-      toggleDeleteMode();
+    if (selectedCount === 0) {
+      alert("삭제할 항목을 선택해주세요.");
+      return;
     }
-  }, [isDeleteMode, markAsDeleted, selected, toggleDeleteMode]);
+
+    // 사용자 확인 요청
+    if (
+      window.confirm(
+        `선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
+      )
+    ) {
+      // UI 반응성을 유지하기 위해 즉시 처리 시작 메시지 표시
+      setTimeout(() => {
+        markAsDeleted(selected);
+        setTimeout(() => {
+          alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`);
+        }, 100);
+      }, 0);
+    }
+  }, [markAsDeleted, selected, toggleDeleteMode]);
 
   // 컴포넌트 마운트 시 최초 1회만 데이터 로드
   useEffect(() => {
@@ -222,7 +228,8 @@ const QuestionList = () => {
           filterValue={filters.type}
           onFilterChange={handleFilterChange}
           isDeleteMode={isDeleteMode}
-          onDeleteToggle={handleDeleteItems}
+          onDeleteToggle={handleDeleteModeToggle}  // 삭제 모드 토글 (취소 버튼)
+          onDeleteConfirm={handleDeleteItems}  // 삭제 확인 (확인 버튼)
         />
       )}
 

@@ -2,13 +2,53 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// 모든 질문 조회
-export const getAllQuestions = async () => {
-  return await prisma.question.findMany({
+// 모든 질문 조회 (사용자 ID 기준)
+export const getAllQuestions = async (userId = null, pagination = {}, filters = {}) => {
+  const { page = 1, pageSize = 10 } = pagination;
+  const { sortBy = 'date', bookmarked = false } = filters;
+  
+  // 기본 쿼리 조건
+  const where = {};
+  
+  // 특정 사용자의 질문만 조회 (userId가 제공된 경우)
+  if (userId) {
+    where.userId = userId;
+  }
+  
+  // 북마크 필터가 적용된 경우
+  if (bookmarked) {
+    where.bookmarked = true;
+  }
+  
+  // 정렬 방식 설정
+  const orderBy = {};
+  if (sortBy === 'date') {
+    orderBy.createdAt = 'desc'; // 최신순
+  } else if (sortBy === 'title') {
+    orderBy.content = 'asc'; // 제목순
+  }
+  
+  // 질문 조회
+  const questions = await prisma.question.findMany({
+    where,
+    orderBy,
     include: {
       interview: true
-    }
+    },
+    skip: (page - 1) * pageSize,
+    take: parseInt(pageSize)
   });
+  
+  // 전체 질문 개수 조회 (페이지네이션 정보 제공용)
+  const totalCount = await prisma.question.count({ where });
+  
+  return {
+    questions,
+    totalCount,
+    page: parseInt(page),
+    pageSize: parseInt(pageSize),
+    totalPages: Math.ceil(totalCount / pageSize)
+  };
 };
 
 // ID로 질문 조회
@@ -83,9 +123,16 @@ export const getQuestionsByType = async (type) => {
 };
 
 // 북마크된 질문 조회
-export const getBookmarkedQuestions = async () => {
+export const getBookmarkedQuestions = async (userId = null) => {
+  const where = { bookmarked: true };
+  
+  // 특정 사용자의 북마크만 조회 (userId가 제공된 경우)
+  if (userId) {
+    where.userId = userId;
+  }
+  
   return await prisma.question.findMany({
-    where: { bookmarked: true },
+    where,
     include: {
       interview: true
     }
