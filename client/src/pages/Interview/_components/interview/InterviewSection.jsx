@@ -11,13 +11,21 @@ import {
 } from "@/store/store";
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
+import cuid from "cuid";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
   const { setInterviewState, interviewState } = useInterviewStateStore();
   const setIsLoading = useLoadingStateStore((state) => state.setIsLoading);
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
-  const { questions, addQuestion, curNum, resetInterview } = useQuestionStore();
+  const {
+    questions,
+    addQuestion,
+    curNum,
+    resetInterview,
+    setInterviewId,
+    interviewId,
+  } = useQuestionStore();
   const { level, qCount, career, ratio } = useInterviewStore();
 
   const [question, setQuestion] = useState({
@@ -28,6 +36,7 @@ const InterviewSection = () => {
 
   useEffect(() => {
     setTabSelect("모의 면접");
+    setInterviewId(cuid());
     const fetchFirstQuestion = async () => {
       try {
         const data = await getInterviewQuestion(level, qCount, career, ratio);
@@ -47,7 +56,6 @@ const InterviewSection = () => {
       }
     };
     fetchFirstQuestion();
-
     return () => {
       setInterviewState("question");
       setIsReplying(false);
@@ -65,6 +73,7 @@ const InterviewSection = () => {
         curNum: curNum,
         type: questions[curNum - 1].type,
       });
+      console.log(level, qCount, career, ratio, interviewId);
       setTimeout(() => setIsLoading(false), 500);
     }
   }, [curNum]);
