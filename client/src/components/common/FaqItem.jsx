@@ -3,6 +3,7 @@ import { FaStar } from "react-icons/fa";
 
 const FaqItem = ({
   id,
+  displayId, // 추가: 화면에 표시할 ID
   career,
   type,
   question,
@@ -38,6 +39,9 @@ const FaqItem = ({
     }
   };
 
+  // displayId가 제공되면 그것을 사용하고, 아니면 원래 id를 사용
+  const displayNumber = displayId !== undefined ? displayId : id;
+  console.log("FaqItem props:", { id, displayId, career, type });
   return (
     <div className="mb-4">
       <div
@@ -96,7 +100,7 @@ const FaqItem = ({
             <span
               className={`text-zik-text text-xs font-bold sm:text-sm ${isExpanded ? `${textColors.accent} font-medium` : ""}`}
             >
-              {id}
+              {displayNumber}
             </span>
             {career && (
               <div

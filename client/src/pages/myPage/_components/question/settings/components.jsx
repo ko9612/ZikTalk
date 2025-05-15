@@ -14,7 +14,7 @@ export const Header = React.memo(({ showDescription = true }) => (
     </h2>
     {showDescription && (
       <div
-        className={`mb-8 text-center text-sm ${TEXT_COLORS.description} sm:text-base`}
+        className={`mb-3 text-center text-sm ${TEXT_COLORS.description} sm:text-base`}
       >
         응시한 모의면접 결과를 한눈에 확인하고,
         <br className="hidden md:block" />
@@ -64,7 +64,7 @@ export const ResultGrid = React.memo(
     handleBookmarkToggle,
     handleCardClick,
   }) => (
-    <div className="grid min-h-[360px] grid-cols-1 gap-4 pt-2 sm:grid-cols-2 sm:gap-6 sm:pt-4 lg:grid-cols-3">
+    <div className="grid min-h-[500px] grid-cols-1 sm:grid-cols-2 sm:gap-6 sm:pt-4.5 lg:grid-cols-3">
       {visibleResults.map((item, idx) => (
         <div
           key={item.id}

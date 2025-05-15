@@ -1,4 +1,4 @@
-export const PAGE_SIZE = 10; // 페이지네이션에 표시할 항목 수
+export const PAGE_SIZE = 6; // 페이지네이션에 표시할 항목 수
 
 export const GRID_TEMPLATE = "34px 118px 60px 1fr 80px";
 

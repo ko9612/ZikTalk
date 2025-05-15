@@ -178,3 +178,4 @@ export const myPageApi = async () => {
     return { error: err.message };
   }
 };
+export { API_URL };
