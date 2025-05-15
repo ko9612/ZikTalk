@@ -133,12 +133,16 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       const startIndex = (page - 1) * PAGE_SIZE;
       const endIndex = startIndex + PAGE_SIZE;
 
-      // 현재 페이지에 표시될 아이템 (displayIndex는 원래 id를 그대로 사용)
+      // 현재 페이지에 표시될 아이템
       const pageItems = filteredData.slice(startIndex, endIndex);
-      const itemsWithDisplayIndex = pageItems.map((item) => ({
-        ...item,
-        displayIndex: item.id, // 원래 id를 그대로 표시 번호로 사용
-      }));
+
+      // 페이지 내에서 순차적인 인덱스를 생성하여 표시 (1부터 시작)
+      const itemsWithDisplayIndex = pageItems.map((item, index) => {
+        const displayIndex = startIndex + index + 1; // 페이지 시작 인덱스 + 현재 인덱스 + 1 (1부터 시작하도록)
+        const result = { ...item, displayIndex };
+        console.log("변환된 항목:", result);
+        return result;
+      });
 
       setVisibleResults(itemsWithDisplayIndex);
       setLoading(false);
@@ -242,24 +246,32 @@ const QuestionBookmarkList = ({ testEmpty }) => {
               <LoadingIndicator />
             ) : (
               <div className="min-h-[350px] p-2">
-                {visibleResults.map((item) => (
-                  <div key={item.id}>
-                    <FaqItem
-                      id={item.id}
-                      displayId={item.displayIndex} // 원래 ID를 표시 번호로 사용
-                      career={item.career}
-                      type={item.type}
-                      question={item.question}
-                      answer={item.answer}
-                      recommendation={item.recommendation}
-                      isExpanded={openIds.includes(item.id)}
-                      onToggle={() => toggleOpen(item.id)}
-                      isStarred={item.bookmarked}
-                      onStarToggle={() => handleBookmarkToggle(item.id)}
-                      textColors={TEXT_COLORS}
-                    />
-                  </div>
-                ))}
+                {visibleResults.map((item) => {
+                  console.log(
+                    "렌더링 항목:",
+                    item.id,
+                    "displayId:",
+                    item.displayIndex,
+                  );
+                  return (
+                    <div key={item.id}>
+                      <FaqItem
+                        id={item.id}
+                        displayId={item.displayIndex}
+                        career={item.career}
+                        type={item.type}
+                        question={item.question}
+                        answer={item.answer}
+                        recommendation={item.recommendation}
+                        isExpanded={openIds.includes(item.id)}
+                        onToggle={() => toggleOpen(item.id)}
+                        isStarred={item.bookmarked}
+                        onStarToggle={() => handleBookmarkToggle(item.id)}
+                        textColors={TEXT_COLORS}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
 
