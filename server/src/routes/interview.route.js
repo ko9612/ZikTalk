@@ -6,10 +6,7 @@
 import express from "express";
 import * as interviewController from "../controllers/interview.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
-import {
-  createInterviewQuestion,
-  convertToText,
-} from "../controllers/interview.controller.js";
+import { createInterviewQuestion } from "../controllers/interview.controller.js";
 
 const router = express.Router();
 
@@ -19,7 +16,10 @@ const router = express.Router();
 router.get("/", interviewController.getAllInterviews);
 
 // 면접 첫번째 질문만 포함하여 조회
-router.get("/with-first-question", interviewController.getAllInterviewsWithFirstQuestion);
+router.get(
+  "/with-first-question",
+  interviewController.getAllInterviewsWithFirstQuestion
+);
 
 // 여러 면접 한 번에 삭제 (배치 삭제)
 router.post("/batch-delete", interviewController.batchDeleteInterviews);
@@ -29,7 +29,6 @@ router.get("/user/:userId", interviewController.getInterviewsByUserId);
 
 // API 엔드포인트들
 router.post("/gpt-question", createInterviewQuestion);
-router.post("/daglo", convertToText);
 
 // 새 면접 생성
 router.post("/", interviewController.createInterview);

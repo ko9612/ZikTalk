@@ -17,9 +17,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// OpenAI API 키가 환경 변수에 없는 경우 기본값 설정 (테스트용)
-// 실제 사용 시에는 유효한 API 키로 교체해야 합니다
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "sk-your-api-key-here";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -69,35 +67,5 @@ export const generateQuestion = async (level, qCount, career, ratio) => {
       if (attempt === 3) throw error;
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
-  }
-};
-
-export const dagloTextConverter = async (audioBlob) => {
-  try {
-    const { DagloAPI } = await import(
-      "https://actionpower.github.io/dagloapi-js-beta/lib/daglo-api.module.js"
-    );
-    const client = new DagloAPI({
-      apiToken: process.env.DAGLO_API_KEY,
-    });
-
-    const transcriber = client.stream.transcriber();
-
-    const transcript = await new Promise((resolve, reject) => {
-      transcriber.on("transcript", (data) => {
-        resolve(data.text);
-      });
-
-      transcriber.on("error", (err) => {
-        reject(err);
-      });
-
-      transcriber.connect(audioBlob);
-    });
-    console.log(transcript);
-    return transcript;
-  } catch (error) {
-    console.error("Daglo API Error:", error);
-    throw new Error("음성 변환 실패");
   }
 };

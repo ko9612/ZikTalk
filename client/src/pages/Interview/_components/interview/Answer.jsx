@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Button from "@/components/common/Button";
 import { MdOutlineReplay } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import PencilIcon from "@/assets/images/pencil.svg";
 import {
   useInterviewStateStore,
@@ -12,37 +11,44 @@ import {
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
-const Answer = ({ end, text }) => {
+const Answer = ({ end, text, init }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
-  const { isLoading, setIsLoading } = useLoadingStateStore();
-  const curNum = useQuestionStore((state) => state.curNum);
-  const setCurNum = useQuestionStore((state) => state.setCurNum);
-  const addAnswer = useQuestionStore((state) => state.addAnswer);
-  const [answer, setAnswer] = useState(text);
+  const { curNum, interviewId, setCurNum, addAnswer, addVideo } =
+    useQuestionStore();
+  const [answer, setAnswer] = useState("");
   const [showOpenModal, setShowOpenModal] = useState(false);
 
-  // 임시
   useEffect(() => {
-    setIsLoading(true);
+    setAnswer(text);
+
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
+      if (!text) {
+        setAnswer(
+          "음성인식 실패, 다시 말하기 버튼을 클릭하여 다시 시도해주시거나, 직접 답변을 입력해주세요.",
+        );
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [text]);
 
   // 임시
   const reReply = () => {
+    init();
+    setAnswer("");
     setIsReplying(true);
     setInterviewState("question");
   };
 
   const buttonHanlder = () => {
+    const copyCurNum = curNum;
     addAnswer(answer);
+    addVideo(`${interviewId}_${copyCurNum}.webm`);
+    init();
+    setAnswer("");
     if (end) {
       setShowOpenModal(true);
     } else {
@@ -56,7 +62,7 @@ const Answer = ({ end, text }) => {
       <div className="flex w-full flex-col gap-8">
         <div>
           <div className="text-zik-main text-2xl font-bold">내 답변</div>
-          {isLoading ? (
+          {!answer ? (
             <div className="border-zik-main/50 mt-2 flex h-40 w-full items-center rounded-3xl rounded-br-none border-3 px-10">
               <LoadingIcon />
             </div>
