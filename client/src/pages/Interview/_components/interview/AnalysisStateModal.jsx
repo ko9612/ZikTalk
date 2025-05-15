@@ -1,8 +1,8 @@
 // 분석 관련 모달
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import AnalysisCompleteIcon from "./AnalysisCompleteIcon";
-import MainLogo from "@/assets/images/logo.webp";
+import MainLogo from "@/assets/images/logo.svg";
 import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import Button from "@/components/common/Button";
@@ -15,6 +15,8 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   useEffect(() => {
     const img = new Image();
     img.src = MainLogo;
+
+    // gpt 피드백 요청 -> 받은 데이터 백엔드로
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);

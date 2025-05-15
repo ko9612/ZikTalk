@@ -21,6 +21,9 @@ const Timer = (qes) => {
   const [transcripts, setTranscripts] = useState([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const timerRef = useRef(null);
+  const percentage = (timeLeft / (isReplying ? 120 : 30)) * 100;
+  const [resetKey, setResetKey] = useState(0);
+  const smoothValue = useSmoothValue(percentage, 0.02, resetKey);
   // const recorderRef = useRef(null);
   // const streamRef = useRef(null);
 
@@ -46,6 +49,18 @@ const Timer = (qes) => {
 
     // setIsReplying(false);
     // setInterviewState("answer");
+  };
+
+  const buttonHandler = () => {
+    if (isReplying) {
+      stopRecording();
+    } else {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsReplying(true);
+      }, 500);
+    }
   };
 
   // useEffect(() => {
@@ -137,25 +152,9 @@ const Timer = (qes) => {
     };
   }, [isReplying, qes]);
 
-  const buttonHandler = () => {
-    if (isReplying) {
-      stopRecording();
-    } else {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setIsReplying(true);
-      }, 500);
-    }
-  };
-
-  const percentage = (timeLeft / (isReplying ? 120 : 30)) * 100;
-  const [resetKey, setResetKey] = useState(0);
   useEffect(() => {
     setResetKey((prev) => prev + 1);
   }, [isReplying]);
-
-  const smoothValue = useSmoothValue(percentage, 0.02, resetKey);
 
   return (
     <div className="relative flex flex-col items-center justify-center">

@@ -21,7 +21,8 @@ const prisma = new PrismaClient();
 // 아래는 예시 코드 (gpt)
 export const createInterviewQuestion = async (req, res) => {
   try {
-    const question = await generateQuestion();
+    const { level, qCount, career, ratio } = req.body;
+    const question = await generateQuestion(level, qCount, career, ratio);
     res.json(question);
   } catch (error) {
     res.status(500).json({ message: "질문 생성 실패" });
