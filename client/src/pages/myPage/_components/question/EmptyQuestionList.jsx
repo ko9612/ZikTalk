@@ -8,7 +8,7 @@ const EmptyQuestionList = () => {
   return (
     <div className="mx-auto w-full max-w-5xl py-4">
       <div
-        className={`mt-20 flex flex-col items-center gap-2 sm:mt-20 sm:gap-5 md:mt-28 md:gap-5 lg:mt-33 ${TEXT_COLORS.normal}`}
+        className={`mt-20 flex min-h-[340px] flex-col items-center gap-2 sm:mt-20 sm:gap-5 md:mt-28 md:gap-5 lg:mt-33 ${TEXT_COLORS.normal}`}
       >
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
           <IoDocumentTextSharp className="text-5xl" />

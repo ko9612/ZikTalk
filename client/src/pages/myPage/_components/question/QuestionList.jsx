@@ -33,24 +33,37 @@ const QuestionList = () => {
     markAsDeleted,
   } = useQuestionListState();
 
-  const { page, visibleResults, hasMore, loading, selected, isDeleteMode, error } = state;
+  const {
+    page,
+    visibleResults,
+    hasMore,
+    loading,
+    selected,
+    isDeleteMode,
+    error,
+  } = state;
 
   // 로컬 스토리지에서 숨겨진 항목 제거
   useEffect(() => {
-    localStorage.removeItem('hiddenQuestions');
-    console.log('숨겨진 항목이 모두 제거되었습니다.');
+    localStorage.removeItem("hiddenQuestions");
+    console.log("숨겨진 항목이 모두 제거되었습니다.");
   }, []);
 
   // 추가 데이터 로드 함수
   const loadMoreResults = useCallback(() => {
     if (loading || !hasMore) {
-      console.log('[DEBUG] 추가 데이터 로드 취소 - loading:', loading, 'hasMore:', hasMore);
+      console.log(
+        "[DEBUG] 추가 데이터 로드 취소 - loading:",
+        loading,
+        "hasMore:",
+        hasMore,
+      );
       return;
     }
-    
-    console.log('[DEBUG] 추가 데이터 로드 시작');
+
+    console.log("[DEBUG] 추가 데이터 로드 시작");
     setLoading(true);
-    
+
     // 현재 필터가 초기값이 아니라면 초기화
     if (filters.type !== "최신순") {
       updateFilter("type", "최신순");
@@ -60,10 +73,18 @@ const QuestionList = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    
+
     // 필터가 이미 최신순이면 다음 페이지 데이터 로드
     fetchQuestions(page + 1, filters.type);
-  }, [page, filters.type, fetchQuestions, setLoading, loading, hasMore, updateFilter]);
+  }, [
+    page,
+    filters.type,
+    fetchQuestions,
+    setLoading,
+    loading,
+    hasMore,
+    updateFilter,
+  ]);
 
   // 무한 스크롤 훅 사용
   const {
@@ -77,7 +98,7 @@ const QuestionList = () => {
   const handleFilterChange = useCallback(
     (type) => {
       if (type === filters.type) return;
-      
+
       updateFilter("type", type);
       setUserScrolled(false);
       // 필터 변경 시 첫 페이지부터 다시 로드
@@ -101,26 +122,29 @@ const QuestionList = () => {
         e.preventDefault();
         e.stopPropagation();
       }
-      
+
       // 디버깅 로그
       console.log("[DEBUG] 북마크 토글 시작:", id);
-      const item = visibleResults.find(item => item.id === id);
+      const item = visibleResults.find((item) => item.id === id);
       console.log("[DEBUG] 토글할 항목:", item);
       console.log("[DEBUG] 현재 북마크 상태:", item?.bookmarked);
       console.log("[DEBUG] 항목 원본 ID:", item?.originalId);
-      
+
       // API를 통해 서버 상태만 업데이트
       toggleQuestionBookmark(id)
-        .then(result => {
+        .then((result) => {
           console.log("[DEBUG] 북마크 토글 성공:", result);
           // 업데이트된 visibleResults 확인
-          const updatedItem = visibleResults.find(item => item.id === id);
+          const updatedItem = visibleResults.find((item) => item.id === id);
           console.log("[DEBUG] 토글 후 항목:", updatedItem);
         })
         .catch((err) => {
           // 실패 시 에러 처리
           console.error("[DEBUG] 북마크 토글 실패:", err);
-          console.error("[DEBUG] 상세 에러 정보:", err.response ? err.response.data : err.message);
+          console.error(
+            "[DEBUG] 상세 에러 정보:",
+            err.response ? err.response.data : err.message,
+          );
         });
     },
     [toggleQuestionBookmark, visibleResults],
@@ -130,8 +154,8 @@ const QuestionList = () => {
   const handleCardClick = useCallback(
     (id) => {
       // 원본 ID가 있는 항목 찾기
-      const item = visibleResults.find(item => item.id === id);
-      
+      const item = visibleResults.find((item) => item.id === id);
+
       if (item && item.interviewId) {
         navigate(`/interview-result/${item.interviewId}`);
       } else {
@@ -146,14 +170,18 @@ const QuestionList = () => {
     if (isDeleteMode) {
       // 선택된 항목 수 확인
       const selectedCount = Object.values(selected).filter(Boolean).length;
-      
+
       if (selectedCount === 0) {
         alert("삭제할 항목을 선택해주세요.");
         return;
       }
-      
+
       // 사용자 확인 요청
-      if (window.confirm(`선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+      if (
+        window.confirm(
+          `선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
+        )
+      ) {
         markAsDeleted(selected);
         alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`);
       }
@@ -165,7 +193,7 @@ const QuestionList = () => {
   // 컴포넌트 마운트 시 최초 1회만 데이터 로드
   useEffect(() => {
     if (!initialDataLoaded) {
-      console.log('[DEBUG] 초기 데이터 로드 시작 - 필터:', filters.type);
+      console.log("[DEBUG] 초기 데이터 로드 시작 - 필터:", filters.type);
       fetchQuestions(0, filters.type);
       setInitialDataLoaded(true);
     }
@@ -186,7 +214,7 @@ const QuestionList = () => {
   }, [isDeleteMode, toggleDeleteMode]);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-2 pt-6 sm:px-4">
+    <div className="max-w-9xl mx-auto w-full px-2 pt-6 sm:px-3">
       <Header showDescription={visibleResults.length > 0} />
 
       {visibleResults.length > 0 && (
@@ -225,8 +253,7 @@ const QuestionList = () => {
           {/* 스크롤 공간 유지를 위한 빈 영역 */}
           {!hasMore && !loading && visibleResults.length > 0 && (
             <div className="scroll-spacer my-10 h-2 w-full">
-              <div className="flex items-center justify-center my-10  w-full text-zik-text/60 text-sm">
-              </div>
+              <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm"></div>
             </div>
           )}
         </>
