@@ -27,20 +27,16 @@ export const getInterviewQuestion = async (level, qCount, career, ratio) => {
   }
 };
 
-// 음성인식 후, text 변환
-export const getTextConverter = async (audioBlob) => {
+// 동영상 파일 업로드
+export const postVideo = async (blob, filename) => {
   try {
     const formData = new FormData();
-    formData.append("audioBlob", audioBlob);
+    formData.append("file", blob, filename);
 
-    const response = await axios.post(`${API_BASE_URL}/daglo`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    await axios.post("http://localhost:5001/api/record/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data.transcript;
   } catch (error) {
-    console.error("Daglo API Error:", error);
-    throw new Error("음성 변환 실패");
+    console.error(error);
   }
 };

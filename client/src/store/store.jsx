@@ -37,10 +37,12 @@ export const useRoleStore = create((set) => ({
 }));
 
 export const useQuestionStore = create((set) => ({
+  interviewId: null,
   curNum: 1,
   questions: [],
   answers: [],
   video: [],
+  setInterviewId: (str) => set({ interviewId: str }),
   setCurNum: (num) => set({ curNum: num }),
   addQuestion: (str) =>
     set((state) => ({
@@ -58,6 +60,7 @@ export const useQuestionStore = create((set) => ({
     })),
   resetInterview: () =>
     set({
+      interviewid: null,
       curNum: 1,
       questions: [],
       answers: [],
