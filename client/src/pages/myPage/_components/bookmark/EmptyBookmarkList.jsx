@@ -13,7 +13,7 @@ const EmptyBookmarkList = ({ job, setJob, type, setType }) => {
       <TableHeader />
 
       <div
-        className={`flex flex-col items-center ${TEXT_COLORS.description} mt-10 min-h-[400px]`}
+        className={`flex flex-col items-center ${TEXT_COLORS.description} mt-10 min-h-[340px]`}
       >
         <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
           <FiSearch className={`text-5xl ${TEXT_COLORS.description}`} />

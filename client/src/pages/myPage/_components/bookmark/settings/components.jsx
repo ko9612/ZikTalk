@@ -33,7 +33,7 @@ export const TableHeader = () => (
   >
     <div className="text-start">No</div>
     <div className="pl-6 text-start">직무</div>
-    <div className="pl-4.5 text-center">유형</div>
+    <div className="pl-3 text-center">유형</div>
     <div className="pl-6 text-left">질문</div>
     <div className="flex justify-center">즐겨찾기</div>
   </div>
@@ -44,4 +44,3 @@ export const LoadingIndicator = () => (
     <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-indigo-500"></div>
   </div>
 );
-
