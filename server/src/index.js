@@ -6,12 +6,24 @@ import cors from "cors";
 dotenv.config();
 const app = express();
 
+// 모든 요청을 로깅하는 미들웨어
+app.use((req, res, next) => {
+  console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('요청 헤더:', req.headers);
+  if (req.method !== 'GET') {
+    console.log('요청 바디:', req.body);
+  }
+  next();
+});
+
 app.use(express.json());
 
-const corsOption = {
-  origin: ["http://localhost:5173"],
+const corsOptions = {
+  origin: ["http://localhost:5173", "http://localhost:5174"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true
 };
-app.use(cors(corsOption));
+app.use(cors(corsOptions));
 
 app.use("/api", rootRouter); // /api/mypage/...
 

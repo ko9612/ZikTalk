@@ -23,7 +23,9 @@ export const ResultCard = ({
 
   return (
     <div
-      className="relative cursor-pointer rounded-md shadow-xl transition-normal duration-1000 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]"
+      className={`relative cursor-pointer rounded-md shadow-xl transition-normal duration-1000 [transform-style:preserve-3d] ${
+        isDeleteMode ? "" : "group-hover:[transform:rotateY(180deg)]"
+      }`}
       onClick={(e) => {
         if (isDeleteMode) {
           e.preventDefault();

@@ -57,7 +57,9 @@ export const createInterview = async (req, res) => {
 // 모든 면접 조회
 export const getAllInterviews = async (req, res) => {
   try {
-    const interviews = await interviewDBService.getAllInterviews();
+    // 현재 로그인된 사용자 ID 또는 test ID 사용
+    const userId = req.user?.id || 'test';
+    const interviews = await interviewDBService.getAllInterviews(userId);
     res.status(200).json(interviews);
   } catch (error) {
     console.error("면접 조회 오류:", error);
@@ -68,8 +70,35 @@ export const getAllInterviews = async (req, res) => {
 // 모든 면접 조회 (각 면접당 첫 번째 질문만 포함)
 export const getAllInterviewsWithFirstQuestion = async (req, res) => {
   try {
-    const interviews = await interviewDBService.getAllInterviewsWithFirstQuestion();
-    res.status(200).json(interviews);
+    // 현재 로그인된 사용자 ID 또는 test ID 사용
+    const userId = req.user?.id || 'test';
+    
+    // 쿼리 파라미터에서 필터와 페이지네이션 정보 추출
+    const { page, pageSize, sortBy, bookmarked } = req.query;
+    
+    // 페이지네이션 설정
+    const pagination = {
+      page: page ? parseInt(page) : 1,
+      pageSize: pageSize ? parseInt(pageSize) : 6
+    };
+    
+    // 필터 설정
+    const filters = {
+      sortBy: sortBy || 'date',
+      bookmarked: bookmarked === 'true'
+    };
+    
+    console.log(`면접 조회 API 호출됨. 사용자 ID: ${userId}, 페이지: ${pagination.page}, 필터:`, filters);
+    
+    // 서비스에 사용자 ID, 페이지네이션, 필터 정보 전달
+    const result = await interviewDBService.getAllInterviewsWithFirstQuestion(
+      userId,
+      pagination,
+      filters
+    );
+    
+    // 기존 API와의 호환성을 위해 interviews 배열만 반환
+    res.status(200).json(result.interviews);
   } catch (error) {
     console.error("면접 조회 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });

@@ -148,9 +148,36 @@ export const fetchUserInfo = async () => {
 // 사용자 정보 업데이트
 export const updateUserInfo = async (userData) => {
   try {
-    const response = await axios.patch(`${API_URL}/mypage/user`, userData);
+    console.log('[클라이언트] 사용자 정보 업데이트 요청 시작');
+    console.log('[클라이언트] 요청 데이터:', userData);
+    console.log('[클라이언트] API 엔드포인트:', `${API_URL}/mypage/user/update`);
+    console.log('[클라이언트] HTTP 메서드: POST');
+    
+    // 요청 옵션 명시적 설정
+    const options = {
+      method: 'POST',
+      url: `${API_URL}/mypage/user/update`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: userData
+    };
+    
+    console.log('[클라이언트] Axios 요청 옵션:', options);
+    
+    // API 요청 전송 (axios 인스턴스 생성)
+    const response = await axios(options);
+    
+    console.log('[클라이언트] 응답 상태 코드:', response.status);
+    console.log('[클라이언트] 응답 데이터:', response.data);
+    
     return response.data;
   } catch (err) {
+    console.error('[클라이언트] 사용자 정보 업데이트 오류:');
+    console.error('- 에러 객체:', err);
+    console.error('- 응답 상태:', err.response?.status);
+    console.error('- 응답 데이터:', err.response?.data);
+    console.error('- 에러 메시지:', err.message);
     throw err;
   }
 };

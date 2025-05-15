@@ -498,8 +498,12 @@ export function useQuestionListState(props) {
   }, []);
 
   const toggleDeleteMode = useCallback(() => {
+    // 삭제 모드가 현재 활성화되어 있으면, 비활성화될 때 선택 상태 초기화
+    if (state.isDeleteMode) {
+      dispatch({ type: ACTIONS.CLEAR_SELECTED });
+    }
     dispatch({ type: ACTIONS.TOGGLE_DELETE_MODE });
-  }, []);
+  }, [state.isDeleteMode]);
 
   const deleteSelectedItems = useCallback(() => {
     dispatch({ type: ACTIONS.DELETE_ITEMS });
@@ -509,8 +513,6 @@ export function useQuestionListState(props) {
   const markAsDeleted = useCallback(
     async (selectedItems) => {
       try {
-        dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-
         // 선택된 항목의 ID 배열 추출
         const itemsToDelete = Object.keys(selectedItems)
           .filter((id) => selectedItems[id])
@@ -518,29 +520,7 @@ export function useQuestionListState(props) {
 
         if (itemsToDelete.length === 0) return;
 
-        // 선택된 항목들의 originalId(면접 ID) 배열 생성
-        const interviewIdsToDelete = [];
-
-        for (const id of itemsToDelete) {
-          const item = state.results.find((q) => q.id === id);
-          if (item && item.interviewId) {
-            interviewIdsToDelete.push(item.interviewId);
-          }
-        }
-
-        console.log("[DEBUG] 삭제할 면접 ID 목록:", interviewIdsToDelete);
-
-        if (interviewIdsToDelete.length > 0) {
-          // 서버에 배치 삭제 요청
-          try {
-            const result = await batchDeleteInterviews(interviewIdsToDelete);
-            console.log("[DEBUG] 배치 삭제 결과:", result);
-          } catch (error) {
-            console.error("[ERROR] 면접 배치 삭제 실패:", error);
-          }
-        }
-
-        // UI에서 항목 제거
+        // UI 먼저 업데이트하여 사용자 경험 개선
         const updatedVisibleResults = state.visibleResults.filter(
           (item) => !itemsToDelete.includes(item.id),
         );
@@ -549,7 +529,7 @@ export function useQuestionListState(props) {
           (item) => !itemsToDelete.includes(item.id),
         );
 
-        // 상태 업데이트
+        // 상태 업데이트 (UI 먼저 반영)
         dispatch({ type: ACTIONS.SET_RESULTS, payload: updatedResults });
         dispatch({
           type: ACTIONS.SET_VISIBLE_RESULTS,
@@ -561,14 +541,37 @@ export function useQuestionListState(props) {
 
         // 삭제 모드 종료
         dispatch({ type: ACTIONS.TOGGLE_DELETE_MODE });
+
+        // 선택된 항목들의 originalId(면접 ID) 배열 생성
+        const interviewIdsToDelete = [];
+
+        for (const id of itemsToDelete) {
+          const item = state.results.find((q) => q.id === id);
+          if (item && item.interviewId) {
+            interviewIdsToDelete.push(item.interviewId);
+          }
+        }
+
+        // UI 업데이트 후 백그라운드에서 서버 요청 처리
+        if (interviewIdsToDelete.length > 0) {
+          // 로딩 상태 업데이트 없이 백그라운드에서 처리
+          try {
+            await batchDeleteInterviews(interviewIdsToDelete);
+          } catch (error) {
+            console.error("[ERROR] 면접 배치 삭제 실패:", error);
+            // 실패해도 UI는 이미 업데이트되어 있으므로 사용자 경험에 영향 없음
+            dispatch({
+              type: ACTIONS.SET_ERROR,
+              payload: "일부 항목이 서버에서 완전히 삭제되지 않았을 수 있습니다.",
+            });
+          }
+        }
       } catch (error) {
         console.error("[ERROR] 항목 삭제 중 오류:", error);
         dispatch({
           type: ACTIONS.SET_ERROR,
           payload: "항목 삭제 중 오류가 발생했습니다.",
         });
-      } finally {
-        dispatch({ type: ACTIONS.SET_LOADING, payload: false });
       }
     },
     [state.visibleResults, state.results],

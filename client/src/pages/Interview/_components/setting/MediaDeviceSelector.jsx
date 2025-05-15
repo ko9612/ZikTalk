@@ -292,7 +292,10 @@ const MediaDeviceSelector = () => {
             마이크
           </span>
           <select
-            className="border-zik-border h-12 w-full rounded-md border px-4 py-2"
+            className={`border-zik-border bg- h-12 w-full appearance-none truncate rounded-md border px-4 py-2 ${
+              hasMicAccess &&
+              "bg-[url('@/assets/images/IoIosArrowDown.svg')] bg-size-[20px] bg-position-[220px] bg-no-repeat pr-5"
+            } `}
             value={selectedMicId ?? ""}
             onChange={(e) => setMicId(e.target.value)}
             disabled={mics.length === 0} // 마이크 없을 시 비활성화
