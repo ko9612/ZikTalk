@@ -17,8 +17,7 @@ const InterviewSection = () => {
   const { setInterviewState, interviewState } = useInterviewStateStore();
   const setIsLoading = useLoadingStateStore((state) => state.setIsLoading);
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
-  const { questions, answers, addQuestion, curNum, skillCnt } =
-    useQuestionStore();
+  const { questions, addQuestion, curNum, resetInterview } = useQuestionStore();
   const { level, qCount, career, ratio } = useInterviewStore();
 
   const [question, setQuestion] = useState({
@@ -40,15 +39,35 @@ const InterviewSection = () => {
             type: data[0].type,
           });
 
-          addQuestion(data.question);
+          data.forEach((item) => addQuestion(item));
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Failed to fetch first question:", error);
+        console.error(error);
       }
     };
     fetchFirstQuestion();
+
+    return () => {
+      setInterviewState("question");
+      setIsReplying(false);
+      setIsLoading(true);
+      resetInterview();
+    };
   }, []);
+
+  useEffect(() => {
+    if (curNum > 1) {
+      setIsLoading(true);
+      setQuestion({
+        qes: questions[curNum - 1].question,
+        totalNum: qCount,
+        curNum: curNum,
+        type: questions[curNum - 1].type,
+      });
+      setTimeout(() => setIsLoading(false), 500);
+    }
+  }, [curNum]);
 
   return (
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
