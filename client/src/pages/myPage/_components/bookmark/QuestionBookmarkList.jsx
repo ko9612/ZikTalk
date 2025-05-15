@@ -49,16 +49,18 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       const formattedQuestions = Array.isArray(response.data.questions)
-        ? response.data.questions.map((q) => ({
-            id: q.id, // 실제 ID는 유지
-            career: q.interview?.role || "미분류",
-            type: q.type === "JOB" ? "직무" : "인성",
-            question: q.content,
-            answer: q.myAnswer,
-            recommendation: q.recommended,
-            bookmarked: q.bookmarked || false,
-            interviewId: q.interviewId,
-          }))
+        ? response.data.questions
+            .map((q) => ({
+              id: q.id, // 실제 ID는 유지
+              career: q.interview?.role || "미분류",
+              type: q.type === "JOB" ? "직무" : "인성",
+              question: q.content,
+              answer: q.myAnswer,
+              recommendation: q.recommended,
+              bookmarked: q.bookmarked || false,
+              interviewId: q.interviewId,
+            }))
+            .filter((q) => q.bookmarked)
         : [];
 
       setQuestions(formattedQuestions);
