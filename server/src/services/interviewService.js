@@ -26,55 +26,49 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
-export const generateQuestion = async (
-  level,
-  qCount,
-  career,
-  ratio,
-  curNum,
-  preQuestion,
-  preAnswer,
-  skillCnt
-) => {
-  const skillCount = Math.floor(qCount * (ratio / 100));
+export const generateQuestion = async (level, qCount, career, ratio) => {
+  const skillCount = Math.round(qCount * (ratio / 100));
   const personalityCount = qCount - skillCount;
-  const remainingSkillQuestions = skillCount - skillCnt;
-  const currentStage = curNum === 1 ? "시작" : "진행 중";
-  const prompt = "";
-  const prompt1 = `
-  "${career}" 직무면접 준비를 위한 "${level}" 수준의 면접 질문을 생성한다. **질문은 무조건 1개만 제시한다.**
+  const prompt = `
+  "${career}" 직무면접 준비를 위한 "${level}" 수준의 면접 질문을 생성한다.
   - 총 질문 수: ${qCount}개 (인성 질문 ${personalityCount}개, 직무 질문 ${skillCount}개)
-  - 현재 질문 번호: ${curNum} / ${qCount} (${currentStage})
-  - 남은 직무 질문: ${remainingSkillQuestions}개
-  - 남은 인성 질문: ${qCount - curNum - remainingSkillQuestions}개
   - 질문 유형: 직무 또는 인성
   - 직무 질문(hard skill):지원자의 직무 능력, 기술적 이해도, 문제 해결 능력을 평가하기 위한 질문
   - 인성 질문 (soft skill):지원자의 성향, 커뮤니케이션 능력, 팀워크, 문제 해결 방식을 평가하기 위한 질문
   - 무조건 경력에 적합한 질문이어야 함
   - 질문 외 다른 문장은 포함하지 말 것
-  - **질문은 무조건 1개만 제시한다.*
-  ${
-    preQuestion && preAnswer
-      ? `- 이전 질문: "${preQuestion}"
-    - 이전 질문에 대한 답변: "${preAnswer}" => 이 답변에 대한 꼬리질문은 이어가도 좋고, 새로운 질문이어도 좋다. (꼬리질문 확률: 30%, 새로운 질문 확률: 70%)`
-      : ""
-  }
+  - 반환 형식은 아래와 값으며, 배열에 담아서 반환한다. 특정 키에 배열을 넣은 객체 형태가 아닌, 오직 배열만 반환한다. -> [{...},{...},{...}]
   - 반환 형식 (JSON):
     {
+      "number": 1,
       "type": "직무 또는 인성",
       "question": "질문 내용"
-    }
+    },
+    {
+      "number": 2,
+      "type": "직무 또는 인성",
+      "question": "질문 내용"
+    },
+    ...
+    {
+      "number": 5,
+      "type": "직무 또는 인성",
+      "question": "질문 내용"
+    },
   `;
-  try {
-    const res = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      store: true,
-      messages: [{ role: "user", content: prompt }],
-    });
-    console.log(res);
-    return res;
-  } catch (error) {
-    throw new Error("첫 질문 생성 실패");
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        store: true,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return res;
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error);
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
   }
 };
 

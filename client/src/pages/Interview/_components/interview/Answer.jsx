@@ -6,18 +6,21 @@ import PencilIcon from "@/assets/images/pencil.svg";
 import {
   useInterviewStateStore,
   useLoadingStateStore,
+  useQuestionStore,
   useReplyingStore,
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
 const Answer = ({ end, text }) => {
-  const navigate = useNavigate();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
   const { isLoading, setIsLoading } = useLoadingStateStore();
+  const curNum = useQuestionStore((state) => state.curNum);
+  const setCurNum = useQuestionStore((state) => state.setCurNum);
+  const addAnswer = useQuestionStore((state) => state.addAnswer);
   const [answer, setAnswer] = useState(text);
   const [showOpenModal, setShowOpenModal] = useState(false);
 
@@ -38,16 +41,13 @@ const Answer = ({ end, text }) => {
     setInterviewState("question");
   };
 
-  const completeHandler = () => {
-    setShowOpenModal(true);
-  };
-
   const buttonHanlder = () => {
+    addAnswer(answer);
     if (end) {
-      completeHandler();
+      setShowOpenModal(true);
     } else {
+      setCurNum(curNum + 1);
       setInterviewState("question");
-      // 새로운 질문 요청
     }
   };
   return (
