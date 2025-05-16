@@ -1,31 +1,32 @@
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
+import Modal from "@/components/common/Modal/Modal";
 import { React, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRoleStore } from "@/store/store";
 import Arrow from "@/assets/images/arrow.svg";
 import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
+import { signup } from "@/api/signApi";
 
 const inputWrapStyle = "mb-3 md:mb-5";
 const errorStyle = "p-2 text-red-400";
 
 const SignupForm = () => {
-  const [careerModal, setCareerModal] = useState(false);
-  const [experienceSelected, setExperienceSelected] = useState("");
-  const [career, setCareer] = useState("");
+  const [roleModal, setRoleModal] = useState(false);
+  const [careerSelected, setCareerSelected] = useState("");
+  const [role, setRole] = useState("");
   const [verification, setVerification] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false); // 이용 약관 토글
   const [allCheck, setAllCheck] = useState(false);
   const [serviceAgreement, setServiceAgreement] = useState(false);
   const [personalAgreement, setPersonalAgreement] = useState(false);
   const [marketingAgreement, setMarketingAgreement] = useState(false);
-
-  const roleValue = useRoleStore((state) => state.roleValue);
+  const [isOpenModal, setIsOpenModal] = useState(false);
 
   const navigate = useNavigate();
-
+  const roleValue = useRoleStore((state) => state.roleValue);
   const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
 
   const {
@@ -42,14 +43,14 @@ const SignupForm = () => {
   password.current = watch("password");
 
   // 회원가입
-  const handleSignup = (data) => {
-    if (!career) {
-      setError("career", { message: "직무를 선택해 주세요." });
+  const handleSignup = async (data) => {
+    if (!role) {
+      setError("role", { message: "직무를 선택해 주세요." });
       return;
     }
 
-    if (!experienceSelected) {
-      setError("experience", { message: "경력을 선택해 주세요." });
+    if (!careerSelected) {
+      setError("career", { message: "경력을 선택해 주세요." });
       return;
     }
 
@@ -63,10 +64,18 @@ const SignupForm = () => {
       return;
     }
 
-    console.log("회원가입 정보", data);
-
-    // 폼 제출 처리
-    navigate("/");
+    try {
+      await signup(data);
+      setIsOpenModal(!isOpenModal);
+    } catch (e) {
+      if (e.response && e.response.status === 409) {
+        setError("email", {
+          message: "사용 중인 이메일입니다.",
+        });
+      } else {
+        console.error("서버 오류:", e.response.data);
+      }
+    }
   };
 
   // 이메일 인증 확인
@@ -75,14 +84,14 @@ const SignupForm = () => {
   };
 
   // 직무 선택 모달창
-  const careerModalHandler = () => {
-    setCareerModal(!careerModal);
+  const roleModalHandler = () => {
+    setRoleModal(!roleModal);
   };
 
   // 경력 선택
-  const handleExperienceSelect = (e) => {
-    setExperienceSelected(e.target.value);
-    clearErrors("experience");
+  const handlecareerSelect = (e) => {
+    setCareerSelected(e.target.value);
+    clearErrors("career");
   };
 
   // 이용 약관 토글
@@ -136,10 +145,10 @@ const SignupForm = () => {
 
   //  직무 선택 값
   useEffect(() => {
-    setCareer(roleValue);
-    setValue("career", roleValue);
-    clearErrors("career");
-    setCareerModal(false);
+    setRole(roleValue);
+    setValue("role", roleValue);
+    clearErrors("role");
+    setRoleModal(false);
   }, [clearErrors, roleValue, setValue]);
 
   // 필수 약관 동의 했을 때 에러 제거
@@ -275,10 +284,10 @@ const SignupForm = () => {
             <div className={inputWrapStyle}>
               <Input
                 type="button"
-                name="career"
-                onClick={careerModalHandler}
+                name="role"
+                onClick={roleModalHandler}
                 required
-                value={career || "직무를 선택해 주세요."}
+                value={role || "직무를 선택해 주세요."}
                 labelClassName="text-sm md:text-base"
                 inputClassName="text-left cursor-pointer"
               >
@@ -286,19 +295,19 @@ const SignupForm = () => {
               </Input>
               <input
                 type="hidden"
-                {...register("career", {
+                {...register("role", {
                   required: "직무를 선택해 주세요.",
                   validate: (value) => value !== "" || "직무를 선택해 주세요.",
                 })}
-                value={career || ""}
+                value={role || ""}
               />
-              {errors.career && (
-                <p className={errorStyle}>{errors.career.message}</p>
+              {errors.role && (
+                <p className={errorStyle}>{errors.role.message}</p>
               )}
-              {careerModal && (
+              {roleModal && (
                 <CareerSelectModal
-                  isOpen={careerModal}
-                  onClose={careerModalHandler}
+                  isOpen={roleModal}
+                  onClose={roleModalHandler}
                 />
               )}
             </div>
@@ -306,25 +315,25 @@ const SignupForm = () => {
               <label className="text-zik-text mb-2 block text-sm font-bold md:text-base">
                 경력
                 <select
-                  {...register("experience", {
+                  {...register("career", {
                     required: "경력을 선택해주세요.",
                   })}
-                  value={experienceSelected}
-                  onChange={handleExperienceSelect}
+                  value={careerSelected}
+                  onChange={handlecareerSelect}
                   className="border-zik-border text-zik-text placeholder:text-zik-border min-h-[46px] w-full cursor-pointer appearance-none truncate rounded-[10px] border px-3 pr-3 text-sm font-medium focus:outline-0"
                 >
                   <option value="" disabled>
                     경력을 선택해주세요.
                   </option>
-                  {selectList.map((item) => (
-                    <option value={item} key={item}>
+                  {selectList.map((item, id) => (
+                    <option value={id} key={id}>
                       {item}
                     </option>
                   ))}
                 </select>
               </label>
-              {errors.experience && (
-                <p className={errorStyle}>{errors.experience.message}</p>
+              {errors.career && (
+                <p className={errorStyle}>{errors.career.message}</p>
               )}
             </div>
 
@@ -425,6 +434,43 @@ const SignupForm = () => {
               회원가입
             </Button>
           </form>
+
+          {isOpenModal && (
+            <Modal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)}>
+              <div className="flex flex-col items-center justify-center gap-4 pr-7 pl-7">
+                <i className="border-zik-main/50 flex h-14 w-14 items-center justify-center rounded-full border-2">
+                  <svg
+                    width="50"
+                    height="50"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 50 50"
+                  >
+                    <polyline
+                      className="stroke-draw-check"
+                      stroke="oklch(0.63 0.2032 281.04)"
+                      points="14,27 22,34 36,16"
+                      strokeWidth="5"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </i>
+                <div className="text-zik-text text-lg sm:text-xl">
+                  회원가입이 완료되었습니다.
+                </div>
+                <Button
+                  shape="bar"
+                  className={"w-full"}
+                  onClick={() => {
+                    setIsOpenModal(false);
+                    navigate("/signin");
+                  }}
+                >
+                  로그인 바로가기
+                </Button>
+              </div>
+            </Modal>
+          )}
         </div>
       </div>
     </div>
