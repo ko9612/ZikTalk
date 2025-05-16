@@ -2,6 +2,7 @@ import express from "express";
 import questionRouter from "./question.route.js";
 import interviewRouter from "./interview.route.js";
 import mypageRouter from "./mypage.route.js";
+import authRouter from "./auth.route.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,6 +17,9 @@ const router = express.Router();
 router.get("/", (req, res) => {
   res.json({ message: "✅ API is working!" });
 });
+
+// 로그인, 회원가입
+router.use("/", authRouter);
 
 // 질문 라우터 연결
 router.use("/questions", questionRouter);
