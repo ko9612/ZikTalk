@@ -6,7 +6,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import Kakao from "@/assets/images/kakao.svg";
 import Google from "@/assets/images/google.svg";
-import { useForm } from "react-hook-form";
 import { signin } from "@/api/signApi";
 import { useCookies } from "react-cookie";
 
@@ -17,6 +16,8 @@ const lineStyle = "flex-1 bg-zik-border block h-px w-full";
 const errorStyle = "p-2 text-xs/loose sm:text-base text-red-400";
 
 const SigninForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false); // 이메일 기억하기
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
@@ -24,14 +25,15 @@ const SigninForm = () => {
 
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-
   // 로그인
-  const handleSignin = async (data) => {
+  const handleSignin = async (e) => {
+    e.preventDefault();
+
+    const data = {
+      email: email,
+      password: password,
+    };
+
     try {
       const token = await signin(data);
       setCookie("token", token, { path: "/", maxAge: 3600, sameSite: "lax" });
@@ -77,47 +79,28 @@ const SigninForm = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(handleSignin)}>
+        <form onSubmit={handleSignin}>
           <div className="mb-3 md:mb-5">
             <Input
-              {...register("email", {
-                required: "이메일을 입력해 주세요.",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "이메일 형식이 올바르지 않습니다.",
-                },
-              })}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일을 입력해 주세요."
               labelClassName="text-sm md:text-base"
             >
               이메일
             </Input>
-            {errors.email && (
-              <p className={errorStyle}>{errors.email.message}</p>
-            )}
           </div>
           <div>
             <Input
               type="password"
-              {...register("password", {
-                required: "비밀번호를 입력해 주세요.",
-                minLength: {
-                  value: 8,
-                  message: "비밀번호는 최소 8자 이상이어야 합니다.",
-                },
-                maxLength: {
-                  value: 12,
-                  message: "비밀번호는 최대 12자까지 입력 가능합니다.",
-                },
-              })}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력해 주세요."
               labelClassName="text-sm md:text-base"
             >
               비밀번호
             </Input>
-            {errors.password && (
-              <p className={errorStyle}>{errors.password.message}</p>
-            )}
           </div>
           {signinFail && (
             <p className={errorStyle}>
