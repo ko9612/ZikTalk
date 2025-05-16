@@ -3,10 +3,12 @@ import questionRouter from "./question.route.js";
 import interviewRouter from "./interview.route.js";
 import mypageRouter from "./mypage.route.js";
 import authRouter from "./auth.route.js";
+import recordRouter from "./record.route.js";
+import chatRouter from "./chat.route.js";
+import supaRouter from "./supa.route.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
-import recordRouter from "./record.route.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,5 +38,9 @@ router.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 
 // 녹화 라우터 연결
 router.use("/record", recordRouter); // ex) POST /api/upload
+
+router.use("/chat", chatRouter);
+
+router.use("/supa", supaRouter);
 
 export default router;
