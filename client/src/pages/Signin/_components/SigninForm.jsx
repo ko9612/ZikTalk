@@ -6,26 +6,48 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import Kakao from "@/assets/images/kakao.svg";
 import Google from "@/assets/images/google.svg";
+import { useForm } from "react-hook-form";
+import { signin } from "@/api/signApi";
+import { useCookies } from "react-cookie";
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
 const snsButtonStyle = "h-[10vw] w-[10vw] md:h-[68px] md:w-[68px]";
 const lineStyle = "flex-1 bg-zik-border block h-px w-full";
+const errorStyle = "p-2 text-xs/loose sm:text-base text-red-400";
 
 const SigninForm = () => {
-  const [email, setEmail] = useState(""); // 이메일
-  const [password, setPassword] = useState(""); // 비밀번호
   const [rememberEmail, setRememberEmail] = useState(false); // 이메일 기억하기
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
+  const [cookies, setCookie] = useCookies(["token"]);
 
   const navigate = useNavigate();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
   // 로그인
-  const handleSignin = (e) => {
-    e.preventDefault();
-    setSigninFail(false);
-    navigate("/");
+  const handleSignin = async (data) => {
+    try {
+      const token = await signin(data);
+      setCookie("token", token, { path: "/", maxAge: 3600, sameSite: "lax" });
+      setSigninFail(false);
+      navigate("/");
+    } catch (e) {
+      if (
+        e.response &&
+        (e.response.status === 401 || e.response.status === 404)
+      ) {
+        setSigninFail(true);
+      } else {
+        setSigninFail(true);
+        console.error("서버 오류:", e.response.data);
+      }
+    }
   };
 
   // 이메일 기억하기 체크 여부
@@ -55,38 +77,50 @@ const SigninForm = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSignin}>
-          <p className="mb-3 md:mb-5">
+        <form onSubmit={handleSubmit(handleSignin)}>
+          <div className="mb-3 md:mb-5">
             <Input
-              type="email"
-              name="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register("email", {
+                required: "이메일을 입력해 주세요.",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "이메일 형식이 올바르지 않습니다.",
+                },
+              })}
               placeholder="이메일을 입력해 주세요."
               labelClassName="text-sm md:text-base"
             >
               이메일
             </Input>
-          </p>
-          <p>
+            {errors.email && (
+              <p className={errorStyle}>{errors.email.message}</p>
+            )}
+          </div>
+          <div>
             <Input
               type="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              maxLength={12}
+              {...register("password", {
+                required: "비밀번호를 입력해 주세요.",
+                minLength: {
+                  value: 8,
+                  message: "비밀번호는 최소 8자 이상이어야 합니다.",
+                },
+                maxLength: {
+                  value: 12,
+                  message: "비밀번호는 최대 12자까지 입력 가능합니다.",
+                },
+              })}
               placeholder="비밀번호를 입력해 주세요."
               labelClassName="text-sm md:text-base"
             >
               비밀번호
             </Input>
-          </p>
+            {errors.password && (
+              <p className={errorStyle}>{errors.password.message}</p>
+            )}
+          </div>
           {signinFail && (
-            <p className="pl-3 text-xs/loose text-[#e93c3c]">
+            <p className={errorStyle}>
               가입하지 않은 아이디이거나, 잘못된 비밀번호입니다.
             </p>
           )}
