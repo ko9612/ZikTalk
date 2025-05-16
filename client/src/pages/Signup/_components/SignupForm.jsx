@@ -4,7 +4,6 @@ import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal/Modal";
 import { React, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRoleStore } from "@/store/store";
 import Arrow from "@/assets/images/arrow.svg";
 import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
@@ -26,7 +25,6 @@ const SignupForm = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
 
   const navigate = useNavigate();
-  const roleValue = useRoleStore((state) => state.roleValue);
   const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
 
   const {
@@ -88,6 +86,14 @@ const SignupForm = () => {
     setRoleModal(!roleModal);
   };
 
+  // 직무 표시
+  const handleRoleSelect = (selectedRole) => {
+    setRole(selectedRole);
+    setValue("role", selectedRole);
+    clearErrors("role");
+    setRoleModal(false);
+  };
+
   // 경력 선택
   const handlecareerSelect = (e) => {
     setCareerSelected(e.target.value);
@@ -142,14 +148,6 @@ const SignupForm = () => {
     const willBeAllChecked = newService && newPersonal && newMarketing;
     setAllCheck(willBeAllChecked);
   };
-
-  //  직무 선택 값
-  useEffect(() => {
-    setRole(roleValue);
-    setValue("role", roleValue);
-    clearErrors("role");
-    setRoleModal(false);
-  }, [clearErrors, roleValue, setValue]);
 
   // 필수 약관 동의 했을 때 에러 제거
   useEffect(() => {
@@ -308,6 +306,7 @@ const SignupForm = () => {
                 <CareerSelectModal
                   isOpen={roleModal}
                   onClose={roleModalHandler}
+                  onSelect={handleRoleSelect}
                 />
               )}
             </div>
