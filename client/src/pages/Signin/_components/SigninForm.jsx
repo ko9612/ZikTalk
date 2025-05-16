@@ -8,6 +8,7 @@ import Kakao from "@/assets/images/kakao.svg";
 import Google from "@/assets/images/google.svg";
 import { signin } from "@/api/signApi";
 import { useCookies } from "react-cookie";
+import { useEffect } from "react";
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
@@ -21,13 +22,25 @@ const SigninForm = () => {
   const [rememberEmail, setRememberEmail] = useState(false); // 이메일 기억하기
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
-  const [cookies, setCookie] = useCookies(["token"]);
+  const [cookies, setCookie, removeCookie] = useCookies([
+    "rememberEmail",
+    "token",
+  ]);
 
   const navigate = useNavigate();
 
   // 로그인
   const handleSignin = async (e) => {
     e.preventDefault();
+
+    if (rememberEmail) {
+      setCookie("rememberEmail", email, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    } else {
+      removeCookie("rememberEmail", { path: "/" });
+    }
 
     const data = {
       email: email,
@@ -52,15 +65,17 @@ const SigninForm = () => {
     }
   };
 
-  // 이메일 기억하기 체크 여부
-  const handleRememberEmail = () => {
-    setRememberEmail(!rememberEmail);
-  };
-
   // 비밀번호 재설정 모달
   const modalHandler = () => {
     setIsOpenModal(!isOpenModal);
   };
+
+  useEffect(() => {
+    if (cookies.rememberEmail) {
+      setEmail(cookies.rememberEmail);
+      setRememberEmail(true);
+    }
+  }, [cookies.rememberEmail]);
 
   return (
     <div className="flex h-screen items-center">
@@ -112,8 +127,8 @@ const SigninForm = () => {
               <input
                 type="checkbox"
                 name="remember-email"
-                value={rememberEmail}
-                onChange={handleRememberEmail}
+                checked={rememberEmail}
+                onChange={(e) => setRememberEmail(e.target.checked)}
               />
               <span className="text-zik-text ml-2 text-sm md:text-base">
                 이메일 기억하기
