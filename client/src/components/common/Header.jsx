@@ -22,6 +22,7 @@ const Header = () => {
     }
     try {
       const decoded = jwtDecode(token);
+      console.log(decoded);
       setUsername(decoded.userName || "사용자");
     } catch (err) {
       console.error("토큰 디코딩 실패:", err);
@@ -32,7 +33,7 @@ const Header = () => {
     <header>
       <div className="mx-auto flex h-[clamp(3.8rem,8vw,5rem)] w-full max-w-[1200px] items-center justify-between px-6 xl:px-0">
         <h1 className="logo">
-          <Link href="/">
+          <Link to="/">
             <img
               src={Logo}
               alt="로고"
