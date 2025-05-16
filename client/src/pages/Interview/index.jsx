@@ -8,6 +8,7 @@ import DiffSetup from "./_components/setting/DiffSetup";
 import RoleSetup from "./_components/setting/RoleSetup";
 import PreCheckStep from "./_components/setting/PreCheckStep";
 import InterviewSection from "./_components/interview/InterviewSection";
+import { useVideoRecord } from "@/hooks/useRecord";
 
 const index = () => {
   // const location = useLocation();
@@ -17,6 +18,7 @@ const index = () => {
   const { currentComponent, resetNavigation } = useSetupNavigationStore(
     (state) => state,
   );
+  const { releaseCamera } = useVideoRecord();
 
   // 컴포넌트 마운트 시 상태 초기화
   useEffect(() => {
@@ -31,6 +33,7 @@ const index = () => {
       resetAll();
       resetDevices();
       resetInterview();
+      releaseCamera();
     };
   }, [resetNavigation, resetAll]);
 

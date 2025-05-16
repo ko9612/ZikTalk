@@ -12,7 +12,10 @@ import {
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
 import cuid from "cuid";
-import { useVideoRecord, useVoiceRecord } from "@/hooks/useRecord";
+import { useVideoRecord } from "@/hooks/useRecord";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -29,17 +32,13 @@ const InterviewSection = () => {
   } = useQuestionStore();
   const { level, qCount, career, ratio } = useInterviewStore();
   const { startVideoRecording, stopVideoRecording } = useVideoRecord();
-  const {
-    startVoiceRecording,
-    stopVoiceRecording,
-    transcripts,
-    setTranscripts,
-  } = useVoiceRecord();
   const [question, setQuestion] = useState({
     qes: "",
     totalNum: qCount,
     curNum: curNum,
   });
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -87,11 +86,19 @@ const InterviewSection = () => {
 
   useEffect(() => {
     if (isReplying) {
+      if (!browserSupportsSpeechRecognition) {
+        alert("Browser doesn't support speech recognition.");
+      }
       startVideoRecording(interviewId, curNum);
-      startVoiceRecording();
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: "ko",
+      });
     } else {
       stopVideoRecording();
-      stopVoiceRecording();
+      SpeechRecognition.stopListening();
+      SpeechRecognition.abortListening();
+      resetTranscript();
     }
   }, [isReplying]);
 
@@ -99,11 +106,7 @@ const InterviewSection = () => {
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
       <QuestionBox {...question} />
       {interviewState === "answer" ? (
-        <Answer
-          end={question.curNum === question.totalNum}
-          text={transcripts.join("")}
-          init={() => setTranscripts([])}
-        />
+        <Answer end={question.curNum === question.totalNum} text={transcript} />
       ) : (
         <Timer qes={question.qes} />
       )}
