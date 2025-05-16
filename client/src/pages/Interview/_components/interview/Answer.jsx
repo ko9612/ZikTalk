@@ -11,7 +11,7 @@ import {
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
-const Answer = ({ end, text, init }) => {
+const Answer = ({ end, text }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
@@ -23,37 +23,34 @@ const Answer = ({ end, text, init }) => {
 
   useEffect(() => {
     setAnswer(text);
-
     const timer = setTimeout(() => {
       if (!text) {
         setAnswer(
           "음성인식 실패, 다시 말하기 버튼을 클릭하여 다시 시도해주시거나, 직접 답변을 입력해주세요.",
         );
       }
-    }, 3000);
+    }, 7000);
 
     return () => clearTimeout(timer);
   }, [text]);
 
   // 임시
   const reReply = () => {
-    init();
-    setAnswer("");
     setIsReplying(true);
     setInterviewState("question");
+    setAnswer("");
   };
 
   const buttonHanlder = () => {
     const copyCurNum = curNum;
     addAnswer(answer);
     addVideo(`${interviewId}_${copyCurNum}.webm`);
-    init();
-    setAnswer("");
     if (end) {
       setShowOpenModal(true);
     } else {
       setCurNum(curNum + 1);
       setInterviewState("question");
+      setAnswer("");
     }
   };
   return (
@@ -82,6 +79,7 @@ const Answer = ({ end, text, init }) => {
         </div>
         <div className="flex items-center justify-between">
           <Button
+            disabled={!answer}
             onClick={reReply}
             className="bg-zik-main/65 hover:bg-zik-main gap-2"
           >
@@ -94,7 +92,7 @@ const Answer = ({ end, text, init }) => {
               텍스트를 클릭해 답변을 직접 수정할 수 있어요
             </p>
           </div>
-          <Button onClick={buttonHanlder} color="violet">
+          <Button disabled={!answer} onClick={buttonHanlder} color="violet">
             {end ? "완료 하기" : "다음 질문"}
           </Button>
           {showOpenModal && (

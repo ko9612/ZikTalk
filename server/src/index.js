@@ -9,9 +9,9 @@ const app = express();
 // 모든 요청을 로깅하는 미들웨어
 app.use((req, res, next) => {
   console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.path}`);
-  console.log('요청 헤더:', req.headers);
-  if (req.method !== 'GET') {
-    console.log('요청 바디:', req.body);
+  console.log("요청 헤더:", req.headers);
+  if (req.method !== "GET") {
+    console.log("요청 바디:", req.body);
   }
   next();
 });
@@ -19,9 +19,13 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+  ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  credentials: true
+  credentials: true,
 };
 app.use(cors(corsOptions));
 

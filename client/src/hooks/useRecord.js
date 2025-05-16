@@ -7,6 +7,7 @@ export const useVideoRecord = () => {
   const mediaRecorderRef = useRef(null);
   const { selectedMicId, selectedCameraId } = useMediaDeviceStore();
   const chunksRef = useRef([]);
+  const streamRef = useRef(null);
 
   const startVideoRecording = async (interviewId, curNum) => {
     try {
@@ -14,6 +15,8 @@ export const useVideoRecord = () => {
         audio: { deviceId: selectedMicId },
         video: { deviceId: selectedCameraId },
       });
+
+      streamRef.current = stream;
 
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
@@ -41,7 +44,16 @@ export const useVideoRecord = () => {
     mediaRecorderRef.current?.stop();
   };
 
-  return { startVideoRecording, stopVideoRecording };
+  const releaseCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop(); // 각 트랙 (비디오/오디오) 중지
+      });
+      streamRef.current = null;
+    }
+  };
+
+  return { startVideoRecording, stopVideoRecording, releaseCamera };
 };
 
 export const useVoiceRecord = () => {
