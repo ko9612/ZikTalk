@@ -125,7 +125,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
             <p className="text-center text-base font-semibold sm:text-xl">
               User님의 답변 분석이 완료되었습니다!
             </p>
-            <Link to={`/interview-result/${id}`}>
+            <Link to={`/interview-result/${interviewId}`}>
               <Button shape="bar" className="px-8">
                 분석 결과 페이지로 이동
               </Button>

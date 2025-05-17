@@ -8,10 +8,7 @@ const InterviewLayout = ({ children }) => {
         <ScreenSizeGuide />
       </div>
       <div className="hidden h-full w-full flex-col items-center xl:flex">
-        <InterviewTab />
-        <div className="mx-auto flex h-full w-full max-w-[1200px] px-6 xl:px-0">
-          {children}
-        </div>
+        {children}
       </div>
     </>
   );

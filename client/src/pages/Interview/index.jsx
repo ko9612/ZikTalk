@@ -12,6 +12,7 @@ import { useVideoRecord } from "@/hooks/useRecord";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import CommonModal from "@/components/common/Modal/CommonModal";
+import InterviewTab from "@/components/common/InterviewTab";
 
 const index = () => {
   const navigate = useNavigate();
@@ -64,7 +65,12 @@ const index = () => {
           subText="인터뷰를 진행하려면 로그인이 필요합니다."
         />
       ) : (
-        COMPONENTS[currentComponent] || <DeviceSetup />
+        <>
+          <InterviewTab />
+          <div className="mx-auto flex h-full w-full max-w-[1200px] px-6 xl:px-0">
+            {COMPONENTS[currentComponent] || <DeviceSetup />}
+          </div>
+        </>
       )}
     </>
   );
