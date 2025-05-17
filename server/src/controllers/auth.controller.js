@@ -1,4 +1,9 @@
-import { loginUser, registerUser } from "../services/authService.js";
+import {
+  loginUser,
+  registerUser,
+  generateVerificationCode,
+  sendVerificationEmail,
+} from "../services/authService.js";
 
 export const signin = async (req, res) => {
   try {
@@ -25,5 +30,19 @@ export const signup = async (req, res) => {
     } else {
       res.status(500).json({ message: "회원가입 실패", error: error.message });
     }
+  }
+};
+
+export const verification = async (req, res) => {
+  const { email } = req.body;
+  const verificationCode = generateVerificationCode();
+  try {
+    await sendVerificationEmail(email, verificationCode);
+    return res.status(200).json({
+      message: "인증번호가 발송되었습니다.",
+      verificationCode,
+    });
+  } catch (e) {
+    res.status(500).json({ message: "인증번호 발송에 실패했습니다." });
   }
 };

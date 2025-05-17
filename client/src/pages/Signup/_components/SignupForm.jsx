@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Arrow from "@/assets/images/arrow.svg";
 import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
-import { signup } from "@/api/signApi";
+import { signup, verification } from "@/api/signApi";
 
 const inputWrapStyle = "mb-3 md:mb-5";
 const labelStyle = "text-sm md:text-base";
@@ -18,9 +18,11 @@ const SignupForm = () => {
   const [careerSelected, setCareerSelected] = useState("");
   const [termsOpen, setTermsOpen] = useState(false); // 이용 약관 토글
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [authSuccess, setAuthSuccess] = useState(false); // 이메일 인증 성공 여부
   const [authOpen, setAuthOpen] = useState(false); // 이메일 인증 창 열고닫기
   const [disabled, setDisabled] = useState(false); // 인증 버튼 비활성화 여부
   const [countdown, setCountdown] = useState(180); // 남은 시간 (초)
+  const [verificationCode, setVerificationCode] = useState("");
 
   const navigate = useNavigate();
   const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
@@ -29,6 +31,7 @@ const SignupForm = () => {
     register, // onChange 등의 이벤트 객체 생성
     handleSubmit,
     watch,
+    getValues,
     setValue,
     setError,
     trigger,
@@ -55,12 +58,22 @@ const SignupForm = () => {
 
   // 회원가입
   const handleSignup = async (data) => {
+    let hasError = false;
+
     if (!serviceAgreement || !personalAgreement) {
       setTermsOpen(true);
       setError("agreements", { message: "필수 약관에 모두 동의해 주세요." });
 
-      return;
+      hasError = true;
     }
+
+    if (!authSuccess) {
+      setError("email", { message: "이메일 인증을 해주세요." });
+
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     try {
       await signup(data);
@@ -78,15 +91,53 @@ const SignupForm = () => {
 
   // 이메일 인증 하기
   const handleAuthOpen = async () => {
+    setDisabled(true);
+
+    // 이메일 유효성 검사
     const emailValid = await trigger("email");
 
     if (!emailValid) {
       return;
     }
 
+    const email = getValues("email");
+
+    // 이메일 검사 및 인증 번호 발송
+    try {
+      const code = await verification(email);
+      setVerificationCode(code);
+    } catch (e) {
+      if (e.response && e.response.status === 409) {
+        setError("email", {
+          message: "이미 가입된 이메일입니다.",
+        });
+      } else {
+        console.error("서버 오류:", e.response.data);
+      }
+
+      setVerificationCode("");
+      setDisabled(false);
+
+      return;
+    }
+
     setAuthOpen(true);
-    setDisabled(true);
     setCountdown(180);
+  };
+
+  // 이메일 인증 확인
+  const handleAuthCheck = () => {
+    const emailCode = getValues("emailCode");
+
+    if (verificationCode === emailCode) {
+      setAuthOpen(false);
+      setDisabled(true);
+      setAuthSuccess(true);
+    } else {
+      setError("emailCode", {
+        message: "인증코드를 다시 확인해주세요.",
+      });
+    }
   };
 
   // 직무 선택 모달창
@@ -112,6 +163,7 @@ const SignupForm = () => {
     setTermsOpen(!termsOpen);
   };
 
+  // 이용 약관 전체 선택
   const handleAllCheck = () => {
     const check = !allCheck;
     setValue("agreements.service", check);
@@ -196,7 +248,7 @@ const SignupForm = () => {
                     "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
                   }
                 >
-                  인증하기
+                  {authSuccess ? "인증완료" : "인증하기"}
                 </Button>
               </div>
               {errors.email && (
@@ -234,6 +286,7 @@ const SignupForm = () => {
 
                       <Button
                         shape="bar"
+                        onClick={handleAuthCheck}
                         className={
                           "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
                         }
