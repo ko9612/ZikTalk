@@ -31,6 +31,7 @@ const FilterDropdown = ({
     { value: "즐겨찾기", label: "즐겨찾기" },
   ],
   className = "",
+  keepOpenOnSelect = false,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -54,7 +55,9 @@ const FilterDropdown = ({
 
   const handleSelect = (val) => {
     onChange(val);
-    setOpen(false);
+    if (!keepOpenOnSelect) {
+      setOpen(false);
+    }
   };
 
   const hasStarOption = options.some((opt) => opt.value === "별");

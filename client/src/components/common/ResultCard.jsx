@@ -98,15 +98,11 @@ export const ResultCard = ({
               />
             </div>
 
-            {/* ✅ 첫 번째 질문만 출력 */}
+            {/* 요약 정보만 표시 */}
             <div className="h-16 pt-3 text-[14px] leading-tight text-white overflow-hidden">
-              {questions?.length > 0 ? (
-                <div className="line-clamp-3 overflow-ellipsis break-words whitespace-normal">
-                  {item.summary ? item.summary : questions[0].content}
-                </div>
-              ) : (
-                <div className="text-white/70">질문 없음</div>
-              )}
+              <div className="line-clamp-3 overflow-ellipsis break-words whitespace-normal">
+                {item.summary || "요약 정보가 없습니다."}
+              </div>
             </div>
           </div>
 

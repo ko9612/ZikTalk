@@ -86,6 +86,7 @@ export const FilterBar = React.memo(
               { value: SORT_OPTIONS.LATEST, label: SORT_OPTIONS.LATEST },
               { value: SORT_OPTIONS.BOOKMARK, label: SORT_OPTIONS.BOOKMARK },
             ]}
+            keepOpenOnSelect={true}
           />
         </div>
         <div className="flex items-center justify-center h-14 w-14 relative">

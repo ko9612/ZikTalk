@@ -30,10 +30,17 @@ export const loginUser = async (data) => {
 
   // JWT 토큰 발급
   const token = jwt.sign(
-    { userId: user.id, userName: user.name, userEmail: user.email },
-    process.env.JWT_SECRET,
+    { 
+      userId: user.id, 
+      id: user.id,
+      userName: user.name, 
+      userEmail: user.email,
+      role: user.role,
+      career: user.career
+    },
+    process.env.JWT_SECRET || 'your-secret-key',
     {
-      expiresIn: "1h",
+      expiresIn: "24h",
     }
   );
 
@@ -44,6 +51,7 @@ export const loginUser = async (data) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      token: token,
     },
   };
 };

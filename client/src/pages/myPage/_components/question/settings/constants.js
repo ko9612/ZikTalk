@@ -26,5 +26,8 @@ export const ACTIONS = {
   MARK_AS_DELETED: 'mark_as_deleted',
   SET_RESULTS: 'set_results',
   SET_ERROR: 'set_error',
-  SET_TOTAL_COUNT: 'set_total_count'
+  SET_TOTAL_COUNT: 'set_total_count',
+  SAVE_SCROLL_POSITION: 'save_scroll_position',
+  SET_SORT_TYPE: 'set_sort_type',
+  RESET_STATE: 'reset_state'
 }; 

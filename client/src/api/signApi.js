@@ -6,7 +6,8 @@ const BASE_URL = "http://localhost:5001/api";
 export const signin = async (data) => {
   try {
     const res = await axios.post(`${BASE_URL}/signin`, data);
-    return res.data.user.token;
+    const token = res.data.user.token;
+    return token;
   } catch (err) {
     console.error("로그인 중 오류 발생", err);
     throw err;

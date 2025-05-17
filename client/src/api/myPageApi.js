@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "./axiosInstance";
 
 const API_URL = "http://localhost:5001/api";
 
@@ -18,7 +19,7 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}) => {
     console.log(
       `[DEBUG] 북마크 API 호출: 페이지=${page}, 페이지크기=${pageSize}`,
     );
-    const response = await axios.get(`${API_URL}/mypage/bookmarks`, {
+    const response = await axiosInstance.get(`/mypage/bookmarks`, {
       params: {
         page,
         pageSize,
@@ -42,6 +43,7 @@ export const fetchInterviewsWithFirstQuestion = async (
   sortType = "date",
   isBookmarked = false,
   isInitialLoad = false,
+  userId = null,
 ) => {
   try {
     const params = {
@@ -49,6 +51,7 @@ export const fetchInterviewsWithFirstQuestion = async (
       pageSize,
       sortBy: sortType,
       bookmarked: isBookmarked ? true : undefined,
+      userId: userId || undefined,
     };
 
     console.log(
@@ -56,8 +59,8 @@ export const fetchInterviewsWithFirstQuestion = async (
       params,
     );
 
-    const response = await axios.get(
-      `${API_URL}/interview/with-first-question`,
+    const response = await axiosInstance.get(
+      `/interview/with-first-question`,
       { params },
     );
     return response.data;
@@ -67,14 +70,15 @@ export const fetchInterviewsWithFirstQuestion = async (
 };
 
 // 여러 면접을 배치로 삭제
-export const batchDeleteInterviews = async (interviewIds) => {
+export const batchDeleteInterviews = async (interviewIds, userId = null) => {
   try {
     console.log(
       `[DEBUG] 배치 삭제 API 호출: ${interviewIds.length}개 면접 ID`,
       interviewIds,
     );
-    const response = await axios.post(`${API_URL}/interview/batch-delete`, {
+    const response = await axiosInstance.post(`/interview/batch-delete`, {
       ids: interviewIds,
+      userId: userId || undefined,
     });
     return response.data;
   } catch (err) {
@@ -98,7 +102,7 @@ export const fetchQuestions = async (
       bookmarked: isBookmarked ? true : undefined,
     };
 
-    const response = await axios.get(`${API_URL}/questions`, { params });
+    const response = await axiosInstance.get(`/questions`, { params });
     return response.data;
   } catch (err) {
     throw err;
@@ -108,8 +112,8 @@ export const fetchQuestions = async (
 // 질문 북마크 토글
 export const toggleQuestionBookmark = async (questionId, bookmarked) => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/questions/${questionId}/bookmark`,
+    const response = await axiosInstance.patch(
+      `/questions/${questionId}/bookmark`,
       {
         bookmarked,
       },
@@ -121,12 +125,13 @@ export const toggleQuestionBookmark = async (questionId, bookmarked) => {
 };
 
 // 면접 북마크 토글
-export const toggleInterviewBookmark = async (interviewId, bookmarked) => {
+export const toggleInterviewBookmark = async (interviewId, bookmarked, userId = null) => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/interview/${interviewId}/bookmark`,
+    const response = await axiosInstance.patch(
+      `/interview/${interviewId}/bookmark`,
       {
         bookmarked,
+        userId: userId || undefined,
       },
     );
     return response.data;
@@ -138,7 +143,7 @@ export const toggleInterviewBookmark = async (interviewId, bookmarked) => {
 // 사용자 정보 조회
 export const fetchUserInfo = async () => {
   try {
-    const response = await axios.get(`${API_URL}/mypage/user`);
+    const response = await axiosInstance.get(`/mypage/user`);
     return response.data;
   } catch (err) {
     throw err;
@@ -148,36 +153,9 @@ export const fetchUserInfo = async () => {
 // 사용자 정보 업데이트
 export const updateUserInfo = async (userData) => {
   try {
-    console.log('[클라이언트] 사용자 정보 업데이트 요청 시작');
-    console.log('[클라이언트] 요청 데이터:', userData);
-    console.log('[클라이언트] API 엔드포인트:', `${API_URL}/mypage/user/update`);
-    console.log('[클라이언트] HTTP 메서드: POST');
-    
-    // 요청 옵션 명시적 설정
-    const options = {
-      method: 'POST',
-      url: `${API_URL}/mypage/user/update`,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      data: userData
-    };
-    
-    console.log('[클라이언트] Axios 요청 옵션:', options);
-    
-    // API 요청 전송 (axios 인스턴스 생성)
-    const response = await axios(options);
-    
-    console.log('[클라이언트] 응답 상태 코드:', response.status);
-    console.log('[클라이언트] 응답 데이터:', response.data);
-    
+    const response = await axiosInstance.post(`/mypage/user/update`, userData);
     return response.data;
   } catch (err) {
-    console.error('[클라이언트] 사용자 정보 업데이트 오류:');
-    console.error('- 에러 객체:', err);
-    console.error('- 응답 상태:', err.response?.status);
-    console.error('- 응답 데이터:', err.response?.data);
-    console.error('- 에러 메시지:', err.message);
     throw err;
   }
 };
@@ -185,7 +163,7 @@ export const updateUserInfo = async (userData) => {
 // 회원 탈퇴
 export const deleteUserAccount = async () => {
   try {
-    const response = await axios.delete(`${API_URL}/mypage/user`);
+    const response = await axiosInstance.delete(`/mypage/user`);
     return response.data;
   } catch (err) {
     throw err;
@@ -195,13 +173,9 @@ export const deleteUserAccount = async () => {
 // 기존 API 함수는 유지 (하위 호환성)
 export const myPageApi = async () => {
   try {
-    const response = await axios.get(
-      "http://localhost:5001/api/mypage/bookmarks",
-    );
+    const response = await axiosInstance.get(`/mypage/bookmarks`);
     return response;
-    return await fetchBookmarks();
   } catch (err) {
-    return err.response;
     return { error: err.message };
   }
 };

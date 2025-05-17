@@ -49,7 +49,18 @@ const SigninForm = () => {
 
     try {
       const token = await signin(data);
-      setCookie("token", token, { path: "/", maxAge: 3600, sameSite: "lax" });
+      
+      // 토큰을 쿠키에 저장 (서버 인증에 사용)
+      setCookie("token", token, { 
+        path: "/", 
+        maxAge: 3600, 
+        sameSite: "lax",
+        secure: window.location.protocol === 'https:'
+      });
+      
+      // 토큰을 로컬 스토리지에도 저장 (axiosInstance에서 사용)
+      localStorage.setItem("accessToken", token);
+      
       setSigninFail(false);
       navigate("/");
     } catch (e) {
@@ -60,7 +71,7 @@ const SigninForm = () => {
         setSigninFail(true);
       } else {
         setSigninFail(true);
-        console.error("서버 오류:", e.response.data);
+        console.error("서버 오류:", e.response?.data || e.message);
       }
     }
   };

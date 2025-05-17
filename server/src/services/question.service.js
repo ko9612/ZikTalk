@@ -99,9 +99,13 @@ export const deleteQuestion = async (id) => {
 };
 
 // 북마크 토글
-export const toggleBookmark = async (id) => {
-  const question = await prisma.question.findUnique({
-    where: { id }
+export const toggleBookmark = async (id, userId) => {
+  // 해당 질문이 존재하고 요청한 사용자의 질문인지 확인
+  const question = await prisma.question.findFirst({
+    where: { 
+      id,
+      userId
+    }
   });
   
   if (!question) return null;
