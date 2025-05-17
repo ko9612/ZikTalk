@@ -7,15 +7,21 @@ import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import Button from "@/components/common/Button";
 import { useQuestionStore } from "@/store/store";
-import { getInterviewFeedback } from "@/api/interviewApi";
+import { createInterview, getInterviewFeedback } from "@/api/interviewApi";
 import { useInterviewStore } from "@/store/interviewSetupStore";
+import { jwtDecode } from "jwt-decode";
+import { useCookies } from "react-cookie";
 
 const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   // 임시
   const [isLoading, setIsLoading] = useState(true);
   const level = useInterviewStore((state) => state.level);
   const career = useInterviewStore((state) => state.career);
+  const ratio = useInterviewStore((state) => state.ratio);
   const { interviewId, questions, answers, video } = useQuestionStore();
+  const [cookies] = useCookies(["token"]);
+  const token = cookies.token;
+  const decoded = jwtDecode(token);
 
   // gpt 피드백 요청
   const requestFeedback = async () => {
@@ -28,8 +34,8 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
     try {
       const data = await getInterviewFeedback(postData);
       if (data) {
-        setIsLoading(false);
         console.log(data);
+        return data;
       }
     } catch (error) {
       console.error(error);
@@ -37,18 +43,58 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   };
 
   // 피드백받은 데이터 + 질문 리스트, 내 답변, 질문별 영상 조합해서 백엔드로 post
-  const postResultData = async () => {};
+  const postResultData = async (feedback) => {
+    const personalityWeight = (100 - ratio) / 100;
+    const jobWeight = ratio / 100;
+    const interviewData = {
+      interviewId: interviewId,
+      userId: decoded.userId,
+      role: career,
+      totalScore:
+        Math.round(feedback.personalityScore * personalityWeight) +
+        Math.round(feedback.jobScore * jobWeight),
+      personalityScore: feedback.personalityScore || 0,
+      personalityEval: feedback.personalityEval || "",
+      jobScore: feedback.jobScore || 0,
+      jobEval: feedback.jobEval || "",
+      summary: feedback.summary || "",
+      strengths: feedback.strengths || "",
+      improvements: feedback.improvements || "",
+      bookmarked: false,
+      questions: questions.map((q, index) => ({
+        order: index + 1,
+        type: q.type === "인성" ? "PERSONALITY" : "JOB",
+        content: q.question,
+        myAnswer: answers[index] || "",
+        videoUrl: video[index] || "",
+        recommended: feedback.recommended[index] || "",
+        bookmarked: false,
+      })),
+    };
+    console.log("전송할 인터뷰 데이터:", interviewData);
+    try {
+      const data = await createInterview(interviewData);
+      if (data) {
+        console.log("보낸 인터뷰 데이터:", data);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const img = new Image();
     img.src = MainLogo;
 
-    requestFeedback();
-    postResultData();
-
-    return () => {
-      clearTimeout(timer);
+    const runAnalysis = async () => {
+      const feedback = await requestFeedback();
+      if (feedback) {
+        await postResultData(feedback);
+      }
     };
+
+    runAnalysis();
   }, []);
 
   return (

@@ -94,10 +94,12 @@ export const generateFeedback = async (data) => {
   - **반환 형식 (JSON)**:
   {
     "personalityScore": 85,
-    "personalityEval": "인성 질문에 대한 전체적인 평가...",
+    "personalityEval": "인성 질문 답변에 대한 전체적인 평가...",
     "jobScore": 77,
-    "jobEval": "직무 질문에 대한 전체적인 평가...",
-    "summary": "전체 질문에 대한 종합 평가...",
+    "jobEval": "직무 질문 답변에 대한 전체적인 평가...",
+    "summary": "전체 질문 답변에 대한 종합 평가...",
+    "strengths": "전체적인 답변에 대한 좋은 점...",
+    "improvements": "전체적인 답변에 대한 개선할 점...",
     "recommended": [
       "1번 질문에 대한 모범 답변",
       "2번 질문에 대한 모범 답변",
@@ -111,7 +113,9 @@ export const generateFeedback = async (data) => {
   - **jobScore** (직무 질문 답변 점수): **30~100점 사이의 정수**
   - **personalityEval** (인성 질문에 대한 평가): **200자 이내의 문자열**
   - **jobEval** (직무 질문에 대한 평가): **200자 이내의 문자열**
-  - **summary** (전체 답변에 대한 총평): **200자 이내의 문자열**
+  - **summary** (전체 답변에 대한 총평): **200자 이내의 문자열*
+  - **strengths** (전체 답변에 대한 좋은 점): **200자 이내의 문자열*
+  - **improvements** (전체 답변에 대한 개선할 점): **200자 이내의 문자열*
   - **recommended** (각 질문에 대한 모범 답변): 각 문자열은 **200자 이내**
   `;
 
