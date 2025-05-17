@@ -2,7 +2,7 @@ import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal/Modal";
-import { React, useState, useEffect, useRef } from "react";
+import { React, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Arrow from "@/assets/images/arrow.svg";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,19 +10,17 @@ import { useForm } from "react-hook-form";
 import { signup } from "@/api/signApi";
 
 const inputWrapStyle = "mb-3 md:mb-5";
+const labelStyle = "text-sm md:text-base";
 const errorStyle = "p-2 text-red-400";
 
 const SignupForm = () => {
   const [roleModal, setRoleModal] = useState(false);
   const [careerSelected, setCareerSelected] = useState("");
-  const [role, setRole] = useState("");
-  const [verification, setVerification] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false); // 이용 약관 토글
-  const [allCheck, setAllCheck] = useState(false);
-  const [serviceAgreement, setServiceAgreement] = useState(false);
-  const [personalAgreement, setPersonalAgreement] = useState(false);
-  const [marketingAgreement, setMarketingAgreement] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false); // 이메일 인증 창 열고닫기
+  const [disabled, setDisabled] = useState(false); // 인증 버튼 비활성화 여부
+  const [countdown, setCountdown] = useState(180); // 남은 시간 (초)
 
   const navigate = useNavigate();
   const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
@@ -33,31 +31,33 @@ const SignupForm = () => {
     watch,
     setValue,
     setError,
+    trigger,
     clearErrors,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      role: "",
+      career: "",
+      agreements: {
+        service: false,
+        personal: false,
+        marketing: false,
+      },
+    },
+  });
 
-  const password = useRef();
-  password.current = watch("password");
+  const role = watch("role");
+  const password = watch("password");
+  const serviceAgreement = watch("agreements.service");
+  const personalAgreement = watch("agreements.personal");
+  const marketingAgreement = watch("agreements.marketing");
+  const allCheck = serviceAgreement && personalAgreement && marketingAgreement;
 
   // 회원가입
   const handleSignup = async (data) => {
-    if (!role) {
-      setError("role", { message: "직무를 선택해 주세요." });
-      return;
-    }
-
-    if (!careerSelected) {
-      setError("career", { message: "경력을 선택해 주세요." });
-      return;
-    }
-
     if (!serviceAgreement || !personalAgreement) {
+      setTermsOpen(true);
       setError("agreements", { message: "필수 약관에 모두 동의해 주세요." });
-
-      if (!termsOpen) {
-        setTermsOpen(true);
-      }
 
       return;
     }
@@ -76,9 +76,17 @@ const SignupForm = () => {
     }
   };
 
-  // 이메일 인증 확인
-  const handleVerification = () => {
-    setVerification(!verification);
+  // 이메일 인증 하기
+  const handleAuthOpen = async () => {
+    const emailValid = await trigger("email");
+
+    if (!emailValid) {
+      return;
+    }
+
+    setAuthOpen(true);
+    setDisabled(true);
+    setCountdown(180);
   };
 
   // 직무 선택 모달창
@@ -88,7 +96,6 @@ const SignupForm = () => {
 
   // 직무 표시
   const handleRoleSelect = (selectedRole) => {
-    setRole(selectedRole);
     setValue("role", selectedRole);
     clearErrors("role");
     setRoleModal(false);
@@ -105,48 +112,12 @@ const SignupForm = () => {
     setTermsOpen(!termsOpen);
   };
 
-  // 이용 약관 전체 선택
   const handleAllCheck = () => {
     const check = !allCheck;
-
-    setAllCheck(check);
-    setServiceAgreement(check);
-    setPersonalAgreement(check);
-    setMarketingAgreement(check);
-
-    if (termsOpen === false) {
-      setTermsOpen(!termsOpen);
-    }
-  };
-
-  // 이용 약관 선택 (서비스, 개인정보, 마케팅)
-  const handleCheck = (value) => {
-    let newService = serviceAgreement;
-    let newPersonal = personalAgreement;
-    let newMarketing = marketingAgreement;
-
-    switch (value) {
-      case "serviceAgreement":
-        newService = !serviceAgreement;
-        setServiceAgreement(newService);
-        break;
-
-      case "personalAgreement":
-        newPersonal = !personalAgreement;
-        setPersonalAgreement(newPersonal);
-        break;
-
-      case "marketingAgreement":
-        newMarketing = !marketingAgreement;
-        setMarketingAgreement(newMarketing);
-        break;
-
-      default:
-        break;
-    }
-
-    const willBeAllChecked = newService && newPersonal && newMarketing;
-    setAllCheck(willBeAllChecked);
+    setValue("agreements.service", check);
+    setValue("agreements.personal", check);
+    setValue("agreements.marketing", check);
+    setTermsOpen(true);
   };
 
   // 필수 약관 동의 했을 때 에러 제거
@@ -155,6 +126,25 @@ const SignupForm = () => {
       clearErrors("agreements");
     }
   }, [serviceAgreement, personalAgreement, clearErrors]);
+
+  // 타이머 시작
+  useEffect(() => {
+    if (!authOpen) return;
+
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    const closeTimeout = setTimeout(() => {
+      setAuthOpen(false);
+      setDisabled(false);
+      setCountdown(0);
+    }, 180000); // 3분 후 닫힘
+    return () => {
+      clearInterval(countdownInterval);
+      clearTimeout(closeTimeout);
+    };
+  }, [authOpen]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center">
@@ -175,7 +165,7 @@ const SignupForm = () => {
                   },
                 })}
                 placeholder="이름을 입력해 주세요."
-                labelClassName="text-sm md:text-base"
+                labelClassName={labelStyle}
               >
                 이름
               </Input>
@@ -194,18 +184,19 @@ const SignupForm = () => {
                     },
                   })}
                   placeholder="example@example.com"
-                  labelClassName="text-sm md:text-base w-3/4"
+                  labelClassName={`${labelStyle} w-3/4`}
                 >
                   이메일
                 </Input>
                 <Button
-                  onClick={handleVerification}
+                  onClick={handleAuthOpen}
                   shape="bar"
+                  disabled={disabled}
                   className={
                     "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
                   }
                 >
-                  {verification ? "인증확인" : "인증요청"}
+                  인증하기
                 </Button>
               </div>
               {errors.email && (
@@ -214,7 +205,7 @@ const SignupForm = () => {
             </div>
 
             <AnimatePresence>
-              {verification && (
+              {authOpen && (
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: "auto" }}
@@ -222,18 +213,38 @@ const SignupForm = () => {
                   exit={{ height: 0 }}
                   className="overflow-hidden"
                 >
-                  <Input
-                    {...register("emailCode", {
-                      required: "인증 번호를 입력해 주세요.",
-                    })}
-                    placeholder="인증 번호를 입력해 주세요."
-                    labelClassName="text-sm md:text-base flex-3 mb-3 md:mb-5"
-                  >
-                    인증 번호
-                  </Input>
-                  {errors.emailCode && (
-                    <p className={errorStyle}>{errors.emailCode.message}</p>
-                  )}
+                  <div className={inputWrapStyle}>
+                    <div className="flex items-end justify-between">
+                      <div className="relative w-3/4">
+                        <Input
+                          {...register("emailCode", {
+                            required: "인증 번호를 입력해 주세요.",
+                          })}
+                          placeholder="인증 번호를 입력해 주세요."
+                          labelClassName={labelStyle}
+                        >
+                          인증 번호
+                        </Input>
+                        <div className="absolute top-[50%] right-2 text-red-500">
+                          {`${Math.floor(countdown / 60)}:${(countdown % 60)
+                            .toString()
+                            .padStart(2, "0")}`}
+                        </div>
+                      </div>
+
+                      <Button
+                        shape="bar"
+                        className={
+                          "ml-2 w-1/4 max-w-[164px] flex-1 text-xs leading-5 text-nowrap sm:ml-4 sm:text-base"
+                        }
+                      >
+                        인증확인
+                      </Button>
+                    </div>
+                    {errors.emailCode && (
+                      <p className={errorStyle}>{errors.emailCode.message}</p>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -251,7 +262,7 @@ const SignupForm = () => {
                   },
                 })}
                 placeholder="영문, 숫자, 특수문자를 조합하여 8~12자의 비밀번호를 입력해 주세요."
-                labelClassName="text-sm md:text-base"
+                labelClassName={labelStyle}
                 inputClassName="text-xs md:text-sm"
               >
                 비밀번호
@@ -265,18 +276,16 @@ const SignupForm = () => {
                 type="password"
                 {...register("passwordCheck", {
                   required: "비밀번호를 입력해 주세요.",
-                  validate: (value) => value === password.current,
+                  validate: (value) =>
+                    value === password || "비밀번호가 일치하지 않습니다.",
                 })}
                 placeholder="비밀번호를 한 번 더 입력해 주세요."
-                labelClassName="text-sm md:text-base"
+                labelClassName={labelStyle}
               >
                 비밀번호 확인
               </Input>
-              {errors?.passwordCheck?.type === "required" && (
+              {errors.passwordCheck && (
                 <p className={errorStyle}>{errors.passwordCheck.message}</p>
-              )}
-              {errors?.passwordCheck?.type === "validate" && (
-                <p className={errorStyle}>비밀번호가 일치하지 않습니다.</p>
               )}
             </div>
             <div className={inputWrapStyle}>
@@ -286,7 +295,7 @@ const SignupForm = () => {
                 onClick={roleModalHandler}
                 required
                 value={role || "직무를 선택해 주세요."}
-                labelClassName="text-sm md:text-base"
+                labelClassName={labelStyle}
                 inputClassName="text-left cursor-pointer"
               >
                 직무
@@ -337,7 +346,7 @@ const SignupForm = () => {
             </div>
 
             {/* 이용 약관 */}
-            <div className="mb-4 flex flex-col text-sm md:text-base">
+            <div className={`${labelStyle} mb-4 flex flex-col`}>
               <div className="after:bg-zik-border after:mt-2 after:mb-2 after:block after:h-px after:w-full after:content-['']">
                 <div className="mr-2 ml-2 flex justify-between">
                   <label>
@@ -380,8 +389,7 @@ const SignupForm = () => {
                         <label>
                           <input
                             type="checkbox"
-                            checked={serviceAgreement}
-                            onChange={() => handleCheck("serviceAgreement")}
+                            {...register("agreements.service")}
                           />
                           <span className="ml-2">
                             서비스 이용약관 동의 (필수)
@@ -393,8 +401,7 @@ const SignupForm = () => {
                         <label>
                           <input
                             type="checkbox"
-                            checked={personalAgreement}
-                            onChange={() => handleCheck("personalAgreement")}
+                            {...register("agreements.personal")}
                           />
                           <span className="ml-2">
                             개인정보 수집 및 이용 동의 (필수)
@@ -406,8 +413,7 @@ const SignupForm = () => {
                         <label>
                           <input
                             type="checkbox"
-                            checked={marketingAgreement}
-                            onChange={() => handleCheck("marketingAgreement")}
+                            {...register("agreements.marketing")}
                           />
                           <span className="ml-2">
                             마케팅 정보 수신 동의 (선택)
@@ -435,7 +441,11 @@ const SignupForm = () => {
           </form>
 
           {isOpenModal && (
-            <Modal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)}>
+            <Modal
+              isOpen={isOpenModal}
+              onClose={() => setIsOpenModal(false)}
+              isDelete={false}
+            >
               <div className="flex flex-col items-center justify-center gap-4 pr-7 pl-7">
                 <i className="border-zik-main/50 flex h-14 w-14 items-center justify-center rounded-full border-2">
                   <svg
