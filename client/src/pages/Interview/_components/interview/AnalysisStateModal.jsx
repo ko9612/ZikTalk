@@ -7,23 +7,44 @@ import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import Button from "@/components/common/Button";
 import { useQuestionStore } from "@/store/store";
+import { getInterviewFeedback } from "@/api/interviewApi";
+import { useInterviewStore } from "@/store/interviewSetupStore";
 
 const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
   // 임시
   const [isLoading, setIsLoading] = useState(true);
+  const level = useInterviewStore((state) => state.level);
+  const career = useInterviewStore((state) => state.career);
+  const { interviewId, questions, answers, video } = useQuestionStore();
 
-  //test
-  const { interviewId, curNum, questions, answers, video } = useQuestionStore();
+  // gpt 피드백 요청
+  const requestFeedback = async () => {
+    const content = questions.map((q, index) => ({
+      question: q.question,
+      answer: answers[index] || "",
+      type: q.type,
+    }));
+    const postData = { career: career, level: level, content: content };
+    try {
+      const data = await getInterviewFeedback(postData);
+      if (data) {
+        setIsLoading(false);
+        console.log(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  // 임시
+  // 피드백받은 데이터 + 질문 리스트, 내 답변, 질문별 영상 조합해서 백엔드로 post
+  const postResultData = async () => {};
+
   useEffect(() => {
     const img = new Image();
     img.src = MainLogo;
 
-    // gpt 피드백 요청 -> 받은 데이터 백엔드로
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    requestFeedback();
+    postResultData();
 
     return () => {
       clearTimeout(timer);
@@ -66,28 +87,6 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
           </>
         )}
       </div>
-      {/* <div className="bg-amber-500 text-xs">
-        <p>인터뷰 아이디: {interviewId}</p>
-        <p>현재 번호: {curNum}</p>
-        <p>
-          질문들:
-          {questions.map((e) => (
-            <p>{e.question}</p>
-          ))}
-        </p>
-        <p>
-          내 답변들:
-          {answers.map((e) => (
-            <p>{e}</p>
-          ))}
-        </p>
-        <p>
-          면접 영상들:
-          {video.map((e) => (
-            <p>{e}</p>
-          ))}
-        </p>
-      </div> */}
     </Modal>
   );
 };

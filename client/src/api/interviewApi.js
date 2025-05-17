@@ -40,3 +40,29 @@ export const postVideo = async (blob, filename) => {
     console.error(error);
   }
 };
+
+// gpt 피드백 요청
+export const getInterviewFeedback = async (data) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/interview/gpt-feedback`,
+      data,
+    );
+    const responseData = response.data;
+    const questionData = responseData?.choices[0]?.message?.content.trim();
+    const sanitizedContent = questionData.replace(/```json|```/g, "").trim();
+    return JSON.parse(sanitizedContent);
+  } catch (error) {
+    throw error.message;
+  }
+};
+
+// 면접 생성
+export const createInterview = async (data) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/interview`, data);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 // 모든 면접 조회
 export const getAllInterviews = async (userId = null) => {
   const where = userId ? { userId } : {};
-  
+
   return await prisma.interview.findMany({
     where,
     include: {
@@ -33,52 +33,52 @@ export const getAllInterviewsWithFirstQuestion = async (
   filters = {}
 ) => {
   const { page = 1, pageSize = 6 } = pagination;
-  const { sortBy = 'date', bookmarked = false } = filters;
-  
+  const { sortBy = "date", bookmarked = false } = filters;
+
   // 기본 쿼리 조건
   const where = {};
-  
+
   // 특정 사용자의 면접만 조회 (userId가 제공된 경우)
   if (userId) {
     where.userId = userId;
   }
-  
+
   // 북마크 필터가 적용된 경우
   if (bookmarked) {
     where.bookmarked = true;
   }
-  
+
   // 정렬 설정
   const orderBy = {};
-  if (sortBy === 'date') {
-    orderBy.createdAt = 'desc'; // 최신순
-  } else if (sortBy === 'score') {
-    orderBy.totalScore = 'desc'; // 점수순
+  if (sortBy === "date") {
+    orderBy.createdAt = "desc"; // 최신순
+  } else if (sortBy === "score") {
+    orderBy.totalScore = "desc"; // 점수순
   }
-  
+
   // 면접 조회
   const interviews = await prisma.interview.findMany({
     where,
     include: {
       questions: {
-        take: 1,  // 각 면접당 첫 번째 질문만 가져옴
-        orderBy: { order: 'asc' }
-      }
+        take: 1, // 각 면접당 첫 번째 질문만 가져옴
+        orderBy: { order: "asc" },
+      },
     },
     orderBy,
     skip: (page - 1) * pageSize,
-    take: parseInt(pageSize)
+    take: parseInt(pageSize),
   });
-  
+
   // 전체 면접 개수 조회 (페이지네이션 정보 제공용)
   const totalCount = await prisma.interview.count({ where });
-  
+
   return {
     interviews,
     totalCount,
     page: parseInt(page),
     pageSize: parseInt(pageSize),
-    totalPages: Math.ceil(totalCount / pageSize)
+    totalPages: Math.ceil(totalCount / pageSize),
   };
 };
 
@@ -191,30 +191,30 @@ export const batchDeleteInterviews = async (ids) => {
   if (!ids || ids.length === 0) {
     return { count: 0 };
   }
-  
+
   // 트랜잭션을 사용하여 모든 면접과 질문을 원자적으로 삭제
   return await prisma.$transaction(async (tx) => {
     // 1. 관련된 모든 질문 삭제
     const deletedQuestions = await tx.question.deleteMany({
       where: {
         interviewId: {
-          in: ids
-        }
-      }
+          in: ids,
+        },
+      },
     });
-    
+
     // 2. 면접들 삭제
     const deletedInterviews = await tx.interview.deleteMany({
       where: {
         id: {
-          in: ids
-        }
-      }
+          in: ids,
+        },
+      },
     });
-    
+
     return {
       deletedInterviews: deletedInterviews.count,
-      deletedQuestions: deletedQuestions.count
+      deletedQuestions: deletedQuestions.count,
     };
   });
 };
@@ -248,12 +248,12 @@ export const getInterviewsByRole = async (role) => {
 // 북마크된 면접 조회
 export const getBookmarkedInterviews = async (userId = null) => {
   const where = { bookmarked: true };
-  
+
   // 특정 사용자의 북마크만 조회 (userId가 제공된 경우)
   if (userId) {
     where.userId = userId;
   }
-  
+
   return await prisma.interview.findMany({
     where,
     include: {

@@ -69,3 +69,64 @@ export const generateQuestion = async (level, qCount, career, ratio) => {
     }
   }
 };
+
+export const generateFeedback = async (data) => {
+  const prompt = `
+  "${data.career}" 직무면접 준비를 위한 "${
+    data.level
+  }" 수준의 면접 질문에 대한 답변을 평가합니다.
+  - 총 질문 수: ${data.content.length}개
+  - 질문과 답변 목록:
+  ${data.content
+    .map(
+      (q, index) =>
+        `${index + 1}. 질문: "${q.question}" / 답변: "${
+          q.answer
+        }" / 질문 유형: "${q.type}"`
+    )
+    .join("\n")}
+  - 질문 유형:
+    - **직무 질문 (Hard Skill)**: 지원자의 직무 능력, 기술적 이해도, 문제 해결 능력을 평가하기 위한 질문
+    - **인성 질문 (Soft Skill)**: 지원자의 성향, 커뮤니케이션 능력, 팀워크, 문제 해결 방식을 평가하기 위한 질문
+  
+  **반환 형식 (JSON) 외 다른 형식은 포함하지 마세요.**
+  
+  - **반환 형식 (JSON)**:
+  {
+    "personalityScore": 85,
+    "personalityEval": "인성 질문에 대한 전체적인 평가...",
+    "jobScore": 77,
+    "jobEval": "직무 질문에 대한 전체적인 평가...",
+    "summary": "전체 질문에 대한 종합 평가...",
+    "recommended": [
+      "1번 질문에 대한 모범 답변",
+      "2번 질문에 대한 모범 답변",
+      ...
+      "${data.content.length}번 질문에 대한 모범 답변"
+    ]
+  }
+  
+  🔗 **세부 요구사항:**
+  - **personalityScore** (인성 질문 답변 점수): **30~100점 사이의 정수**
+  - **jobScore** (직무 질문 답변 점수): **30~100점 사이의 정수**
+  - **personalityEval** (인성 질문에 대한 평가): **200자 이내의 문자열**
+  - **jobEval** (직무 질문에 대한 평가): **200자 이내의 문자열**
+  - **summary** (전체 답변에 대한 총평): **200자 이내의 문자열**
+  - **recommended** (각 질문에 대한 모범 답변): 각 문자열은 **200자 이내**
+  `;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        store: true,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return res;
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error);
+      if (attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+};

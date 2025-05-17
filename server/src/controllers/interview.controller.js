@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import * as interviewDBService from "../services/interviewDBService.js";
-import { generateQuestion } from "../services/interviewService.js";
+import {
+  generateQuestion,
+  generateFeedback,
+} from "../services/interviewService.js";
 
 const prisma = new PrismaClient();
 
@@ -15,12 +18,21 @@ const prisma = new PrismaClient();
 // 4. 에러 처리
 // 서비스 계층에서 발생한 예외를 HTTP 상태 코드와 함께 클라이언트에게 반환
 
-// 아래는 예시 코드 (gpt)
 export const createInterviewQuestion = async (req, res) => {
   try {
     const { level, qCount, career, ratio } = req.body;
     const question = await generateQuestion(level, qCount, career, ratio);
     res.json(question);
+  } catch (error) {
+    res.status(500).json({ message: "질문 생성 실패" });
+  }
+};
+
+export const createInterviewFeedback = async (req, res) => {
+  try {
+    const data = req.body;
+    const feedback = await generateFeedback(data);
+    res.json(feedback);
   } catch (error) {
     res.status(500).json({ message: "질문 생성 실패" });
   }

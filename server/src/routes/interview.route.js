@@ -6,7 +6,10 @@
 import express from "express";
 import * as interviewController from "../controllers/interview.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
-import { createInterviewQuestion } from "../controllers/interview.controller.js";
+import {
+  createInterviewQuestion,
+  createInterviewFeedback,
+} from "../controllers/interview.controller.js";
 
 const router = express.Router();
 
@@ -27,8 +30,11 @@ router.post("/batch-delete", interviewController.batchDeleteInterviews);
 // 사용자 ID로 면접 조회
 router.get("/user/:userId", interviewController.getInterviewsByUserId);
 
-// API 엔드포인트들
+// 질문 생성
 router.post("/gpt-question", createInterviewQuestion);
+
+// 피드백 생성
+router.post("/gpt-feedback", createInterviewFeedback);
 
 // 새 면접 생성
 router.post("/", interviewController.createInterview);
