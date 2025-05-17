@@ -164,3 +164,71 @@ export const updateUserInfo = async (req, res) => {
     return res.status(500).json({ message: '서버 오류가 발생했습니다.' });
   }
 };
+
+// 회원 탈퇴
+export const deleteUserAccount = async (req, res) => {
+  try {
+    // 인증 확인 - userId가 없으면 401 반환
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
+    
+    // 비밀번호 확인 (추가 보안) - req.body가 undefined일 수 있으므로 안전하게 처리
+    const password = req.body?.password;
+    
+    // 먼저 사용자가 존재하는지 확인
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+    
+    if (!existingUser) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+    
+    // 비밀번호 확인이 제공된 경우 검증 (추가 보안)
+    if (password) {
+      const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+      }
+    }
+    
+    try {
+      // 트랜잭션 사용하여 원자적으로 데이터 삭제 처리
+      await prisma.$transaction(async (prisma) => {
+        // 1. 사용자의 질문 삭제 (외래 키 문제로 가장 먼저 삭제)
+        await prisma.question.deleteMany({
+          where: { userId }
+        });
+        
+        // 2. 사용자의 면접 삭제 (질문 삭제 후 면접 삭제)
+        await prisma.interview.deleteMany({
+          where: { userId }
+        });
+        
+        // 3. 사용자 계정 삭제 (관련 데이터가 모두 삭제된 후 계정 삭제)
+        await prisma.user.delete({
+          where: { id: userId }
+        });
+      });
+      
+      return res.status(200).json({ 
+        success: true,
+        message: '회원 탈퇴가 성공적으로 처리되었습니다.'
+      });
+    } catch (deleteError) {
+      console.error('Prisma 삭제 에러:', deleteError);
+      if (deleteError.code === 'P2003') {
+        return res.status(500).json({ 
+          message: '참조 무결성 제약조건으로 인해 삭제할 수 없습니다. 관련 데이터를 먼저 삭제해주세요.' 
+        });
+      }
+      throw deleteError;
+    }
+  } catch (error) {
+    console.error('회원 탈퇴 처리 오류:', error);
+    return res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+  }
+};

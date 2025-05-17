@@ -3,47 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { jwtDecode } from "jwt-decode";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
+import DeleteAccountModal from "@/components/common/Modal/DeleteAccountModal";
 import Input from "@/components/common/Input";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Button from "@/components/common/Button";
-import { updateUserInfo } from "@/api/myPageApi";
+import { updateUserInfo, deleteUserAccount } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast.jsx";
-
-// 로그인 필요 모달
-const LoginRequiredModal = ({ isOpen, onClose, onLogin }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
-      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h3 className="mb-4 text-xl font-semibold text-gray-800">로그인 필요</h3>
-        <p className="mb-6 text-gray-600">이 기능을 사용하려면 로그인이 필요합니다.</p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onClose}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            취소
-          </button>
-          <button
-            onClick={onLogin}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            로그인
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const MyInfo = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const [cookies] = useCookies(["token"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -82,7 +54,6 @@ const MyInfo = () => {
     const token = cookies.token;
     if (!token || typeof token !== "string") {
       setIsLoggedIn(false);
-      setLoginModalOpen(true);
       return;
     }
     
@@ -114,7 +85,6 @@ const MyInfo = () => {
       setSelectedJob(userRole);
     } catch (err) {
       setIsLoggedIn(false);
-      setLoginModalOpen(true);
     }
   }, [cookies.token]);
 
@@ -141,15 +111,11 @@ const MyInfo = () => {
     return true;
   };
 
-  const handleLogin = () => {
-    navigate('/login');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isLoggedIn) {
-      setLoginModalOpen(true);
+      navigate('/signin');
       return;
     }
     
@@ -223,6 +189,44 @@ const MyInfo = () => {
       // 일반 오류 메시지는 이미 API 오류 처리에서 표시됨
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (password = null) => {
+    if (!isLoggedIn) {
+      navigate('/signin');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // API 호출 (비밀번호 전달)
+      await deleteUserAccount(password);
+      
+      // 로그아웃 처리 (토큰 제거)
+      removeCookie("token", { path: "/" });
+      
+      showToast("회원 탈퇴가 완료되었습니다.", "success");
+      
+      // 즉시 홈페이지로 이동 (지연 없이)
+      window.location.href = "/";
+    } catch (error) {
+      console.error("회원 탈퇴 에러:", error);
+      
+      // 에러 메시지 표시
+      let errorMessage = "회원 탈퇴 처리 중 오류가 발생했습니다.";
+      
+      // 비밀번호 불일치 에러 처리
+      if (error.response?.status === 401 && password) {
+        errorMessage = "비밀번호가 일치하지 않습니다.";
+      } else {
+        errorMessage = error.response?.data?.message || errorMessage;
+      }
+      
+      showToast(errorMessage, "error");
+      setIsLoading(false);
+      setDeleteModalOpen(false);
     }
   };
 
@@ -362,10 +366,10 @@ const MyInfo = () => {
                 className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"
                 onClick={() => {
                   if (!isLoggedIn) {
-                    setLoginModalOpen(true);
+                    navigate('/signin');
                     return;
                   }
-                  alert("회원탈퇴 기능은 준비 중입니다.");
+                  setDeleteModalOpen(true);
                 }}
                 disabled={isLoading}
               >
@@ -375,11 +379,12 @@ const MyInfo = () => {
           </form>
         )}
       </div>
-      
-      <LoginRequiredModal
-        isOpen={loginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-        onLogin={handleLogin}
+
+      <DeleteAccountModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        isLoading={isLoading}
       />
     </div>
   );
