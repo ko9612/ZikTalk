@@ -69,7 +69,7 @@ const Timer = ({ qes }) => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isReplying, qes]);
+  }, [isReplying, qes, isLoading]);
 
   useEffect(() => {
     setResetKey((prev) => prev + 1);
