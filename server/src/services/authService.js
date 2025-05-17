@@ -1,6 +1,7 @@
 import bcrypt, { hash } from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import { createTransport } from "nodemailer";
 
 const prisma = new PrismaClient();
 
@@ -30,15 +31,15 @@ export const loginUser = async (data) => {
 
   // JWT 토큰 발급
   const token = jwt.sign(
-    { 
-      userId: user.id, 
+    {
+      userId: user.id,
       id: user.id,
-      userName: user.name, 
+      userName: user.name,
       userEmail: user.email,
       role: user.role,
-      career: user.career
+      career: user.career,
     },
-    process.env.JWT_SECRET || 'your-secret-key',
+    process.env.JWT_SECRET || "your-secret-key",
     {
       expiresIn: "24h",
     }
@@ -81,4 +82,57 @@ export const registerUser = async (data) => {
       career: Number(career),
     },
   });
+};
+
+// 이메일 인증
+
+// 인증 번호 생성 (6자리 숫자)
+export const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// 이메일 인증 번호 발송
+export const sendVerificationEmail = async (email, verificationCode) => {
+  try {
+    const transporter = createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        type: "OAuth2",
+        user: process.env.GMAIL_OAUTH_USER,
+        clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
+      },
+    });
+    const mailOptions = {
+      from: process.env.GMAIL_OAUTH_USER,
+      to: email,
+      subject: "[ZikTalk] 직톡 회원가입 이메일 인증 메일입니다.",
+      html: `
+        <div style="text-align: center; font-family: Arial, sans-serif;">
+        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
+          <h2>ZikTalk 회원가입 인증번호</h2>
+          <p>아래 인증번호를 <strong>3분 내에</strong> 입력해주세요.</p>
+          <div style="color: #1a73e8;">회원가입 인증번호는 <strong style="font-size: 20px; font-weight: bold;">${verificationCode}</strong> 입니다.</div>
+          <br />
+          <p>감사합니다.<br/>ZikTalk 팀 드림</p>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: "logo.png",
+          path: "./src/assets/images/logo.webp",
+          cid: "logo",
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 };
