@@ -20,7 +20,8 @@ export const authenticate = (req, res, next) => {
     }
 
     // 토큰 검증
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const secret = process.env.JWT_SECRET || 'your-secret-key';
+    const decoded = jwt.verify(token, secret);
     
     // 요청 객체에 사용자 정보 추가
     req.user = decoded;

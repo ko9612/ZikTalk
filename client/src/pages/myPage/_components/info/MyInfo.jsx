@@ -1,13 +1,49 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import { jwtDecode } from "jwt-decode";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import Input from "@/components/common/Input";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Button from "@/components/common/Button";
-import { fetchUserInfo, updateUserInfo } from "@/api/myPageApi";
+import { updateUserInfo } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast.jsx";
+
+// 로그인 필요 모달
+const LoginRequiredModal = ({ isOpen, onClose, onLogin }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
+      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <h3 className="mb-4 text-xl font-semibold text-gray-800">로그인 필요</h3>
+        <p className="mb-6 text-gray-600">이 기능을 사용하려면 로그인이 필요합니다.</p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            취소
+          </button>
+          <button
+            onClick={onLogin}
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            로그인
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MyInfo = () => {
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [cookies] = useCookies(["token"]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -29,43 +65,58 @@ const MyInfo = () => {
     { value: "4년차", label: "4년차" },
     { value: "5년차 이상", label: "5년차 이상" },
   ];
+  
+  // 숫자 형식의 경력 값을 문자열로 변환하는 함수
+  const convertCareerNumberToString = (careerNumber) => {
+    if (careerNumber === undefined || careerNumber === null) return "신입";
+    
+    if (careerNumber === 0) return "신입";
+    if (careerNumber === 5) return "5년차 이상";
+    if (careerNumber > 0) return `${careerNumber}년차`;
+    
+    return "신입";
+  };
 
-  // 사용자 정보 불러오기
+  // 로그인 상태 확인 및 토큰에서 사용자 정보 직접 추출
   useEffect(() => {
-    const getUserInfo = async () => {
-      try {
-        setIsLoading(true);
-        const userData = await fetchUserInfo();
-        
-        // 경력 값 변환 (숫자 -> 문자열)
-        let careerStr = "신입";
-        if (userData.career === 0) {
-          careerStr = "신입";
-        } else if (userData.career === 5) {
-          careerStr = "5년차 이상";
-        } else if (userData.career > 0) {
-          careerStr = `${userData.career}년차`;
-        }
-        
-        setForm({
-          name: userData.name || "",
-          email: userData.email || "",
-          password: "",
-          passwordCheck: "",
-          role: userData.role || "",
-          career: careerStr,
-        });
-        setSelectedJob(userData.role || "");
-      } catch (error) {
-        console.error("사용자 정보 로딩 오류:", error);
-        showToast("사용자 정보를 불러오는데 실패했습니다.", "error");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getUserInfo();
-  }, [showToast]);
+    const token = cookies.token;
+    if (!token || typeof token !== "string") {
+      setIsLoggedIn(false);
+      setLoginModalOpen(true);
+      return;
+    }
+    
+    try {
+      // 토큰 검증 및 정보 추출
+      const decoded = jwtDecode(token);
+      setIsLoggedIn(true);
+      
+      // 토큰에서 직접 필요한 정보 추출
+      const userName = decoded.userName || decoded.name || "사용자";
+      // 이메일 우선순위: userEmail > email
+      const userEmail = decoded.userEmail || decoded.email || "";
+      const userRole = decoded.role || "";
+      const userCareer = decoded.career !== undefined ? decoded.career : 0;
+      
+      // 경력 값 변환 (숫자 -> 문자열)
+      const careerStr = convertCareerNumberToString(userCareer);
+      
+      // 토큰에서 가져온 정보로 폼 설정
+      setForm({
+        name: userName,
+        email: userEmail,
+        role: userRole,
+        career: careerStr,
+        password: "",
+        passwordCheck: "",
+      });
+      
+      setSelectedJob(userRole);
+    } catch (err) {
+      setIsLoggedIn(false);
+      setLoginModalOpen(true);
+    }
+  }, [cookies.token]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -80,9 +131,6 @@ const MyInfo = () => {
   const validateForm = () => {
     // 비밀번호 변경 시 유효성 검사
     if (form.password) {
-      // 임시로 비밀번호 검증 조건 완화 (테스트 목적)
-      console.log("비밀번호 검증 완화 - 테스트 목적으로 모든 비밀번호 허용");
-      
       // 비밀번호 확인
       if (form.password !== form.passwordCheck) {
         showToast("비밀번호가 일치하지 않습니다.", "error");
@@ -93,19 +141,22 @@ const MyInfo = () => {
     return true;
   };
 
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log("폼 제출 이벤트 발생");
-    console.log("폼 데이터:", form);
-    console.log("선택된 직무:", selectedJob);
+    if (!isLoggedIn) {
+      setLoginModalOpen(true);
+      return;
+    }
     
-    // 검증 결과 로깅
+    // 검증 결과
     const isValid = validateForm();
-    console.log("폼 검증 결과:", isValid);
     
     if (!isValid) {
-      console.log("폼 검증 실패 - API 호출 중단");
       return;
     }
     
@@ -126,38 +177,50 @@ const MyInfo = () => {
       // 경력 업데이트
       updateData.career = form.career;
       
-      // 전송할 데이터 로그 출력
-      console.log("서버로 보내는 데이터:", JSON.stringify(updateData, null, 2));
-      
-      // API 호출 직전
-      console.log("API 호출 시작...");
-      
       try {
         // API 호출
         const response = await updateUserInfo(updateData);
-        console.log("API 호출 성공!", response);
         
         // 성공적으로 업데이트되었는지 확인하기 위해 서버에서 받은 사용자 정보 출력
         if (response && response.user) {
-          console.log("업데이트된 사용자 정보:", response.user);
+          // 서버 응답에서 받은 사용자 정보로 폼 업데이트
+          const updatedUser = response.user;
+          setForm({
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            career: convertCareerNumberToString(updatedUser.career),
+            password: "",
+            passwordCheck: "",
+          });
+          
+          setSelectedJob(updatedUser.role);
+          
+          // 토큰이 새로 발급된 경우 갱신
+          if (response.user.token) {
+            // 토큰 갱신 처리
+          }
         }
-        
-        // 비밀번호 필드 초기화
-        setForm({
-          ...form,
-          password: "",
-          passwordCheck: "",
-        });
         
         showToast("정보가 성공적으로 업데이트되었습니다.", "success");
       } catch (apiError) {
-        console.error("API 호출 중 오류 발생:", apiError);
-        console.error("오류 세부정보:", apiError.response?.data || apiError.message);
+        // API 오류 처리
+        if (apiError.response && apiError.response.status === 401) {
+          showToast("인증이 만료되었습니다. 다시 로그인해 주세요.", "error");
+          
+          // 로그인 페이지로 리다이렉트
+          setTimeout(() => navigate('/signin'), 1500);
+        } else {
+          showToast(
+            apiError.response?.data?.message || "정보 업데이트에 실패했습니다.", 
+            "error"
+          );
+        }
+        
         throw apiError;
       }
     } catch (error) {
-      console.error("정보 업데이트 오류:", error);
-      showToast("정보 업데이트에 실패했습니다.", "error");
+      // 일반 오류 메시지는 이미 API 오류 처리에서 표시됨
     } finally {
       setIsLoading(false);
     }
@@ -297,7 +360,13 @@ const MyInfo = () => {
               <button
                 type="button"
                 className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"
-                onClick={() => alert("회원탈퇴 기능은 준비 중입니다.")}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    setLoginModalOpen(true);
+                    return;
+                  }
+                  alert("회원탈퇴 기능은 준비 중입니다.");
+                }}
                 disabled={isLoading}
               >
                 회원탈퇴
@@ -306,6 +375,12 @@ const MyInfo = () => {
           </form>
         )}
       </div>
+      
+      <LoginRequiredModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onLogin={handleLogin}
+      />
     </div>
   );
 };

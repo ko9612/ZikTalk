@@ -6,8 +6,13 @@ const prisma = new PrismaClient();
 // 모든 질문 조회
 export const getAllQuestions = async (req, res) => {
   try {
-    // 현재 로그인된 사용자 ID 또는 test ID 사용
-    const userId = req.user?.id || 'test';
+    // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
+    const userId = req.query.userId || req.user?.id;
+    
+    // userId가 없으면 401 에러 반환
+    if (!userId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
     
     // 쿼리 파라미터에서 필터와 페이지네이션 정보 추출
     const { page, pageSize, sortBy, bookmarked } = req.query;
@@ -105,7 +110,15 @@ export const deleteQuestion = async (req, res) => {
 export const toggleBookmark = async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await questionService.toggleBookmark(id);
+    const { userId } = req.body;
+    const authenticatedUserId = userId || req.user?.id;
+    
+    // userId가 없으면 401 에러 반환
+    if (!authenticatedUserId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
+    
+    const updated = await questionService.toggleBookmark(id, authenticatedUserId);
     
     if (!updated) {
       return res.status(404).json({ message: '질문을 찾을 수 없습니다.' });

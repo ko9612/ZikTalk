@@ -1,31 +1,24 @@
-import { useReducer, useCallback, useMemo, useState, useEffect } from "react";
+import { useReducer, useCallback, useEffect } from "react";
 import { ACTIONS, PAGE_SIZE, SCROLL_BATCH_SIZE } from "./constants";
-import {
-  prepareInitialData,
-  filterAndSortResults,
-  formatQuestionData,
-} from "./utils";
 import { SORT_OPTIONS } from "@/components/common/useFilter";
 import {
-  fetchQuestions,
   fetchInterviewsWithFirstQuestion,
-  toggleQuestionBookmark as apiToggleBookmark,
   toggleInterviewBookmark,
-  getHiddenQuestions,
   batchDeleteInterviews,
 } from "@/api/myPageApi";
 
 // 초기 상태
 const initialState = {
-  results: [],
+  results: [],         // 전체 결과 (필터링 전)
   page: 0,
-  visibleResults: [],
+  visibleResults: [],  // 화면에 표시할 결과
   hasMore: true,
   loading: false,
   selected: {},
   isDeleteMode: false,
   totalCount: 0,
   error: null,
+  currentSortType: "최신순" // 현재 정렬 타입 저장
 };
 
 // 리듀서 함수
@@ -57,36 +50,16 @@ function reducer(state, action) {
       return { ...state, isDeleteMode: !state.isDeleteMode };
     case ACTIONS.CLEAR_SELECTED:
       return { ...state, selected: {} };
-    case ACTIONS.RESET_PAGINATION:
-      return {
-        ...state,
+    case ACTIONS.SET_SORT_TYPE:
+      return { ...state, currentSortType: action.payload };
+    case ACTIONS.RESET_STATE:
+      return { 
+        ...state, 
+        results: [], 
+        visibleResults: [], 
         page: 0,
-        visibleResults: action.payload.slice(0, PAGE_SIZE),
-        hasMore: action.payload.length > PAGE_SIZE,
-      };
-    case ACTIONS.DELETE_ITEMS:
-      // 항목을 실제로 삭제하는 대신 UI에서만 제거
-      const visibleAfterDelete = state.visibleResults.filter(
-        (item) => !state.selected[item.id],
-      );
-      return {
-        ...state,
-        visibleResults: visibleAfterDelete,
-        selected: {},
-        isDeleteMode: false,
-      };
-    case ACTIONS.MARK_AS_DELETED:
-      // 지정된 ID 목록의 항목에 isDeleted 플래그 설정
-      const itemsToDelete = action.payload;
-      const resultsWithDeletedFlag = state.results.map((item) =>
-        itemsToDelete.includes(item.id) ? { ...item, isDeleted: true } : item,
-      );
-
-      return {
-        ...state,
-        results: resultsWithDeletedFlag,
-        selected: {},
-        isDeleteMode: false,
+        hasMore: true,
+        error: null
       };
     default:
       return state;
@@ -94,517 +67,302 @@ function reducer(state, action) {
 }
 
 /**
- * 질문 목록 상태 관리 훅
+ * 질문 목록 상태 관리 훅 (common 훅 활용 버전)
  */
-export function useQuestionListState(props) {
-  // 리듀서 설정
+export function useQuestionListState() {
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  
   // 질문 데이터 불러오기
-  const fetchQuestionsData = useCallback(
-    async (page = 0, sortType = SORT_OPTIONS.LATEST) => {
-      try {
-        console.log(
-          `[DEBUG] 데이터 로드 시작 - 페이지: ${page}, 정렬: ${sortType}`,
-        );
-        dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-        dispatch({ type: ACTIONS.SET_ERROR, payload: null });
+  const fetchQuestionsData = useCallback(async (page = 0, sortType = SORT_OPTIONS.LATEST, userId = null) => {
+    try {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+      dispatch({ type: ACTIONS.SET_ERROR, payload: null });
+      
+      // 정렬 타입이 변경되었을 때 처리
+      const isFilterChange = sortType !== state.currentSortType;
+      const isBookmarkToLatest = state.currentSortType === SORT_OPTIONS.BOOKMARK && sortType === SORT_OPTIONS.LATEST;
+      
+      if (isFilterChange) {
+        // 정렬 타입 변경 (상태 초기화하지 않음)
+        dispatch({ type: ACTIONS.SET_SORT_TYPE, payload: sortType });
+        page = 0; // 페이지 번호 초기화
+      } else {
+        // 정렬 타입 저장
+        dispatch({ type: ACTIONS.SET_SORT_TYPE, payload: sortType });
+      }
 
-        // 이미 요청한 페이지라면 중복 요청 방지
-        if (page > 0 && page <= state.page && state.results.length > 0) {
-          console.log(`[DEBUG] 이미 요청한 페이지 스킵: ${page}`);
-          dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-          return;
-        }
+      // API 파라미터 설정
+      const isBookmarked = false; // 북마크 필터링을 API에서 하지 않고 클라이언트에서 정렬만 수행
+      const sortBy = "date"; // 항상 날짜순 요청
+      const isInitialLoad = page === 0;
+      
+      // 초기 로드 시 더 많은 데이터 불러오기
+      const batchSize = page === 0 
+        ? SCROLL_BATCH_SIZE * 5 // 초기 로드 시 더 많은 데이터 로드
+        : SCROLL_BATCH_SIZE;
 
-        // 북마크 여부와 정렬 방식 결정
-        const isBookmarked = sortType === SORT_OPTIONS.BOOKMARK;
-        const sortBy = sortType === SORT_OPTIONS.LATEST ? "date" : "bookmark";
+      // API 호출 - userId 전달
+      const data = await fetchInterviewsWithFirstQuestion(
+        page + 1,
+        batchSize,
+        sortBy,
+        isBookmarked,
+        isInitialLoad,
+        userId
+      );
 
-        // 초기 로드인지 확인 (페이지가 0이면 초기 로드)
-        const isInitialLoad = page === 0;
+      if (!data) throw new Error("데이터를 불러올 수 없습니다.");
 
-        console.log(
-          `[DEBUG] API 호출 파라미터: page=${page + 1}, pageSize=${SCROLL_BATCH_SIZE}, sortBy=${sortBy}, isBookmarked=${isBookmarked}, isInitialLoad=${isInitialLoad}`,
-        );
+      // 데이터 가공
+      const formattedData = data.map((interview, index) => {
+        const firstQuestion = interview.questions?.[0] || null;
+        const uniqueId = `${interview.id}-${page}-${index}`;
 
-        // 면접 API 호출 (각 면접당 첫 번째 질문만 포함)
-        const data = await fetchInterviewsWithFirstQuestion(
-          page + 1,
-          SCROLL_BATCH_SIZE,
-          sortBy,
-          isBookmarked,
-          isInitialLoad,
-        );
+        return {
+          id: uniqueId,
+          originalId: interview.id,
+          interviewId: interview.id,
+          title: interview.role || "미분류",
+          content: firstQuestion?.content || "",
+          answer: firstQuestion?.myAnswer || "",
+          recommendation: firstQuestion?.recommended || "",
+          score: interview.totalScore || 0,
+          desc: "score",
+          date: new Date(interview.createdAt).toISOString().slice(0, 10).replace(/-/g, "."),
+          createdAt: interview.createdAt, // 원본 타임스탬프 저장
+          type: firstQuestion?.type === "PERSONALITY" ? "인성" : "직무",
+          bookmarked: interview.bookmarked || false,
+          interviewData: interview,
+          userId: interview.userId || userId, // 사용자 ID 저장
+          summary: interview.summary || "", // summary 필드 추가
+        };
+      });
 
-        console.log(`[DEBUG] API 응답 데이터:`, data);
-
-        if (!data) {
-          throw new Error("서버 응답 형식이 올바르지 않습니다.");
-        }
-
-        // 총 개수 또는 기본 개수
-        const total = data.length;
-        console.log(`[DEBUG] 총 데이터 개수: ${total}`);
-
-        // 숨겨진 질문 목록 가져오기
-        const hiddenQuestions = getHiddenQuestions();
-        console.log(`[DEBUG] 숨겨진 질문 목록:`, hiddenQuestions);
-
-        // 데이터 형식 변환 (면접 + 첫 번째 질문)
-        const formattedData = data.map((interview, index) => {
-          // 각 면접의 첫 번째 질문 가져오기
-          const firstQuestion =
-            interview.questions && interview.questions.length > 0
-              ? interview.questions[0]
-              : null;
-
-          console.log(
-            `[DEBUG] 면접 ID ${interview.id}의 첫 번째 질문:`,
-            firstQuestion,
-          );
-
-          // 질문이 없는 경우 기본 데이터로 생성
-          if (!firstQuestion) {
-            return {
-              id: index + 1,
-              originalId: interview.id,
-              interviewId: interview.id,
-              title: interview.role || "미분류",
-              content: "",
-              answer: "",
-              recommendation: "",
-              score: interview.totalScore || 0,
-              desc: "score",
-              date: new Date(interview.createdAt)
-                .toISOString()
-                .slice(0, 10)
-                .replace(/-/g, "."),
-              type: "일반",
-              more: true,
-              recommend: 0,
-              views: 0,
-              feedback:
-                interview.summary ||
-                `${interview.role} 포지션에 대한 답변입니다.`,
-              bookmarked: interview.bookmarked || false,
-              isDeleted: false,
-              career: interview.role || "미분류",
-
-              // 추가 인터뷰 정보
-              totalScore: interview.totalScore || 0,
-              personalityScore: interview.personalityScore || 0,
-              jobScore: interview.jobScore || 0,
-              summary: interview.summary || "",
-              strengths: interview.strengths || "",
-              improvements: interview.improvements || "",
-
-              // 질문 목록
-              questions: interview.questions || [],
-
-              // 원본 인터뷰 데이터
-              interviewData: interview,
-            };
-          }
-
-          // 면접과 질문 데이터를 결합하여 반환
-          return {
-            id: index + 1,
-            originalId: interview.id, // 면접 ID를 원본 ID로 사용
-            interviewId: interview.id,
-            title: interview.role || "미분류",
-            content: firstQuestion.content || "",
-            answer: firstQuestion.myAnswer || "",
-            recommendation: firstQuestion.recommended || "",
-            score: interview.totalScore || 0,
-            desc: "score",
-            date: new Date(interview.createdAt)
-              .toISOString()
-              .slice(0, 10)
-              .replace(/-/g, "."),
-            type: firstQuestion.type === "PERSONALITY" ? "인성" : "직무",
-            more: true,
-            recommend: 0,
-            views: 0,
-            feedback:
-              interview.summary ||
-              `${interview.role} 포지션에 대한 답변입니다.`,
-            bookmarked: interview.bookmarked || false,
-            isDeleted: false,
-            career: interview.role || "미분류",
-
-            // 추가 인터뷰 정보
-            totalScore: interview.totalScore || 0,
-            personalityScore: interview.personalityScore || 0,
-            jobScore: interview.jobScore || 0,
-            summary: interview.summary || "",
-            strengths: interview.strengths || "",
-            improvements: interview.improvements || "",
-
-            // 질문 목록
-            questions: interview.questions || [],
-
-            // 원본 인터뷰 데이터
-            interviewData: interview,
-          };
-        });
-
-        console.log(`[DEBUG] 변환된 데이터:`, formattedData);
-
-        // 숨겨진 항목 필터링
-        const filteredData = formattedData.filter(
-          (item) => !hiddenQuestions.includes(item.originalId),
-        );
-        console.log(`[DEBUG] 필터링 후 데이터:`, filteredData);
-        console.log(
-          `[DEBUG] 필터링으로 제외된 항목 수: ${formattedData.length - filteredData.length}`,
-        );
-
-        // 데이터가 더 없으면 hasMore를 false로 설정
-        const hasMoreData =
-          filteredData.length > 0 && filteredData.length >= SCROLL_BATCH_SIZE;
-        console.log(`[DEBUG] 더 로드할 데이터 있음: ${hasMoreData}`);
-
-        // 정렬 (필터 타입에 따라 다르게 적용)
-        let sortedResults;
-        if (sortType === SORT_OPTIONS.LATEST) {
-          // 최신순: 북마크 상태와 무관하게 날짜순으로만 정렬
-          sortedResults = filteredData.sort(
-            (a, b) => new Date(b.date) - new Date(a.date),
-          );
-        } else if (sortType === SORT_OPTIONS.BOOKMARK) {
-          // 북마크순: 북마크된 항목이 상단에 오도록 정렬
-          sortedResults = filteredData.sort((a, b) => {
-            // 북마크 상태가 다르면 북마크된 것이 먼저 오도록
+      // 정렬 함수
+      const sortResults = (results, type) => {
+        if (type === SORT_OPTIONS.BOOKMARK) {
+          // 북마크 우선 정렬
+          return [...results].sort((a, b) => {
             if (a.bookmarked !== b.bookmarked) {
               return a.bookmarked ? -1 : 1;
             }
-            // 북마크 상태가 같으면 날짜순 정렬
-            return new Date(b.date) - new Date(a.date);
+            return new Date(b.createdAt) - new Date(a.createdAt);
           });
         } else {
-          // 기본값: 날짜순 정렬
-          sortedResults = filteredData.sort(
-            (a, b) => new Date(b.date) - new Date(a.date),
-          );
+          // 최신순 정렬
+          return [...results].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
+      };
 
-        console.log(`[DEBUG] 정렬 후 결과:`, sortedResults);
+      // 사용자 ID로 필터링 (받은 userId가 있는 경우)
+      const filteredByUser = userId 
+        ? formattedData.filter(item => !item.userId || item.userId === userId)
+        : formattedData;
 
-        // 중복 데이터 감지 (originalId 기준)
-        let isDuplicate = false;
-        if (page > 0 && state.results.length > 0) {
-          // API 응답의 모든 항목이 이미 있는지 확인
-          const existingIds = state.results.map((item) => item.originalId);
-          const newIds = sortedResults.map((item) => item.originalId);
-
-          // 모든 새 ID가 기존 ID 목록에 있는지 확인
-          const allDuplicated = newIds.every((id) => existingIds.includes(id));
-
-          // 새 항목이 없으면 중복으로 처리
-          if (allDuplicated) {
-            console.log(`[DEBUG] 중복 데이터 감지됨. 더 이상 로드하지 않음.`);
-            isDuplicate = true;
-          }
-        }
-
-        // 상태 업데이트 (첫 페이지와 스크롤 페이지)
-        if (page === 0) {
-          // 초기 로드 시에는 PAGE_SIZE 개수만큼 표시 (6개)
-          dispatch({ type: ACTIONS.SET_RESULTS, payload: sortedResults });
-          // 초기 페이지에는 PAGE_SIZE 개수만 표시
+      // 데이터 정렬
+      const sortedResults = sortResults(filteredByUser, sortType);
+      const hasMoreData = data.length >= batchSize;
+      
+      if (page === 0) {
+        // 첫 페이지 로드 - 결과 대체
+        dispatch({ type: ACTIONS.SET_RESULTS, payload: sortedResults });
+        
+        // 필터 변경된 경우 - 모든 전환에서 부드러운 정렬 적용
+        if (isFilterChange && state.results.length > 0) {
+          // 기존 데이터를 새 정렬 타입으로 재정렬
+          // sortResults 함수 재사용 (최신순일 때는 이미 날짜 기준으로만 정렬됨)
+          const reorderedResults = sortResults(state.results, sortType);
+          
+          // 표시 항목 유지하면서 정렬만 변경
+          dispatch({ type: ACTIONS.SET_VISIBLE_RESULTS, payload: reorderedResults.slice(0, state.visibleResults.length) });
+        } else {
+          // 첫 로드 시
           dispatch({
             type: ACTIONS.SET_VISIBLE_RESULTS,
-            payload: sortedResults.slice(0, PAGE_SIZE),
-          });
-          console.log(
-            `[DEBUG] 초기 페이지 상태 업데이트 - 표시 항목 수: ${sortedResults.slice(0, PAGE_SIZE).length}`,
-          );
-
-          // 더 로드할 데이터가 있는지 여부 (API 응답 확인)
-          // 초기에 불러온 데이터가 더 있으면 hasMore = true
-          const hasMoreItems =
-            sortedResults.length > PAGE_SIZE || data.length >= PAGE_SIZE;
-          console.log(
-            `[DEBUG] hasMore 상태 계산: 총 항목 ${sortedResults.length}개, 표시 항목 ${PAGE_SIZE}개, API 응답 ${data.length}개, hasMore=${hasMoreItems}`,
-          );
-          dispatch({ type: ACTIONS.SET_HAS_MORE, payload: hasMoreItems });
-        } else {
-          // 스크롤 시 추가 데이터 로드
-
-          // 기존 결과와 새 결과를 병합
-          const updatedResults = [...state.results, ...sortedResults];
-
-          // ID 기준으로 중복 제거하면서 북마크 상태 유지
-          const idMap = new Map();
-
-          // 먼저 기존 결과(state.results)의 상태를 보존
-          state.results.forEach((item) => {
-            idMap.set(item.originalId, item);
-          });
-
-          // 새 결과에서 없는 항목만 추가하거나, 기존 항목의 북마크 상태를 유지
-          sortedResults.forEach((item) => {
-            const existingItem = idMap.get(item.originalId);
-            if (existingItem) {
-              // 기존 항목이 있으면 북마크 상태를 유지하면서 다른 정보 업데이트
-              idMap.set(item.originalId, {
-                ...item,
-                bookmarked: existingItem.bookmarked,
-              });
-            } else {
-              // 새 항목은 그대로 추가
-              idMap.set(item.originalId, item);
-            }
-          });
-
-          // Map을 배열로 변환
-          const uniqueResults = Array.from(idMap.values());
-
-          dispatch({ type: ACTIONS.SET_RESULTS, payload: uniqueResults });
-          // 스크롤 시 추가 데이터를 포함하여 현재 페이지까지의 데이터 표시
-          const visibleItems = uniqueResults.slice(
-            0,
-            Math.floor(PAGE_SIZE / 2) + page * SCROLL_BATCH_SIZE,
-          );
-          dispatch({
-            type: ACTIONS.SET_VISIBLE_RESULTS,
-            payload: visibleItems,
-          });
-          console.log(
-            `[DEBUG] 추가 페이지 상태 업데이트 - 총 항목 수: ${uniqueResults.length}, 표시 항목 수: ${visibleItems.length}`,
-          );
-
-          // 더 로드할 데이터가 있는지 여부 (API 응답 확인)
-          // 1. 중복 감지되었거나
-          // 2. API 응답이 SCROLL_BATCH_SIZE보다 작거나
-          // 3. 정렬된 결과가 없으면 hasMore = false
-          const hasMoreItems =
-            !isDuplicate &&
-            data.length >= SCROLL_BATCH_SIZE &&
-            sortedResults.length > 0;
-          console.log(
-            `[DEBUG] hasMore 상태 계산 (추가 페이지): 중복=${isDuplicate}, API 응답 ${data.length}개, SCROLL_BATCH_SIZE=${SCROLL_BATCH_SIZE}, hasMore=${hasMoreItems}`,
-          );
-          dispatch({ type: ACTIONS.SET_HAS_MORE, payload: hasMoreItems });
-        }
-
-        dispatch({ type: ACTIONS.SET_PAGE, payload: page });
-        dispatch({ type: ACTIONS.SET_TOTAL_COUNT, payload: total });
-        console.log(
-          `[DEBUG] 데이터 로드 완료 - 페이지: ${page}, 정렬: ${sortType}`,
-        );
-      } catch (error) {
-        console.error(`[DEBUG] 데이터 로드 오류:`, error);
-        // 상세 오류 메시지 출력
-        if (error.response) {
-          // 서버가 응답을 반환했지만 2xx 범위가 아닌 상태 코드
-          console.error(`[DEBUG] 서버 오류 응답:`, error.response);
-          dispatch({
-            type: ACTIONS.SET_ERROR,
-            payload: `서버 오류: ${error.response.status} - ${error.response.data.message || "알 수 없는 오류"}`,
-          });
-        } else if (error.request) {
-          // 요청이 발생했지만 응답을 받지 못함
-          console.error(`[DEBUG] 서버 무응답:`, error.request);
-          dispatch({
-            type: ACTIONS.SET_ERROR,
-            payload:
-              "서버와 통신할 수 없습니다. 서버가 실행 중인지 확인해주세요.",
-          });
-        } else {
-          // 요청 설정 중에 오류가 발생
-          dispatch({
-            type: ACTIONS.SET_ERROR,
-            payload: `요청 오류: ${error.message}`,
+            payload: sortedResults.slice(0, SCROLL_BATCH_SIZE),
           });
         }
-      } finally {
-        dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-      }
-    },
-    [state.page, state.results.length],
-  );
-
-  // 북마크 토글 함수
-  const toggleQuestionBookmark = useCallback(
-    async (id) => {
-      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-
-      const targetItem = state.results.find((q) => q.id === id);
-      if (!targetItem) {
-        dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-        return Promise.reject(new Error("북마크할 항목을 찾을 수 없습니다."));
-      }
-
-      const originalId = targetItem.originalId; // 면접 ID
-      const newBookmarkState = !targetItem.bookmarked;
-
-      // 상태 낙관적 업데이트
-      const updatedResults = state.results.map((q) =>
-        q.id === id ? { ...q, bookmarked: newBookmarkState } : q,
-      );
-
-      // visibleResults도 함께 업데이트하여 UI에 즉시 반영
-      const updatedVisibleResults = state.visibleResults.map((q) =>
-        q.id === id ? { ...q, bookmarked: newBookmarkState } : q,
-      );
-
-      dispatch({ type: ACTIONS.SET_RESULTS, payload: updatedResults });
-      dispatch({
-        type: ACTIONS.SET_VISIBLE_RESULTS,
-        payload: updatedVisibleResults,
-      });
-
-      try {
-        // 면접 북마크 API 호출
-        await toggleInterviewBookmark(originalId, newBookmarkState);
-        dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-        return Promise.resolve({ success: true, bookmarked: newBookmarkState });
-      } catch (error) {
-        // 오류 발생 시 상태 롤백
-        dispatch({ type: ACTIONS.SET_RESULTS, payload: state.results });
+      } else {
+        // 추가 페이지 로드 - 결과 병합
+        // 중복 제거된 새 결과 배열 생성
+        const uniqueResults = mergeUniqueResults(state.results, sortedResults);
+        
+        // 정렬 적용
+        const sortedMergedResults = sortResults(uniqueResults, sortType);
+        
+        dispatch({ type: ACTIONS.SET_RESULTS, payload: sortedMergedResults });
+        
+        // 스크롤 시 추가 표시할 항목 수 계산
+        const visibleCount = state.visibleResults.length + Math.min(sortedResults.length, SCROLL_BATCH_SIZE);
+        
         dispatch({
           type: ACTIONS.SET_VISIBLE_RESULTS,
-          payload: state.visibleResults,
+          payload: sortedMergedResults.slice(0, visibleCount),
         });
-
-        dispatch({
-          type: ACTIONS.SET_ERROR,
-          payload: "북마크 업데이트 중 오류가 발생했습니다.",
-        });
-        dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-        return Promise.reject(error);
       }
-    },
-    [state.results, state.page, state.visibleResults],
-  );
 
-  // 정렬 및 필터링 함수
-  const getSortedResultsByType = useCallback(
-    (type, starredItems) => {
-      return filterAndSortResults(state.results, type, starredItems);
-    },
-    [state.results],
-  );
+      dispatch({ type: ACTIONS.SET_HAS_MORE, payload: hasMoreData });
+      dispatch({ type: ACTIONS.SET_PAGE, payload: page });
+      dispatch({ type: ACTIONS.SET_TOTAL_COUNT, payload: data.length });
+    } catch (error) {
+      dispatch({
+        type: ACTIONS.SET_ERROR,
+        payload: `데이터 로드 중 오류가 발생했습니다.`,
+      });
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+    }
+  }, [state.results, state.currentSortType, state.visibleResults.length]);
 
-  // 상태 변경 함수들
-  const setLoading = useCallback((isLoading) => {
-    dispatch({ type: ACTIONS.SET_LOADING, payload: isLoading });
-  }, []);
+  // 북마크 토글 함수
+  const toggleQuestionBookmark = useCallback(async (id, userId = null) => {
+    try {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+      
+      // 항목 찾기
+      const targetItem = state.results.find((q) => q.id === id);
+      if (!targetItem) {
+        throw new Error("북마크할 항목을 찾을 수 없습니다.");
+      }
 
+      const originalId = targetItem.originalId;
+      const newBookmarkState = !targetItem.bookmarked;
+      
+      // API 호출 - userId 전달
+      await toggleInterviewBookmark(originalId, newBookmarkState, userId);
+      
+      // 전체 결과 배열에서 북마크 상태 업데이트
+      const updatedResults = state.results.map(item => 
+        item.originalId === originalId ? { ...item, bookmarked: newBookmarkState } : item
+      );
+      
+      dispatch({ type: ACTIONS.SET_RESULTS, payload: updatedResults });
+      
+      // 북마크 필터 모드일 때 특수 처리
+      if (state.currentSortType === SORT_OPTIONS.BOOKMARK) {
+        // 북마크 해제 시: 해당 항목 제거 후 재정렬
+        if (!newBookmarkState) {
+          // originalId가 일치하는 항목을 제외한 나머지만 표시
+          const filteredVisible = state.visibleResults.filter(
+            item => item.originalId !== originalId
+          );
+          dispatch({ type: ACTIONS.SET_VISIBLE_RESULTS, payload: filteredVisible });
+        } else {
+          // 북마크 추가 시: 전체 재정렬 (북마크된 항목이 앞으로 오도록)
+          const sortedResults = [...updatedResults].sort((a, b) => {
+            if (a.bookmarked !== b.bookmarked) {
+              return a.bookmarked ? -1 : 1;
+            }
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          });
+          
+          // 현재 표시 중인 항목 수 유지
+          const currentCount = state.visibleResults.length;
+          dispatch({ 
+            type: ACTIONS.SET_VISIBLE_RESULTS, 
+            payload: sortedResults.slice(0, currentCount) 
+          });
+        }
+      } else {
+        // 일반 모드에서는 표시 중인 항목들의 북마크 상태만 업데이트
+        const updatedVisible = state.visibleResults.map(item => 
+          item.originalId === originalId ? { ...item, bookmarked: newBookmarkState } : item
+        );
+        dispatch({ type: ACTIONS.SET_VISIBLE_RESULTS, payload: updatedVisible });
+      }
+      
+      return { success: true, bookmarked: newBookmarkState, originalId };
+    } catch (error) {
+      dispatch({ type: ACTIONS.SET_ERROR, payload: "북마크 업데이트 실패" });
+      return Promise.reject(error);
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+    }
+  }, [state.results, state.currentSortType, state.visibleResults]);
+
+  // 항목 선택 토글
   const toggleSelectItem = useCallback((id) => {
     dispatch({ type: ACTIONS.TOGGLE_SELECT, payload: id });
   }, []);
 
+  // 삭제 모드 토글
   const toggleDeleteMode = useCallback(() => {
-    // 삭제 모드가 현재 활성화되어 있으면, 비활성화될 때 선택 상태 초기화
     if (state.isDeleteMode) {
       dispatch({ type: ACTIONS.CLEAR_SELECTED });
     }
     dispatch({ type: ACTIONS.TOGGLE_DELETE_MODE });
   }, [state.isDeleteMode]);
 
-  const deleteSelectedItems = useCallback(() => {
-    dispatch({ type: ACTIONS.DELETE_ITEMS });
-  }, []);
+  // 선택된 항목 삭제
+  const markAsDeleted = useCallback(async (selectedItems, userId = null) => {
+    try {
+      const itemsToDelete = Object.keys(selectedItems).filter((id) => selectedItems[id]);
+      if (itemsToDelete.length === 0) return;
 
-  // 선택된 항목을 UI에서 제거하는 함수
-  const markAsDeleted = useCallback(
-    async (selectedItems) => {
-      try {
-        // 선택된 항목의 ID 배열 추출
-        const itemsToDelete = Object.keys(selectedItems)
-          .filter((id) => selectedItems[id])
-          .map((id) => parseInt(id, 10) || id); // ID가 숫자인 경우 변환
+      // UI 업데이트
+      const updatedResults = state.results.filter(
+        (item) => !itemsToDelete.includes(item.id)
+      );
+      
+      dispatch({ type: ACTIONS.SET_RESULTS, payload: updatedResults });
+      dispatch({
+        type: ACTIONS.SET_VISIBLE_RESULTS,
+        payload: updatedResults,
+      });
+      
+      dispatch({ type: ACTIONS.CLEAR_SELECTED });
+      dispatch({ type: ACTIONS.TOGGLE_DELETE_MODE });
 
-        if (itemsToDelete.length === 0) return;
-
-        // UI 먼저 업데이트하여 사용자 경험 개선
-        const updatedVisibleResults = state.visibleResults.filter(
-          (item) => !itemsToDelete.includes(item.id),
-        );
-
-        const updatedResults = state.results.filter(
-          (item) => !itemsToDelete.includes(item.id),
-        );
-
-        // 상태 업데이트 (UI 먼저 반영)
-        dispatch({ type: ACTIONS.SET_RESULTS, payload: updatedResults });
-        dispatch({
-          type: ACTIONS.SET_VISIBLE_RESULTS,
-          payload: updatedVisibleResults,
-        });
-
-        // 선택 상태 초기화
-        dispatch({ type: ACTIONS.CLEAR_SELECTED });
-
-        // 삭제 모드 종료
-        dispatch({ type: ACTIONS.TOGGLE_DELETE_MODE });
-
-        // 선택된 항목들의 originalId(면접 ID) 배열 생성
-        const interviewIdsToDelete = [];
-
-        for (const id of itemsToDelete) {
-          const item = state.results.find((q) => q.id === id);
-          if (item && item.interviewId) {
-            interviewIdsToDelete.push(item.interviewId);
-          }
-        }
-
-        // UI 업데이트 후 백그라운드에서 서버 요청 처리
-        if (interviewIdsToDelete.length > 0) {
-          // 로딩 상태 업데이트 없이 백그라운드에서 처리
-          try {
-            await batchDeleteInterviews(interviewIdsToDelete);
-          } catch (error) {
-            console.error("[ERROR] 면접 배치 삭제 실패:", error);
-            // 실패해도 UI는 이미 업데이트되어 있으므로 사용자 경험에 영향 없음
-            dispatch({
-              type: ACTIONS.SET_ERROR,
-              payload: "일부 항목이 서버에서 완전히 삭제되지 않았을 수 있습니다.",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("[ERROR] 항목 삭제 중 오류:", error);
-        dispatch({
-          type: ACTIONS.SET_ERROR,
-          payload: "항목 삭제 중 오류가 발생했습니다.",
-        });
+      // 서버 업데이트
+      const interviewIds = itemsToDelete
+        .map(id => state.results.find(q => q.id === id)?.interviewId)
+        .filter(id => id);
+        
+      if (interviewIds.length > 0) {
+        await batchDeleteInterviews(interviewIds, userId);
       }
-    },
-    [state.visibleResults, state.results],
-  );
+    } catch (error) {
+      dispatch({ type: ACTIONS.SET_ERROR, payload: "삭제 중 오류가 발생했습니다." });
+    }
+  }, [state.results]);
 
-  const resetPagination = useCallback((data) => {
-    dispatch({ type: ACTIONS.RESET_PAGINATION, payload: data });
-  }, []);
-
-  const loadMoreItems = useCallback((sortedData, nextPage) => {
-    const newResults = sortedData.slice(0, (nextPage + 1) * PAGE_SIZE);
-
-    dispatch({ type: ACTIONS.SET_VISIBLE_RESULTS, payload: newResults });
-    dispatch({ type: ACTIONS.SET_PAGE, payload: nextPage });
-    dispatch({
-      type: ACTIONS.SET_HAS_MORE,
-      payload: newResults.length < sortedData.length,
+  // 중복 없이 결과 병합 (개선된 버전)
+  function mergeUniqueResults(existingResults, newResults) {
+    // ID 기반 맵 생성
+    const resultMap = new Map();
+    
+    // 기존 결과 추가
+    existingResults.forEach(item => {
+      resultMap.set(item.originalId, item);
     });
-    dispatch({ type: ACTIONS.SET_LOADING, payload: false });
-  }, []);
+    
+    // 새 결과 추가 (중복 시 북마크 상태 유지)
+    newResults.forEach(item => {
+      const existing = resultMap.get(item.originalId);
+      if (existing) {
+        // 기존 항목의 북마크 상태 유지하면서 업데이트
+        resultMap.set(item.originalId, {
+          ...item,
+          bookmarked: existing.bookmarked
+        });
+      } else {
+        resultMap.set(item.originalId, item);
+      }
+    });
+    
+    // 맵을 배열로 변환
+    return Array.from(resultMap.values());
+  }
 
-  // 반환 객체
   return {
     state,
-    fetchQuestions: fetchQuestionsData, // 하위 호환성 유지
+    fetchQuestions: fetchQuestionsData,
     toggleQuestionBookmark,
-    getSortedResultsByType,
-    setLoading,
+    setLoading: useCallback((isLoading) => {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: isLoading });
+    }, []),
     toggleSelectItem,
     toggleDeleteMode,
-    markAsDeleted,
-    deleteSelectedItems,
-    resetPagination,
-    loadMoreItems,
+    markAsDeleted
   };
 }
