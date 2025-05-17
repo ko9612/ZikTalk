@@ -34,7 +34,7 @@ export const createInterviewFeedback = async (req, res) => {
     const feedback = await generateFeedback(data);
     res.json(feedback);
   } catch (error) {
-    res.status(500).json({ message: "질문 생성 실패" });
+    res.status(500).json({ message: "피드백 생성 실패" });
   }
 };
 
