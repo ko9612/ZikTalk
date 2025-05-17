@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import QuestionBox from "./QuestionBox";
 import Timer from "./Timer";
 import Answer from "./Answer";
@@ -39,6 +39,12 @@ const InterviewSection = () => {
   });
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
+
+  const onStopRecording = useCallback(() => {
+    SpeechRecognition.stopListening();
+    SpeechRecognition.abortListening();
+    resetTranscript();
+  }, [resetTranscript]);
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -96,9 +102,6 @@ const InterviewSection = () => {
       });
     } else {
       stopVideoRecording();
-      SpeechRecognition.stopListening();
-      SpeechRecognition.abortListening();
-      resetTranscript();
     }
   }, [isReplying]);
 
@@ -106,7 +109,11 @@ const InterviewSection = () => {
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
       <QuestionBox {...question} />
       {interviewState === "answer" ? (
-        <Answer end={question.curNum === question.totalNum} text={transcript} />
+        <Answer
+          end={question.curNum === question.totalNum}
+          text={transcript}
+          onStopRecording={onStopRecording}
+        />
       ) : (
         <Timer qes={question.qes} />
       )}

@@ -4,44 +4,60 @@ import { MdOutlineReplay } from "react-icons/md";
 import PencilIcon from "@/assets/images/pencil.svg";
 import {
   useInterviewStateStore,
-  useLoadingStateStore,
   useQuestionStore,
   useReplyingStore,
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
-const Answer = ({ end, text }) => {
+const Answer = ({ end, text, onStopRecording }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
   const setIsReplying = useReplyingStore((state) => state.setIsReplying);
   const { curNum, interviewId, setCurNum, addAnswer, addVideo } =
     useQuestionStore();
-  const [answer, setAnswer] = useState("");
+  const [answer, setAnswer] = useState(null);
+  const [captured, setCaptured] = useState(false);
   const [showOpenModal, setShowOpenModal] = useState(false);
 
   useEffect(() => {
-    setAnswer(text);
+    if (captured) return;
+
+    if (text) {
+      setAnswer(text);
+      setCaptured(true);
+      return;
+    }
+
     const timer = setTimeout(() => {
-      if (!text) {
+      if (!captured) {
         setAnswer(
           "음성인식 실패, 다시 말하기 버튼을 클릭하여 다시 시도해주시거나, 직접 답변을 입력해주세요.",
         );
+        setCaptured(true);
       }
     }, 7000);
-
     return () => clearTimeout(timer);
-  }, [text]);
+  }, [text, captured]);
+
+  useEffect(() => {
+    if (captured) {
+      onStopRecording();
+    }
+  }, [captured, onStopRecording]);
 
   // 임시
   const reReply = () => {
+    onStopRecording();
     setIsReplying(true);
     setInterviewState("question");
-    setAnswer("");
+    setAnswer(null);
+    setCaptured(false);
   };
 
   const buttonHanlder = () => {
+    onStopRecording();
     const copyCurNum = curNum;
     addAnswer(answer);
     addVideo(`${interviewId}_${copyCurNum}.webm`);
@@ -50,7 +66,8 @@ const Answer = ({ end, text }) => {
     } else {
       setCurNum(curNum + 1);
       setInterviewState("question");
-      setAnswer("");
+      setAnswer(null);
+      setCaptured(false);
     }
   };
   return (
@@ -59,7 +76,7 @@ const Answer = ({ end, text }) => {
       <div className="flex w-full flex-col gap-8">
         <div>
           <div className="text-zik-main text-2xl font-bold">내 답변</div>
-          {!answer ? (
+          {answer === null ? (
             <div className="border-zik-main/50 mt-2 flex h-40 w-full items-center rounded-3xl rounded-br-none border-3 px-10">
               <LoadingIcon />
             </div>
