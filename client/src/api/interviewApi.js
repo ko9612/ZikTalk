@@ -1,4 +1,5 @@
 // 인터뷰 관련 api
+import axiosInstance from "@/api/axiosInstance";
 import axios from "axios";
 
 // 일단 로컬로
@@ -60,7 +61,10 @@ export const getInterviewFeedback = async (data) => {
 // 면접 생성
 export const createInterview = async (data) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/interview`, data);
+    const response = await axiosInstance.post(
+      `${API_BASE_URL}/interview`,
+      data,
+    );
     return response.data;
   } catch (error) {
     console.error(error);
