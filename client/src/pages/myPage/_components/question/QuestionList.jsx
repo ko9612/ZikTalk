@@ -12,38 +12,7 @@ import {
   useQuestionListState,
 } from "./settings";
 import { loginInfo } from "@/store/loginStore";
-
-// 확인 모달 컴포넌트
-const ConfirmModal = ({ isOpen, message, onConfirm, onCancel }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="fixed inset-0 bg-black opacity-50"
-        onClick={onCancel}
-      ></div>
-      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h3 className="mb-4 text-xl font-semibold text-gray-800">삭제 확인</h3>
-        <p className="mb-6 text-gray-600">{message}</p>
-        <div className="flex justify-end space-x-3">
-          <button
-            onClick={onCancel}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            취소
-          </button>
-          <button
-            onClick={onConfirm}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-          >
-            삭제
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import CommonModal from "@/components/common/Modal/CommonModal";
 
 const QuestionList = () => {
   const navigate = useNavigate();
@@ -99,6 +68,8 @@ const QuestionList = () => {
     userScrolled,
     setUserScrolled,
     debounceScrollAction,
+    isDelaying,
+    resetAllStates,
   } = useInfiniteScroll(loadMoreResults, hasMore, loading, setLoading);
 
   // 필터 변경 핸들러
@@ -106,23 +77,68 @@ const QuestionList = () => {
     (type) => {
       if (type === filters.type || !loginState || !userId) return;
 
-      // 부드러운 스크롤 이동
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      console.log(`[필터] 필터 변경 시작: ${filters.type} → ${type}`);
 
+      // 먼저 모든 상태 리셋 (이전 필터 관련 상태 초기화)
+      if (typeof resetAllStates === 'function') {
+        resetAllStates();
+      }
+      
+      // 로딩 상태 설정 (로딩 인디케이터 표시)
+      setLoading(true);
+      
       // 필터 상태 업데이트
       updateFilter("type", type);
 
-      // 스크롤 플래그 초기화
-      setUserScrolled(false);
+      // 스크롤 플래그 설정 - true로 유지 (스크롤 감지 활성화)
+      setUserScrolled(true);
 
-      // 새로운 필터로 데이터 로드
+      // 새로운 필터로 데이터 로드 (페이지 번호 0으로 리셋)
       fetchQuestions(0, type, userId);
 
-      // 스크롤 액션 디바운싱
+      // 스크롤 액션 디바운싱 - 데이터 로드 후 지연 설정
       debounceScrollAction();
+      
+      // 상태 정리를 위한 단계적 검사 및 초기화
+      const sequence = [
+        // 1단계: 400ms 후 스크롤 활성화
+        () => {
+          console.log("[필터] 단계 1: 스크롤 감지 활성화");
+          setUserScrolled(true);
+        },
+        
+        // 2단계: 800ms 후 디바운싱 상태 확인 및 강제 초기화 
+        () => {
+          console.log("[필터] 단계 2: 디바운싱 상태 초기화");
+          if (typeof resetAllStates === 'function') {
+            resetAllStates();
+          }
+        },
+        
+        // 3단계: 1500ms 후 최종 상태 확인 및 필요시 재초기화
+        () => {
+          console.log("[필터] 단계 3: 최종 상태 확인");
+          setUserScrolled(true);
+          if (typeof resetAllStates === 'function') {
+            resetAllStates();
+          }
+          // 로딩이 계속되고 있다면 강제 종료
+          setLoading(false);
+        },
+        
+        // 4단계: 2200ms 후 스크롤 이벤트 다시 트리거
+        () => {
+          console.log("[필터] 단계 4: 스크롤 이벤트 재트리거");
+          // 강제로 스크롤 이벤트 발생시켜 체크 유도
+          window.dispatchEvent(new Event('scroll'));
+          setUserScrolled(true);
+        }
+      ];
+      
+      // 각 단계 순차 실행 - 타이밍 증가
+      sequence.forEach((step, index) => {
+        setTimeout(step, 500 + (index * 600));
+      });
     },
     [
       updateFilter,
@@ -132,6 +148,8 @@ const QuestionList = () => {
       debounceScrollAction,
       loginState,
       userId,
+      resetAllStates,
+      setLoading,
     ],
   );
 
@@ -271,12 +289,16 @@ const QuestionList = () => {
         </>
       )}
 
-      <ConfirmModal
-        isOpen={confirmModalOpen}
-        message={confirmMessage}
-        onConfirm={executeDelete}
-        onCancel={() => setConfirmModalOpen(false)}
-      />
+      {confirmModalOpen && (
+        <CommonModal
+          isOpen={confirmModalOpen}
+          onClose={() => setConfirmModalOpen(false)}
+          title="삭제 확인"
+          subText={confirmMessage}
+          btnText="삭제하기"
+          btnHandler={executeDelete}
+        />
+      )}
     </div>
   );
 };

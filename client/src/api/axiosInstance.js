@@ -32,11 +32,22 @@ axiosInstance.interceptors.response.use(
         // 실패 요청 재시도
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // refresh 실패 시 로그아웃
+        // // refresh 실패 시 로그아웃
         const { logout } = loginInfo.getState();
-        logout();
+        if (logout) logout();
+        console.log("[인증 실패] 리프레시 토큰 만료로 인한 로그아웃");
+        console.log("[인증 실패] 상세 내용:", {
+          error: refreshError?.response?.data || refreshError?.message,
+          status: refreshError?.response?.status,
+          timestamp: new Date().toISOString()
+        });
 
-        window.location.href = "/login";
+        // 로컬 스토리지 토큰 삭제
+        localStorage.removeItem("accessToken");
+
+        // 로그인 페이지로 이동
+        window.location.href = "/signin";
+        console.log("리프레시 토큰 만료로 인한 로그아웃");
 
         return Promise.reject(refreshError);
       }

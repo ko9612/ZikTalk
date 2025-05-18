@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosInstance";
+import { loginInfo } from "@/store/loginStore";
 
 const serverUrl = import.meta.env.VITE_SERVER_URL;
 
@@ -13,25 +14,80 @@ export const getHiddenQuestions = () => {
 };
 
 // 북마크된 질문 목록 조회
-export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}) => {
+export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, userId = null) => {
+  console.log('[BOOKMARK API] 호출 시작 - 파라미터:', { page, pageSize, filters, userId });
+  
   try {
-    console.log(
-      `[DEBUG] 북마크 API 호출: 페이지=${page}, 페이지크기=${pageSize}`,
-    );
-    const response = await axiosInstance.get(`/mypage/bookmarks`, {
-      params: {
-        page,
-        pageSize,
-        job: filters.job !== "직군·직무" ? filters.job : undefined,
-        type:
-          filters.questionType !== "질문유형"
-            ? filters.questionType
-            : undefined,
-      },
-    });
-    return response.data;
-  } catch (err) {
-    throw err;
+    // 로그인 정보가 없는 경우 빈 데이터 반환
+    if (!userId) {
+      console.log('[BOOKMARK API] 사용자 ID가 없어 빈 결과 반환');
+      console.warn('[BOOKMARK API] 호출 문제 디버그:', { 
+        userId: userId,
+        userIdType: typeof userId,
+        hasFilters: !!filters,
+        filtersType: typeof filters,
+        page: page
+      });
+      return { questions: [] };
+    }
+    
+    const params = {
+      page,
+      pageSize,
+      bookmarked: filters.bookmarked, // 명시적으로 북마크 값 전달
+      userId: userId, // 토큰에서 추출한 userId 전달
+      job: filters.job !== "직군·직무" ? filters.job : undefined,
+      type:
+        filters.questionType !== "질문유형"
+          ? filters.questionType
+          : undefined,
+    };
+    
+    console.log('[BOOKMARK API] 요청 파라미터:', params);
+    console.log('[BOOKMARK API] 요청 URL:', `${serverUrl}/mypage/bookmarks`);
+    
+    // 요청 타임아웃 설정
+    const timeoutId = setTimeout(() => {
+      console.log('[BOOKMARK API] 요청 시간 초과 (3초)');
+      throw new Error('요청 시간 초과');
+    }, 3000);
+    
+    try {
+      const response = await axiosInstance.get(`/mypage/bookmarks`, {
+        params,
+      });
+      
+      // 타임아웃 취소
+      clearTimeout(timeoutId);
+      
+      console.log('[BOOKMARK API] 응답 상태 코드:', response.status);
+      console.log('[BOOKMARK API] 응답 데이터 헤더:', response.headers);
+      console.log('[BOOKMARK API] 응답 데이터:', response.data);
+      
+      // 응답 데이터 유효성 검사
+      if (!response.data) {
+        console.warn('[BOOKMARK API] 응답 데이터가 없음');
+        return { questions: [] };
+      }
+      
+      if (!response.data.questions) {
+        console.warn('[BOOKMARK API] 유효하지 않은 응답 형식:', response.data);
+        // questions 속성이 없으면 빈 배열로 추가
+        return { ...response.data, questions: [] };
+      }
+      
+      console.log('[BOOKMARK API] 받은 질문 수:', response.data.questions.length);
+      return response.data;
+    } catch (innerError) {
+      clearTimeout(timeoutId);
+      console.error('[BOOKMARK API] 내부 에러:', innerError.message);
+      // 에러 발생 시 빈 questions 배열 반환
+      return { questions: [] };
+    }
+  } catch (outerError) {
+    console.error('[BOOKMARK API] 외부 에러:', outerError.message);
+    // 모든 예외 상황에서 빈 questions 배열 반환
+    return { questions: [] };
   }
 };
 
@@ -144,64 +200,123 @@ export const toggleInterviewBookmark = async (
 
 // 사용자 정보 조회
 export const fetchUserInfo = async () => {
+  console.log("[fetchUserInfo] 호출 시작");
   try {
+    console.log("[fetchUserInfo] 요청 URL:", `/mypage/user`);
+    console.log("[fetchUserInfo] Authorization 헤더:", axiosInstance.defaults.headers.common["Authorization"]);
+    
     const response = await axiosInstance.get(`/mypage/user`);
+    console.log("[fetchUserInfo] 성공적으로 응답 받음:", response.status);
+    console.log("[fetchUserInfo] 응답 데이터:", response.data);
+    
     return response.data;
   } catch (err) {
     // 404 오류 (사용자가 존재하지 않음)인 경우 더 구체적인 오류 메시지 제공
     if (err.response && err.response.status === 404) {
       console.log(
-        "사용자 정보를 찾을 수 없습니다. 로그아웃 상태일 수 있습니다.",
+        "[fetchUserInfo] 사용자 정보를 찾을 수 없습니다. 로그아웃 상태일 수 있습니다.",
       );
       return null; // 오류 대신 null 반환하여 호출자가 처리할 수 있도록 함
     }
-    console.error("사용자 정보 가져오기 실패:", err);
+    
+    console.error("[fetchUserInfo] 사용자 정보 가져오기 실패:", err);
+    console.error("[fetchUserInfo] 오류 상세:", {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      message: err.message
+    });
+    
     throw err;
   }
 };
 
 // 사용자 정보 업데이트
 export const updateUserInfo = async (userData) => {
+  console.log("[updateUserInfo] API 호출 시작");
+  console.log("[updateUserInfo] 요청 데이터:", userData);
+  console.log("[updateUserInfo] Authorization 헤더:", axiosInstance.defaults.headers.common["Authorization"]);
+  console.log("[updateUserInfo] 요청 URL:", `${serverUrl}/mypage/user/update`);
+  
   try {
     const response = await axiosInstance.post(`/mypage/user/update`, userData);
+    console.log("[updateUserInfo] 성공적으로 응답 받음:", response.status);
+    console.log("[updateUserInfo] 응답 데이터:", response.data);
     return response.data;
   } catch (err) {
+    console.error("[updateUserInfo] API 오류 발생:", err);
+    
+    // 오류 상세 로깅
+    if (err.response) {
+      console.error("[updateUserInfo] 서버 응답 오류:", {
+        status: err.response.status,
+        data: err.response.data,
+        headers: err.response.headers
+      });
+    } else if (err.request) {
+      console.error("[updateUserInfo] 요청은 전송됐으나 응답 없음:", err.request);
+    } else {
+      console.error("[updateUserInfo] 요청 설정 중 오류:", err.message);
+    }
+    
     throw err;
   }
 };
 
 // 회원 탈퇴
-export const deleteUserAccount = async (password = null) => {
+export const deleteUserAccount = async (password = null, passedUserId = null) => {
+  console.log("[deleteUserAccount] API 호출 시작");
+  
   try {
-    try {
-      // 비밀번호가 제공된 경우 요청 본문에 포함
-      const requestData = password ? { password } : {};
-
-      // POST 메서드를 사용하여 회원탈퇴 요청
-      const response = await axiosInstance.post(
-        `/mypage/user/delete`,
-        requestData,
-      );
-      return response.data;
-    } catch (serverError) {
-      // 서버 API가 404 Not Found인 경우 (아직 구현되지 않음)
-      if (
-        serverError.response &&
-        (serverError.response.status === 404 ||
-          serverError.response.status === 405)
-      ) {
-        console.log(
-          "서버에 회원탈퇴 API가 구현되지 않았습니다. 임시로 성공 응답을 반환합니다.",
-        );
-        // 임시로 성공 응답 반환
-        return { success: true, message: "회원 탈퇴가 처리되었습니다." };
+    // userId 가져오기 (함수 인자나 스토어에서)
+    let userId = passedUserId; // 우선 전달된 userId 사용
+    
+    if (!userId) {
+      try {
+        const { getState } = loginInfo;
+        userId = getState().userId;
+      } catch (e) {
+        console.warn("[deleteUserAccount] 스토어에서 userId를 가져올 수 없습니다:", e);
       }
-
-      // 다른 서버 오류는 그대로 throw
-      throw serverError;
     }
+    
+    console.log("[deleteUserAccount] 요청 준비:", {
+      password: password ? "***" : null,
+      userId: userId,
+      hasAuthHeader: !!axiosInstance.defaults.headers.common["Authorization"]
+    });
+    
+    // 요청 본문 구성 - userId 명시적 포함
+    const requestData = {
+      userId: userId,
+      password: password
+    };
+    
+    console.log("[deleteUserAccount] 요청 URL:", `${serverUrl}/mypage/user/delete`);
+    console.log("[deleteUserAccount] 요청 데이터:", { ...requestData, password: password ? "***" : null });
+    
+    const response = await axiosInstance.post(`/mypage/user/delete`, requestData);
+    
+    console.log("[deleteUserAccount] 응답 받음:", {
+      status: response.status,
+      data: response.data
+    });
+    
+    return response.data;
   } catch (err) {
-    console.error("회원탈퇴 API 오류:", err);
+    console.error("[deleteUserAccount] 오류 발생:", err);
+    
+    // 오류 세부 정보 로깅
+    if (err.response) {
+      console.error("[deleteUserAccount] 서버 응답 오류:", {
+        status: err.response.status,
+        data: err.response.data
+      });
+    } else if (err.request) {
+      console.error("[deleteUserAccount] 요청은 전송됐으나 응답 없음");
+    } else {
+      console.error("[deleteUserAccount] 요청 설정 오류:", err.message);
+    }
+    
     throw err;
   }
 };

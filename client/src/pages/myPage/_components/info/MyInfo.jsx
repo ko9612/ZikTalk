@@ -1,32 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
-import DeleteAccountModal from "@/components/common/Modal/DeleteAccountModal";
+import CommonModal from "@/components/common/Modal/CommonModal";
 import Input from "@/components/common/Input";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Button from "@/components/common/Button";
-import { updateUserInfo, deleteUserAccount } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast.jsx";
 import { loginInfo } from "@/store/loginStore";
+import { updateUserInfo, deleteUserAccount, fetchUserInfo } from "@/api/myPageApi";
+import axiosInstance from "@/api/axiosInstance";
 
 const MyInfo = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
+  
+  // Zustand 스토어에서 각 속성을 개별적으로 가져오기 (객체 생성 방지)
+  const userName = loginInfo(state => state.userName);
+  const userId = loginInfo(state => state.userId);
+  const logoutFn = loginInfo(state => state.logout);
+  // Zustand 스토어 상태 업데이트 함수 가져오기
+  const updateUserName = loginInfo(state => state.setUserName);
+  const setUserRole = loginInfo(state => state.setUserRole);
+  const setUserCareer = loginInfo(state => state.setUserCareer);
+  
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const userName = loginInfo((state) => state.userName);
+  
+  // 사용자 정보 초기화
   const [form, setForm] = useState({
-    name: userName,
-    email: "",
+    name: userName || "사용자",
+    email: "test@example.com", // 더미 이메일 데이터
     password: "",
     passwordCheck: "",
-    role: "",
+    role: "프론트엔드 개발자", // 더미 역할 데이터
     career: "신입",
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [isCareerModalOpen, setCareerModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState("");
+  const [selectedJob, setSelectedJob] = useState(form.role);
+  
+  // 폼 변경 상태 추적
+  const [formChanged, setFormChanged] = useState(false);
+  // 오류 관리
+  const [error, setError] = useState(null);
 
+  // 경력 옵션
   const careerOptions = [
     { value: "신입", label: "신입" },
     { value: "1년차", label: "1년차" },
@@ -35,29 +53,122 @@ const MyInfo = () => {
     { value: "4년차", label: "4년차" },
     { value: "5년차 이상", label: "5년차 이상" },
   ];
+  
+  // 로컬 스토리지에서 토큰 복원 시도
+  const restoreTokenFromStorage = useCallback(() => {
+    try {
+      const storedToken = localStorage.getItem('accessToken');
+      if (storedToken) {
+        console.log("[토큰 복원] 로컬 스토리지에서 토큰 발견");
+        // axiosInstance에 토큰 설정
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("[토큰 복원] 실패:", e);
+      return false;
+    }
+  }, []);
+  
+  // 사용자 정보 가져오기 함수
+  const getUserInfo = useCallback(async () => {
+    if (!userId) {
+      console.error("[ERROR] 사용자 정보 불러오기 실패: 사용자 ID가 없습니다");
+      setError("로그인이 필요한 기능입니다.");
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // 서버 API 호출 대신 모의 데이터 사용
+      console.log("[테스트] 사용자 정보 API 호출 제거, 로컬 데이터만 사용");
+      
+      // 모의 데이터
+      const mockData = {
+        name: userName || "사용자",
+        email: "test@example.com",
+        role: form.role || "프론트엔드 개발자",
+        career: form.career === "신입" ? 0 : 
+                form.career === "5년차 이상" ? 5 : 
+                parseInt(form.career || "0")
+      };
+      
+      // 폼 업데이트
+      setForm(prev => ({
+        ...prev,
+        name: mockData.name,
+        email: mockData.email,
+        role: mockData.role,
+        career: mockData.career === 0 
+          ? "신입"
+          : mockData.career >= 5 
+            ? "5년차 이상" 
+            : `${mockData.career}년차`
+      }));
+      
+      // 선택된 직무 업데이트
+      setSelectedJob(mockData.role);
+      
+      // Zustand 스토어도 업데이트
+      if (updateUserName && mockData.name) updateUserName(mockData.name);
+      if (setUserRole && mockData.role) setUserRole(mockData.role);
+      if (setUserCareer && mockData.career !== undefined) {
+        const careerText = mockData.career === 0 
+          ? "신입"
+          : mockData.career >= 5 
+            ? "5년차 이상" 
+            : `${mockData.career}년차`;
+        setUserCareer(careerText);
+      }
+      
+      console.log("[테스트] 로컬 데이터로 사용자 정보 설정 완료");
+    } catch (err) {
+      console.error("[테스트] 로컬 데이터 처리 중 오류:", err);
+      setError(`사용자 정보 처리 오류: ${err.message || "알 수 없는 오류"}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, updateUserName, setUserRole, setUserCareer, form.role, form.career, userName]);
+  
+  // 컴포넌트 마운트 시 사용자 정보 가져오기
+  React.useEffect(() => {
+    if (userId) {
+      getUserInfo();
+    } else {
+      console.log("[인증 확인] 사용자 ID가 없습니다.");
+      setError("로그인이 필요한 기능입니다.");
+    }
+  }, [userId, getUserInfo]);
 
-  // 숫자 형식의 경력 값을 문자열로 변환하는 함수
-  const convertCareerNumberToString = (careerNumber) => {
-    if (careerNumber === undefined || careerNumber === null) return "신입";
+  // 폼 필드 변경 시 호출되는 함수
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    setFormChanged(true);
+  }, []);
 
-    if (careerNumber === 0) return "신입";
-    if (careerNumber === 5) return "5년차 이상";
-    if (careerNumber > 0) return `${careerNumber}년차`;
-
-    return "신입";
-  };
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleCareerSelect = (job) => {
+  // 직무 선택 시 호출되는 함수
+  const handleCareerSelect = useCallback((job) => {
     setSelectedJob(job);
-    setForm({ ...form, role: job });
+    setForm(prev => ({ ...prev, role: job }));
     setCareerModalOpen(false);
-  };
+    setFormChanged(true);
+  }, []);
 
-  const validateForm = () => {
+  // 경력 변경 시 호출되는 함수
+  const handleCareerChange = useCallback((career) => {
+    setForm(prev => ({ ...prev, career }));
+    setFormChanged(true);
+    
+    // 변경 표시 - 토스트는 한 번만 표시
+    showToast("경력이 변경되었습니다: " + career, "success");
+  }, [showToast]);
+
+  // 폼 유효성 검사
+  const validateForm = useCallback(() => {
     // 비밀번호 변경 시 유효성 검사
     if (form.password) {
       // 비밀번호 확인
@@ -65,119 +176,219 @@ const MyInfo = () => {
         showToast("비밀번호가 일치하지 않습니다.", "error");
         return false;
       }
+      
+      // 비밀번호 길이 확인 (8자 이상)
+      if (form.password.length < 8) {
+        showToast("비밀번호는 8자 이상이어야 합니다.", "error");
+        return false;
+      }
     }
 
     return true;
-  };
+  }, [form.password, form.passwordCheck, showToast]);
 
-  const handleSubmit = async (e) => {
+  // 폼 제출 시 호출되는 함수
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
+
+    if (!userId) {
+      console.error("[데이터 수정 실패] 사용자 ID가 없음:", userId);
+      showToast("로그인이 필요합니다.", "error");
+      return;
+    }
 
     // 검증 결과
     const isValid = validateForm();
 
     if (!isValid) {
+      console.error("[데이터 수정 실패] 폼 검증 실패");
       return;
     }
+    
+    // 인증 헤더 확인
+    const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+    console.log("[데이터 수정] 인증 헤더 존재:", hasAuthHeader);
+    console.log("[데이터 수정] 인증 토큰:", axiosInstance.defaults.headers.common["Authorization"]);
+    
+    if (!hasAuthHeader) {
+      console.log("[데이터 수정] 인증 헤더가 없습니다. 토큰 복원 시도...");
+      const restored = restoreTokenFromStorage();
+      if (!restored) {
+        console.error("[데이터 수정 실패] 토큰 복원 실패");
+        showToast("인증 정보가 없습니다. 새로고침 후 다시 시도해주세요.", "error");
+        return;
+      }
+      console.log("[데이터 수정] 토큰 복원 성공:", axiosInstance.defaults.headers.common["Authorization"]);
+    }
+
+    // 폼 제출 시 간단한 로딩 처리
+    setIsLoading(true);
+    setError(null);
 
     try {
-      setIsLoading(true);
-
       // 업데이트할 데이터 준비
-      const updateData = {};
+      const updateData = {
+        // 비밀번호가 입력된 경우에만 포함
+        ...(form.password ? { password: form.password } : {}),
+        // 직무 업데이트
+        role: form.role,
+        // 경력 업데이트 - 문자열을 숫자로 변환
+        career: form.career === "신입" ? 0 : 
+                form.career === "5년차 이상" ? 5 : 
+                parseInt(form.career),
+        // 사용자 ID
+        userId: userId
+      };
+      
+      console.log("[데이터 수정] 요청 전송 데이터:", JSON.stringify(updateData));
+      console.log("[데이터 수정] API 엔드포인트:", `${import.meta.env.VITE_SERVER_URL}/mypage/user/update`);
+      
+      // 실제 API 호출
+      const response = await updateUserInfo(updateData);
+      console.log("[데이터 수정 성공] 서버 응답:", response);
 
-      // 비밀번호가 입력된 경우에만 포함
-      if (form.password) {
-        updateData.password = form.password;
+      // 입력된 정보로 폼 업데이트
+      setForm(prev => ({
+        ...prev,
+        password: "",
+        passwordCheck: "",
+      }));
+
+      // Zustand 스토어 업데이트: 변경된 사용자 정보를 메모리에 유지
+      if (form.name !== userName && updateUserName) {
+        updateUserName(form.name);
+        console.log("[데이터 수정] 이름 업데이트:", form.name);
       }
 
-      // 직무 업데이트
-      updateData.role = form.role;
-
-      // 경력 업데이트
-      updateData.career = form.career;
-
-      try {
-        // API 호출
-        const response = await updateUserInfo(updateData);
-
-        // 성공적으로 업데이트되었는지 확인하기 위해 서버에서 받은 사용자 정보 출력
-        if (response && response.user) {
-          // 서버 응답에서 받은 사용자 정보로 폼 업데이트
-          const updatedUser = response.user;
-          setForm({
-            name: updatedUser.name,
-            email: updatedUser.email,
-            role: updatedUser.role,
-            career: convertCareerNumberToString(updatedUser.career),
-            password: "",
-            passwordCheck: "",
-          });
-
-          setSelectedJob(updatedUser.role);
-
-          // 토큰이 새로 발급된 경우 갱신
-          if (response.user.token) {
-            // 토큰 갱신 처리
-          }
-        }
-
-        showToast("정보가 성공적으로 업데이트되었습니다.", "success");
-      } catch (apiError) {
-        // API 오류 처리
-        if (apiError.response && apiError.response.status === 401) {
-          showToast("인증이 만료되었습니다. 다시 로그인해 주세요.", "error");
-
-          // 로그인 페이지로 리다이렉트
-          setTimeout(() => navigate("/signin"), 1500);
-        } else {
-          showToast(
-            apiError.response?.data?.message || "정보 업데이트에 실패했습니다.",
-            "error",
-          );
-        }
-
-        throw apiError;
+      if (setUserRole) {
+        setUserRole(form.role);
+        console.log("[데이터 수정] 직무 업데이트:", form.role);
       }
+
+      if (setUserCareer) {
+        setUserCareer(form.career);
+        console.log("[데이터 수정] 경력 업데이트:", form.career);
+      }
+
+      // 성공 메시지 표시
+      console.log("[데이터 수정 성공] 내 정보가 업데이트되었습니다:", form.role, form.career);
+      showToast(response.message || `정보가 성공적으로 업데이트되었습니다`, "success");
+      setFormChanged(false);
     } catch (error) {
-      // 일반 오류 메시지는 이미 API 오류 처리에서 표시됨
+      console.error("[데이터 수정 실패] 오류 발생:", error);
+      
+      // 오류 응답 상세 정보 기록
+      if (error.response) {
+        console.error("[데이터 수정 실패] 응답 상태:", error.response.status);
+        console.error("[데이터 수정 실패] 응답 데이터:", error.response.data);
+        console.error("[데이터 수정 실패] 응답 헤더:", error.response.headers);
+      } else if (error.request) {
+        console.error("[데이터 수정 실패] 요청 전송됨, 응답 없음:", error.request);
+      } else {
+        console.error("[데이터 수정 실패] 요청 설정 오류:", error.message);
+      }
+      console.error("[데이터 수정 실패] 요청 설정:", error.config);
+      
+      // API 오류 응답 확인 - 로그아웃 및 리다이렉트 제거
+      let errorMessage = "정보 업데이트에 실패했습니다.";
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = "인증에 문제가 발생했습니다. 새로고침 후 다시 시도해주세요.";
+        } else if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      }
+      
+      setError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [form, validateForm, showToast, userName, updateUserName, setUserRole, setUserCareer, userId, restoreTokenFromStorage]);
 
-  const handleDeleteAccount = async (password = null) => {
+  // 회원 탈퇴 함수
+  const handleDeleteAccount = useCallback(async (password = null) => {
+    if (!userId) {
+      console.error("[회원탈퇴] 사용자 ID가 없음:", userId);
+      showToast("로그인이 필요합니다.", "error");
+      return;
+    }
+
+    // 간단한 로딩 처리
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-
-      // API 호출 (비밀번호 전달)
-      await deleteUserAccount(password);
-
-      // 로그아웃 처리 (토큰 제거)
-      removeCookie("token", { path: "/" });
-
-      showToast("회원 탈퇴가 완료되었습니다.", "success");
-
-      // 즉시 홈페이지로 이동 (지연 없이)
-      window.location.href = "/";
-    } catch (error) {
-      console.error("회원 탈퇴 에러:", error);
-
-      // 에러 메시지 표시
-      let errorMessage = "회원 탈퇴 처리 중 오류가 발생했습니다.";
-
-      // 비밀번호 불일치 에러 처리
-      if (error.response?.status === 401 && password) {
-        errorMessage = "비밀번호가 일치하지 않습니다.";
-      } else {
-        errorMessage = error.response?.data?.message || errorMessage;
+      console.log("[회원탈퇴] 요청 시작", { userId, hasPassword: !!password });
+      
+      // API 직접 호출 - userId 명시적 전달
+      const result = await deleteUserAccount(password, userId);
+      console.log("[회원탈퇴] 서버 응답:", result);
+      
+      showToast(result.message || "회원 탈퇴가 완료되었습니다.", "success");
+      
+      // 모달 닫기
+      setDeleteModalOpen(false);
+      
+      // 로그아웃 처리
+      if (typeof logoutFn === 'function') {
+        console.log("[회원탈퇴] 로그아웃 실행");
+        logoutFn();
       }
-
+      
+      // 로컬 스토리지 정리
+      localStorage.removeItem('accessToken');
+      
+      // 홈페이지로 이동
+      console.log("[회원탈퇴] 홈페이지로 이동");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
+      
+    } catch (error) {
+      console.error("[회원탈퇴] 오류 발생:", error);
+      
+      // 오류 세부 정보 로깅
+      if (error.response) {
+        console.error("[회원탈퇴] 서버 응답 오류:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      } else if (error.request) {
+        console.error("[회원탈퇴] 요청은 전송됐으나 응답 없음:", error.request);
+      } else {
+        console.error("[회원탈퇴] 요청 설정 오류:", error.message);
+      }
+      
+      let errorMessage = "회원 탈퇴 처리 중 오류가 발생했습니다.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      setError(errorMessage);
       showToast(errorMessage, "error");
+    } finally {
       setIsLoading(false);
       setDeleteModalOpen(false);
     }
-  };
+  }, [showToast, logoutFn, userId]);
+
+  // 버튼 클릭 핸들러
+  const handleButtonClick = useCallback((e) => {
+    // 이벤트 전파 중지 (이중 처리 방지)
+    e.stopPropagation();
+  }, []);
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = useCallback(() => {
+    setDeleteModalOpen(false);
+  }, []);
+
+  // 모달 열기 핸들러
+  const handleOpenModal = useCallback(() => {
+    setDeleteModalOpen(true);
+  }, []);
 
   return (
     <div className="relative flex w-full justify-center px-2 py-6 sm:px-0">
@@ -185,6 +396,22 @@ const MyInfo = () => {
         <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
           내 정보 관리
         </h2>
+        
+        {/* 오류 메시지 표시 */}
+        {error && (
+          <div className="mb-4 rounded-md bg-red-50 p-4 text-red-500">
+            {error}
+            {error.includes("로그인") && (
+              <button
+                className="ml-4 rounded bg-blue-500 px-2 py-1 text-white"
+                onClick={() => navigate("/signin")}
+              >
+                로그인 페이지로 이동
+              </button>
+            )}
+          </div>
+        )}
+        
         {isLoading ? (
           <div className="flex h-60 items-center justify-center">
             <p className="text-gray-500">로딩 중...</p>
@@ -298,7 +525,7 @@ const MyInfo = () => {
               <div className="relative">
                 <FilterDropdown
                   value={form.career}
-                  onChange={(career) => setForm({ ...form, career })}
+                  onChange={handleCareerChange}
                   options={careerOptions}
                   className="w-36 rounded-lg text-gray-500"
                 />
@@ -310,15 +537,14 @@ const MyInfo = () => {
                 shape="bar"
                 className="w-full"
                 disabled={isLoading}
+                onClick={handleButtonClick}
               >
                 {isLoading ? "저장 중..." : "수정 완료"}
               </Button>
               <button
                 type="button"
                 className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"
-                onClick={() => {
-                  setDeleteModalOpen(true);
-                }}
+                onClick={handleOpenModal}
                 disabled={isLoading}
               >
                 회원탈퇴
@@ -328,12 +554,16 @@ const MyInfo = () => {
         )}
       </div>
 
-      <DeleteAccountModal
-        isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={handleDeleteAccount}
-        isLoading={isLoading}
-      />
+      {deleteModalOpen && (
+        <CommonModal
+          isOpen={deleteModalOpen}
+          onClose={handleCloseModal}
+          title="회원 탈퇴"
+          subText="정말로 회원 탈퇴를 진행하시겠습니까? 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다."
+          btnText={isLoading ? "처리 중..." : "탈퇴하기"}
+          btnHandler={() => handleDeleteAccount(null)}
+        />
+      )}
     </div>
   );
 };

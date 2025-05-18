@@ -1,6 +1,6 @@
 // 상수 정의
 export const PAGE_SIZE = 6;
-export const SCROLL_BATCH_SIZE = 6; // 스크롤 시 로드할 항목 수
+export const SCROLL_BATCH_SIZE = 6; // 스크롤 시 로드할 항목 수 (원래 값으로 복원)
 
 // 그리드 레이아웃 스타일 (ResultsTableHeader에서 사용)
 export const GRID_TEMPLATE = "1fr 6rem 5rem";

@@ -54,8 +54,11 @@ const FilterDropdown = ({
   }, []);
 
   const handleSelect = (val) => {
+    // 선택 시 바로 상위 컴포넌트에 변경 사항 전달
     onChange(val);
-    if (!keepOpenOnSelect) {
+    
+    // 별점 옵션은 계속 열려있게 하고, 그 외에는 선택 후 닫기
+    if (val !== "별" && !keepOpenOnSelect) {
       setOpen(false);
     }
   };
@@ -95,7 +98,7 @@ const FilterDropdown = ({
       <div
         className={`absolute z-11 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
           open
-            ? "max-h-60 scale-100 transform opacity-100"
+            ? "max-h-80 scale-100 transform opacity-100"
             : "pointer-events-none max-h-0 scale-95 transform opacity-0"
         }`}
         onClick={(e) => e.stopPropagation()}

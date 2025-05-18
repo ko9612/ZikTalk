@@ -88,34 +88,44 @@ export function useQuestionListState() {
           sortType === SORT_OPTIONS.LATEST;
 
         if (isFilterChange) {
-          // 정렬 타입 변경 (상태 초기화하지 않음)
+          console.log(`[로그] 필터 변경 감지: ${state.currentSortType} → ${sortType}`);
+          
+          // 정렬 타입만 변경 (상태를 초기화하지 않음 - 스크롤 위치 유지)
           dispatch({ type: ACTIONS.SET_SORT_TYPE, payload: sortType });
-          page = 0; // 페이지 번호 초기화
+          
+          // 첫 페이지부터 다시 시작하지만 기존 결과는 유지
+          if (page !== 0) {
+            page = 0;
+          }
         } else {
           // 정렬 타입 저장
           dispatch({ type: ACTIONS.SET_SORT_TYPE, payload: sortType });
         }
 
         // API 파라미터 설정
-        const isBookmarked = false; // 북마크 필터링을 API에서 하지 않고 클라이언트에서 정렬만 수행
         const sortBy = "date"; // 항상 날짜순 요청
         const isInitialLoad = page === 0;
 
         // 초기 로드 시 더 많은 데이터 불러오기
         const batchSize =
           page === 0
-            ? SCROLL_BATCH_SIZE * 5 // 초기 로드 시 더 많은 데이터 로드
+            ? SCROLL_BATCH_SIZE * 2 // 초기 로드 시 2배만 로드 (진짜 무한 스크롤을 위해 줄임)
             : SCROLL_BATCH_SIZE;
 
+        console.log("[로그] 데이터 로드 - 페이지:", page, "배치 사이즈:", batchSize, "필터:", sortType);
+
         // API 호출 - userId 전달
+        // 북마크 필터를 API 파라미터로 전달하지 않고, 전체 데이터를 가져와서 클라이언트에서 정렬
         const data = await fetchInterviewsWithFirstQuestion(
           page + 1,
           batchSize,
           sortBy,
-          isBookmarked,
+          undefined, // bookmarked 파라미터를 undefined로 설정하여 모든 항목 로드
           isInitialLoad,
           userId
         );
+
+        console.log("[로그] API 응답 데이터:", data ? data.length : 0, "개 항목");
 
         if (!data) throw new Error("데이터를 불러올 수 없습니다.");
 
@@ -176,6 +186,12 @@ export function useQuestionListState() {
         const sortedResults = sortResults(filteredByUser, sortType);
         const hasMoreData = data.length >= batchSize;
 
+        console.log("[로그] 정렬 후 아이템 수:", sortedResults.length, "더 불러올 데이터:", hasMoreData);
+
+        // hasMoreData가 false여도 필터 변경 후에는 무조건 true로 설정
+        // (최소 1회는 스크롤 동작하게 함)
+        const adjustedHasMore = isFilterChange ? true : hasMoreData;
+
         if (page === 0) {
           // 첫 페이지 로드 - 결과 대체
           dispatch({ type: ACTIONS.SET_RESULTS, payload: sortedResults });
@@ -186,16 +202,21 @@ export function useQuestionListState() {
             // sortResults 함수 재사용 (최신순일 때는 이미 날짜 기준으로만 정렬됨)
             const reorderedResults = sortResults(state.results, sortType);
 
-            // 표시 항목 유지하면서 정렬만 변경
+            // 표시 항목 유지하면서 정렬만 변경 - 항목 수 보존
+            const visibleCount = Math.max(state.visibleResults.length, SCROLL_BATCH_SIZE);
+            
             dispatch({
               type: ACTIONS.SET_VISIBLE_RESULTS,
-              payload: reorderedResults.slice(0, state.visibleResults.length),
+              payload: reorderedResults.slice(0, visibleCount),
             });
           } else {
-            // 첫 로드 시
+            // 첫 로드 시 표시할 아이템 수 (진짜 무한 스크롤을 위해 줄임)
+            const initialVisibleCount = Math.min(sortedResults.length, SCROLL_BATCH_SIZE);
+            console.log("[로그] 초기 표시 아이템 수:", initialVisibleCount);
+            
             dispatch({
               type: ACTIONS.SET_VISIBLE_RESULTS,
-              payload: sortedResults.slice(0, SCROLL_BATCH_SIZE),
+              payload: sortedResults.slice(0, initialVisibleCount),
             });
           }
         } else {
@@ -216,16 +237,19 @@ export function useQuestionListState() {
             state.visibleResults.length +
             Math.min(sortedResults.length, SCROLL_BATCH_SIZE);
 
+          console.log("[로그] 스크롤 후 표시 아이템 수:", visibleCount);
+          
           dispatch({
             type: ACTIONS.SET_VISIBLE_RESULTS,
             payload: sortedMergedResults.slice(0, visibleCount),
           });
         }
 
-        dispatch({ type: ACTIONS.SET_HAS_MORE, payload: hasMoreData });
+        dispatch({ type: ACTIONS.SET_HAS_MORE, payload: adjustedHasMore });
         dispatch({ type: ACTIONS.SET_PAGE, payload: page });
         dispatch({ type: ACTIONS.SET_TOTAL_COUNT, payload: data.length });
       } catch (error) {
+        console.error("[로그] 데이터 로드 오류:", error);
         dispatch({
           type: ACTIONS.SET_ERROR,
           payload: `데이터 로드 중 오류가 발생했습니다.`,

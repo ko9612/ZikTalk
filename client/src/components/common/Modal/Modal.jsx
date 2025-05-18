@@ -33,6 +33,7 @@ const Modal = ({
     };
   }, [isOpen]);
 
+
   return (
     <div
       ref={modalRef}
