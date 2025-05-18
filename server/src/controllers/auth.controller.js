@@ -12,7 +12,7 @@ export const signin = async (req, res) => {
   try {
     const user = await loginUser(req.body);
 
-    const { accessToken, refreshToken, userName } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens(user);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -21,7 +21,7 @@ export const signin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    res.status(200).json({ message: "로그인 성공", userName, accessToken });
+    res.status(200).json({ message: "로그인 성공", user, accessToken });
   } catch (error) {
     if (error.status === 401) {
       res.status(401).json({ message: error.message });

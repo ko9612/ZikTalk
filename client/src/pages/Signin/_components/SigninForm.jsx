@@ -24,7 +24,7 @@ const SigninForm = () => {
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
   const [cookies, setCookie, removeCookie] = useCookies(["rememberEmail"]);
-  const { setLoginState, setUserName } = loginInfo();
+  const { setLoginState, setUserId, setUserName } = loginInfo();
 
   const navigate = useNavigate();
 
@@ -47,11 +47,12 @@ const SigninForm = () => {
     };
 
     try {
-      const { userName } = await signin(data);
+      const { user } = await signin(data);
 
       setSigninFail(false);
       setLoginState(true);
-      setUserName(userName);
+      setUserId(user.userId);
+      setUserName(user.userName);
 
       navigate("/");
     } catch (e) {

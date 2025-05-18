@@ -52,7 +52,7 @@ export const generateTokens = (user) => {
     }
   );
 
-  return { accessToken, refreshToken, userName: user.userName };
+  return { accessToken, refreshToken };
 };
 
 // 회원 가입 유저 등록
