@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "./Button";
+import { Link } from "react-router-dom";
 import { useInterviewTabStore } from "@/store/store";
 
 const InterviewTab = () => {
@@ -22,7 +23,9 @@ const InterviewTab = () => {
           </React.Fragment>
         ))}
         <li>
-          <Button>나가기</Button>
+          <Link to="/">
+            <Button>나가기</Button>
+          </Link>
         </li>
       </ul>
     </div>
