@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { useAuth } from "@/hooks/useAuth.js";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import QuestionList from "@/pages/myPage/_components/question/QuestionList";
 import QuestionBookmarkList from "@/pages/myPage/_components/bookmark/QuestionBookmarkList";
@@ -16,43 +15,20 @@ const tabs = [
 ];
 
 const MyPage = () => {
-  console.log("📂 마이페이지 컴포넌트 렌더링");
   const location = useLocation();
   const navigate = useNavigate();
   const [cookies] = useCookies(["token"]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const currentPath = location.pathname.split("/").pop() || "result-list";
-  
-  // 토큰 인증 체크
   const token = cookies.token;
-  const localToken = localStorage.getItem("accessToken");
-  const { isAuthenticated } = useAuth();
-
-  console.log("📂 마이페이지 경로 정보:", { 
-    전체경로: location.pathname,
-    현재탭: currentPath,
-    쿠키토큰: token ? "있음" : "없음",
-    로컬토큰: localToken ? "있음" : "없음",
-    인증상태: isAuthenticated
-  });
 
   useEffect(() => {
-    console.log("📂 마이페이지 인증 체크:", { 
-      쿠키토큰: token ? "있음" : "없음",
-      로컬토큰: localToken ? "있음" : "없음",
-      인증상태: isAuthenticated
-    });
-    
-    if (!isAuthenticated) {
+    if (!token || typeof token !== "string") {
       setShowLoginModal(true);
-    } else {
-      setShowLoginModal(false);
     }
-  }, [token, localToken, isAuthenticated]);
+  }, [token]);
 
   const renderContent = () => {
-    console.log("📂 현재 탭에 따른 컴포넌트 렌더링:", currentPath);
-    
     switch (currentPath) {
       case "result-list":
         return <QuestionList />;
@@ -68,14 +44,13 @@ const MyPage = () => {
         }
         return null;
       default:
-        console.log("📂 기본 경로로 QuestionList 렌더링");
         return <QuestionList />;
     }
   };
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      {!isAuthenticated ? (
+      {!token ? (
         <CommonModal
           isOpen={showLoginModal}
           onClose={() => navigate("/")}
