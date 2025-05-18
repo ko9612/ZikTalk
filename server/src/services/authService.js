@@ -36,15 +36,16 @@ export const loginUser = async (data) => {
 };
 
 export const generateTokens = (user) => {
+  console.log(user);
   const accessToken = jwt.sign(
-    { userId: user.id, userName: user.userName },
+    { userId: user.userId, userName: user.userName },
     process.env.JWT_SECRET,
     {
       expiresIn: "15m",
     }
   );
   const refreshToken = jwt.sign(
-    { userId: user.id, userName: user.userName },
+    { userId: user.userId, userName: user.userName },
     process.env.JWT_REFRESH_SECRET,
     {
       expiresIn: "7d",
