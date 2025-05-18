@@ -1,41 +1,31 @@
-// src/api/axiosInstance.js
 import axios from "axios";
-import { Cookies } from "react-cookie";
+import { loginInfo } from "@/store/loginStore";
 
-const cookies = new Cookies();
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5001/api", // API 기본 주소
-  withCredentials: true, // 쿠키를 요청과 함께 전송
+  baseURL: "http://localhost:5001/api",
+  withCredentials: true,
+  headers: { "Content-Type": "application/json" },
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  // 여러 소스에서 토큰 조회 시도
-  const cookieToken = cookies.get("token");
-  const localToken = localStorage.getItem("accessToken");
-  
-  // 사용 가능한 토큰 선택 (쿠키 우선)
-  const token = cookieToken || localToken;
-  
-  if (token) {
-    // Authorization 헤더에 추가
-    config.headers.Authorization = `Bearer ${token}`;
-  } else {
-    // 토큰이 없는 경우 처리
-  }
-  
-  return config;
-});
-
-// 응답 인터셉터
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // 응답 성공 처리
-    return response;
-  },
-  (error) => {
-    // 응답 오류 처리
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn("토큰이 만료되었습니다.");
+
+      try {
+        // refresh token 재발급 -> 실패시 로그아웃으로 수정해야 함
+        await axiosInstance.post("/logout");
+
+        loginInfo.getState().logout();
+
+        window.location.href = "/signin";
+      } catch (e) {
+        console.log("자동 로그아웃 실패: ", e);
+      }
+    }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

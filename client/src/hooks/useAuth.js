@@ -1,14 +1,26 @@
-import { useCookies } from "react-cookie";
+import axiosInstance from "@/api/axiosInstance";
+import { loginInfo } from "@/store/loginStore";
 import { useNavigate } from "react-router-dom";
 
-export const useLogout = () => {
-  const navigate = useNavigate();
-  const [, , removeCookie] = useCookies(["token"]);
+const useLogout = () => {
+  const { setLoginState, setUserName } = loginInfo();
 
-  const logout = () => {
-    removeCookie("token", { path: "/" });
-    navigate("/");
+  const navigate = useNavigate();
+
+  const logout = async () => {
+    try {
+      await axiosInstance.post("/logout");
+
+      setLoginState(false);
+      setUserName("");
+
+      navigate("/signin");
+    } catch (e) {
+      console.error("로그아웃 실패:", e);
+    }
   };
 
   return logout;
 };
+
+export default useLogout;

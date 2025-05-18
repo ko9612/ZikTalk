@@ -1,6 +1,6 @@
+import jwt from "jsonwebtoken";
 import bcrypt, { hash } from "bcrypt";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
 import { createTransport } from "nodemailer";
 
 const prisma = new PrismaClient();
@@ -29,32 +29,29 @@ export const loginUser = async (data) => {
     throw error;
   }
 
-  // JWT 토큰 발급
-  const token = jwt.sign(
+  return {
+    userId: user.id,
+    userName: user.name,
+  };
+};
+
+export const generateTokens = (user) => {
+  const accessToken = jwt.sign(
+    { userId: user.id, userName: user.userName },
+    process.env.JWT_SECRET,
     {
-      userId: user.id,
-      id: user.id,
-      userName: user.name,
-      userEmail: user.email,
-      role: user.role,
-      career: user.career,
-    },
-    process.env.JWT_SECRET || "your-secret-key",
+      expiresIn: "15m",
+    }
+  );
+  const refreshToken = jwt.sign(
+    { userId: user.id, userName: user.userName },
+    process.env.JWT_REFRESH_SECRET,
     {
-      expiresIn: "24h",
+      expiresIn: "7d",
     }
   );
 
-  return {
-    message: "로그인 성공",
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      token: token,
-    },
-  };
+  return { accessToken, refreshToken, userName: user.userName };
 };
 
 // 회원 가입 유저 등록

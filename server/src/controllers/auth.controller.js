@@ -3,12 +3,30 @@ import {
   registerUser,
   generateVerificationCode,
   sendVerificationEmail,
+  generateTokens,
 } from "../services/authService.js";
 
 export const signin = async (req, res) => {
   try {
     const user = await loginUser(req.body);
-    res.status(201).json({ message: "로그인 성공", user });
+
+    const { accessToken, refreshToken, userName } = generateTokens(user);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      maxAge: 1000 * 60 * 15, // 15분 유효기간
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    });
+
+    res.status(200).json({ message: "로그인 성공", userName });
   } catch (error) {
     if (error.status === 401) {
       res.status(401).json({ message: error.message });
@@ -17,6 +35,27 @@ export const signin = async (req, res) => {
     } else {
       res.status(500).json({ message: "로그인 실패", error: error.message });
     }
+  }
+};
+
+export const logout = (req, res) => {
+  try {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+    });
+
+    return res.status(200).json({ message: "로그아웃 완료" });
+  } catch (e) {
+    console.error("로그아웃 오류:", e);
+    res.status(500).json({ message: "서버 오류" });
   }
 };
 
