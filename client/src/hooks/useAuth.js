@@ -3,16 +3,18 @@ import { loginInfo } from "@/store/loginStore";
 import { useNavigate } from "react-router-dom";
 
 const useLogout = () => {
-  const { setLoginState, setUserName } = loginInfo();
+  const { logout } = loginInfo();
 
   const navigate = useNavigate();
 
-  const logout = async () => {
+  const logoutHandler = async () => {
     try {
       await axiosInstance.post("/logout");
 
-      setLoginState(false);
-      setUserName("");
+      logout();
+
+      // axios 전역 Authorization 헤더 삭제
+      delete axiosInstance.defaults.headers.common["Authorization"];
 
       navigate("/signin");
     } catch (e) {
@@ -20,7 +22,7 @@ const useLogout = () => {
     }
   };
 
-  return logout;
+  return logoutHandler;
 };
 
 export default useLogout;

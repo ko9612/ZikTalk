@@ -6,27 +6,22 @@ import {
   generateTokens,
 } from "../services/authService.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const signin = async (req, res) => {
   try {
     const user = await loginUser(req.body);
 
     const { accessToken, refreshToken, userName } = generateTokens(user);
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Lax",
-      maxAge: 1000 * 60 * 15, // 15분 유효기간
-    });
-
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: isProduction,
       sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
-    res.status(200).json({ message: "로그인 성공", userName });
+    res.status(200).json({ message: "로그인 성공", userName, accessToken });
   } catch (error) {
     if (error.status === 401) {
       res.status(401).json({ message: error.message });
@@ -38,17 +33,29 @@ export const signin = async (req, res) => {
   }
 };
 
+export const refreshToken = (req, res) => {
+  const token = req.cookies.refreshToken;
+  if (!token) return res.status(401).json({ message: "토큰 없음" });
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = jwt.sign(
+      { id: payload.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+    res.json({ accessToken: newAccessToken });
+  } catch (e) {
+    console.error("토큰 오류:", e);
+    return res.status(401).json({ message: "토큰 오류" });
+  }
+};
+
 export const logout = (req, res) => {
   try {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Lax",
-    });
-
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: true,
+      secure: isProduction,
       sameSite: "Lax",
     });
 

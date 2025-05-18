@@ -10,7 +10,10 @@ export const signin = async (data) => {
       headers: { "Content-Type": "application/json" },
     });
 
-    const { userName } = res.data;
+    const { userName, accessToken } = res.data;
+
+    // API 요청시 헤더에 accessToken 담아 보내도록 설정
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     return { userName };
   } catch (e) {
