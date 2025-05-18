@@ -9,19 +9,15 @@ import Button from "@/components/common/Button";
 import { useQuestionStore } from "@/store/store";
 import { createInterview, getInterviewFeedback } from "@/api/interviewApi";
 import { useInterviewStore } from "@/store/interviewSetupStore";
-import { jwtDecode } from "jwt-decode";
-import { useCookies } from "react-cookie";
+import { loginInfo } from "@/store/loginStore";
 
-const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
-  // 임시
+const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   const [isLoading, setIsLoading] = useState(true);
   const level = useInterviewStore((state) => state.level);
   const career = useInterviewStore((state) => state.career);
   const ratio = useInterviewStore((state) => state.ratio);
   const { interviewId, questions, answers, video } = useQuestionStore();
-  const [cookies] = useCookies(["token"]);
-  const token = cookies.token;
-  const decoded = jwtDecode(token);
+  const userId = loginInfo((state) => state.userId);
 
   // gpt 피드백 요청
   const requestFeedback = async () => {
@@ -48,7 +44,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed, id }) => {
     const jobWeight = ratio / 100;
     const interviewData = {
       interviewId: interviewId,
-      userId: decoded.userId,
+      userId: userId,
       role: career,
       totalScore:
         Math.round(feedback.personalityScore * personalityWeight) +

@@ -1,11 +1,11 @@
 // 로그인, 회원가입 관련 api
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api";
+const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 export const signin = async (data) => {
   try {
-    const res = await axios.post(`${BASE_URL}/signin`, data, {
+    const res = await axios.post(`${serverUrl}/signin`, data, {
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
     });
@@ -24,7 +24,7 @@ export const signin = async (data) => {
 
 export const signup = async (data) => {
   try {
-    await axios.post(`${BASE_URL}/signup`, data);
+    await axios.post(`${serverUrl}/signup`, data);
   } catch (e) {
     console.error("회원가입 중 오류 발생", e);
     throw e;
@@ -33,7 +33,7 @@ export const signup = async (data) => {
 
 export const verification = async (email) => {
   try {
-    const res = await axios.post(`${BASE_URL}/verification`, {
+    const res = await axios.post(`${serverUrl}/verification`, {
       email,
     });
 

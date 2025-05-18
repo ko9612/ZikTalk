@@ -3,7 +3,7 @@ import axiosInstance from "@/api/axiosInstance";
 import axios from "axios";
 
 // 일단 로컬로
-const API_BASE_URL = "http://localhost:5001/api";
+const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 // gpt 질문 요청
 export const getInterviewQuestion = async (level, qCount, career, ratio) => {
@@ -15,7 +15,7 @@ export const getInterviewQuestion = async (level, qCount, career, ratio) => {
       ratio,
     };
     const response = await axios.post(
-      `${API_BASE_URL}/interview/gpt-question`,
+      `${serverUrl}/interview/gpt-question`,
       payload,
     );
     const responseData = response.data;
@@ -33,8 +33,8 @@ export const postVideo = async (blob, filename) => {
   try {
     const formData = new FormData();
     formData.append("file", blob, filename);
-
-    await axios.post("http://localhost:5001/api/record/upload", formData, {
+    console.log(serverUrl);
+    await axios.post(`${serverUrl}/record/upload`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   } catch (error) {
@@ -46,7 +46,7 @@ export const postVideo = async (blob, filename) => {
 export const getInterviewFeedback = async (data) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/interview/gpt-feedback`,
+      `${serverUrl}/interview/gpt-feedback`,
       data,
     );
     const responseData = response.data;
@@ -61,10 +61,7 @@ export const getInterviewFeedback = async (data) => {
 // 면접 생성
 export const createInterview = async (data) => {
   try {
-    const response = await axiosInstance.post(
-      `${API_BASE_URL}/interview`,
-      data,
-    );
+    const response = await axiosInstance.post(`${serverUrl}/interview`, data);
     return response.data;
   } catch (error) {
     console.error(error);

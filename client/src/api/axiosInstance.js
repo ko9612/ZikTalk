@@ -1,8 +1,8 @@
 import axios from "axios";
 import { loginInfo } from "@/store/loginStore";
-
+const serverUrl = import.meta.env.VITE_SERVER_URL;
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: serverUrl,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
