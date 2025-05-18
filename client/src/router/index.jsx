@@ -42,7 +42,12 @@ const router = createBrowserRouter([
       },
       {
         path: "/mypage/*",
-        element: <ProtectedRoute>{withSuspense(MyPage)}</ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            {console.log("🚦 마이페이지 라우트 활성화")}
+            {withSuspense(MyPage)}
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/interview-result/:resultId",
