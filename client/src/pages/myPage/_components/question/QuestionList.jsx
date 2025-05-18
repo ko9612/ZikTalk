@@ -1,9 +1,9 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import { jwtDecode } from "jwt-decode";
 import { useInfiniteScroll } from "@/components/common/useInfiniteScroll";
 import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
+import { useAuth } from "@/hooks/useAuth.js";
 import EmptyQuestionList from "./EmptyQuestionList";
 import {
   Header,
@@ -13,6 +13,11 @@ import {
   ScrollPrompt,
   useQuestionListState,
 } from "./settings";
+
+// 로그 헬퍼 함수 추가
+const logDebug = (component, action, data) => {
+  console.log(`🔍 [${component}] ${action}:`, data);
+};
 
 // 확인 모달 컴포넌트
 const ConfirmModal = ({ isOpen, message, onConfirm, onCancel }) => {
@@ -73,15 +78,17 @@ const LoginRequiredModal = ({ isOpen, onClose, onLogin }) => {
 };
 
 const QuestionList = () => {
+  console.log("🔄 QuestionList 컴포넌트 렌더링");
   const navigate = useNavigate();
-  const [cookies] = useCookies(["token"]);
   const { filters, updateFilter } = useFilter({ type: SORT_OPTIONS.LATEST });
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
+  
+  // useAuth 훅 사용
+  const { isAuthenticated, userId, userName, authFetch, fetchQuestions: authFetchQuestions } = useAuth();
+  logDebug("QuestionList", "인증 상태", { isAuthenticated, userId, userName });
   
   const {
     state,
@@ -94,50 +101,70 @@ const QuestionList = () => {
   } = useQuestionListState();
 
   const { page, visibleResults, hasMore, loading, selected, isDeleteMode, error } = state;
-
-  // 로그인 상태 확인 및 사용자 ID 추출
-  useEffect(() => {
-    const token = cookies.token;
-    if (!token || typeof token !== "string") {
-      setIsLoggedIn(false);
-      setUserId(null);
-      setLoginModalOpen(true); // 로그인되지 않은 상태로 마이페이지 접근 시 바로 모달 표시
-      return;
-    }
-    
-    try {
-      const decoded = jwtDecode(token); // 토큰 유효성 검증
-      const userIdFromToken = decoded.userId || decoded.sub || decoded.id;
-      
-      if (!userIdFromToken) {
-        console.error("토큰에서 사용자 ID를 찾을 수 없습니다.");
-        setIsLoggedIn(false);
-        setUserId(null);
-        setLoginModalOpen(true);
-        return;
-      }
-      
-      setIsLoggedIn(true);
-      setUserId(userIdFromToken);
-      console.log("토큰에서 추출한 사용자 ID:", userIdFromToken);
-    } catch (err) {
-      console.error("토큰 디코딩 실패:", err);
-      setIsLoggedIn(false);
-      setUserId(null);
-      setLoginModalOpen(true);
-    }
-  }, [cookies.token]);
+  logDebug("QuestionList", "상태 정보", { 
+    page, 
+    resultCount: visibleResults.length, 
+    hasMore, 
+    loading, 
+    selectedCount: Object.values(selected).filter(Boolean).length,
+    isDeleteMode,
+    error
+  });
 
   // 로컬 스토리지에서 숨겨진 항목 제거
   useEffect(() => {
     localStorage.removeItem("hiddenQuestions");
+    logDebug("QuestionList", "로컬 스토리지 정리", "hiddenQuestions 삭제됨");
+    
+    // 로컬 스토리지 내용 확인
+    const token = localStorage.getItem("accessToken");
+    logDebug("QuestionList", "로컬 스토리지 accessToken", token ? "토큰 존재" : "토큰 없음");
   }, []);
+
+  // 질문 가져오기 - useAuth 훅 사용
+  const loadQuestions = useCallback(async (pageNumber, filterType) => {
+    logDebug("QuestionList", "loadQuestions 호출", { pageNumber, filterType, isAuthenticated, userId });
+    
+    if (!isAuthenticated || !userId) {
+      logDebug("QuestionList", "loadQuestions 취소", "인증되지 않음");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      logDebug("QuestionList", "API 호출 시작", { pageNumber, filterType });
+      
+      const isBookmarked = filterType === SORT_OPTIONS.BOOKMARK;
+      const data = await authFetchQuestions(pageNumber, 10, 'date', isBookmarked);
+      logDebug("QuestionList", "API 호출 성공", {
+        resultCount: data?.length || 0,
+        firstItem: data?.[0] ? { id: data[0].id } : "없음",
+        isBookmarked
+      });
+      
+      // useQuestionListState에 데이터 전달
+      fetchQuestions(pageNumber, filterType, userId, data);
+    } catch (error) {
+      logDebug("QuestionList", "API 호출 실패", { 
+        message: error.message, 
+        status: error.response?.status,
+        details: error.response?.data
+      });
+      console.error("질문 목록 조회 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, userId, authFetchQuestions, fetchQuestions, setLoading]);
 
   // 추가 데이터 로드 함수
   const loadMoreResults = useCallback(() => {
-    if (loading || !hasMore || !isLoggedIn || !userId) return;
-    fetchQuestions(page + 1, filters.type, userId);
-  }, [page, filters.type, fetchQuestions, loading, hasMore, isLoggedIn, userId]);
+    if (loading || !hasMore || !isAuthenticated || !userId) {
+      logDebug("QuestionList", "더 로딩 취소", { loading, hasMore, isAuthenticated });
+      return;
+    }
+    logDebug("QuestionList", "더 로딩 시작", { page: page + 1, filterType: filters.type });
+    loadQuestions(page + 1, filters.type);
+  }, [page, filters.type, loading, hasMore, isAuthenticated, userId, loadQuestions]);
 
   // 무한 스크롤 훅 사용
   const { lastElementRef, userScrolled, setUserScrolled, debounceScrollAction } = 
@@ -145,7 +172,12 @@ const QuestionList = () => {
 
   // 필터 변경 핸들러
   const handleFilterChange = useCallback((type) => {
-    if (type === filters.type || !isLoggedIn || !userId) return;
+    logDebug("QuestionList", "필터 변경 시도", { currentType: filters.type, newType: type });
+    
+    if (type === filters.type || !isAuthenticated || !userId) {
+      logDebug("QuestionList", "필터 변경 취소", { 같은필터: type === filters.type, 인증여부: isAuthenticated });
+      return;
+    }
     
     // 부드러운 스크롤 이동
     window.scrollTo({
@@ -155,75 +187,123 @@ const QuestionList = () => {
     
     // 필터 상태 업데이트
     updateFilter("type", type);
+    logDebug("QuestionList", "필터 변경됨", { newType: type });
     
     // 스크롤 플래그 초기화
     setUserScrolled(false);
     
     // 새로운 필터로 데이터 로드
-    fetchQuestions(0, type, userId);
+    loadQuestions(0, type);
     
     // 스크롤 액션 디바운싱
     debounceScrollAction();
-  }, [updateFilter, fetchQuestions, filters.type, setUserScrolled, debounceScrollAction, isLoggedIn, userId]);
+  }, [updateFilter, loadQuestions, filters.type, setUserScrolled, debounceScrollAction, isAuthenticated, userId]);
 
-  // 항목 선택 토글
-  const handleSelectToggle = useCallback((id) => {
-    if (!isLoggedIn) {
-      setLoginModalOpen(true);
-      return;
-    }
-    toggleSelectItem(id);
-  }, [toggleSelectItem, isLoggedIn]);
-
-  // 북마크 토글
-  const handleBookmarkToggle = useCallback((id, e) => {
+  // 북마크 토글 - useAuth 훅 사용
+  const handleBookmarkToggle = useCallback(async (id, e) => {
+    logDebug("QuestionList", "북마크 토글 시도", { questionId: id });
+    
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
+      logDebug("QuestionList", "북마크 토글 취소", "인증되지 않음");
       setLoginModalOpen(true);
       return;
     }
     
-    // 현재 필터 모드 확인
-    const isBookmarkMode = filters.type === SORT_OPTIONS.BOOKMARK;
-
-    toggleQuestionBookmark(id, userId)
-      .then((result) => {
-        // 북마크 모드에서는 상태 변경 후 전체 데이터 리로드 불필요
-        // 이미 toggleQuestionBookmark 내부에서 올바르게 처리됨
-      })
-      .catch((err) => {
-        console.error("북마크 토글 실패:", err);
+    try {
+      logDebug("QuestionList", "북마크 API 호출", { questionId: id, userId });
+      // 인증된 요청으로 북마크 토글
+      await authFetch(`/questions/${id}/bookmark`, {
+        method: 'PATCH',
+        data: { userId }
       });
-  }, [toggleQuestionBookmark, filters.type, isLoggedIn, userId]);
+      
+      logDebug("QuestionList", "북마크 API 성공", { questionId: id });
+      // UI 업데이트
+      toggleQuestionBookmark(id, userId);
+    } catch (error) {
+      logDebug("QuestionList", "북마크 API 실패", { 
+        questionId: id, 
+        error: error.message, 
+        status: error.response?.status 
+      });
+      console.error("북마크 토글 실패:", error);
+    }
+  }, [authFetch, toggleQuestionBookmark, isAuthenticated, userId]);
+
+  // 항목 선택 토글
+  const handleSelectToggle = useCallback((id) => {
+    if (!isAuthenticated) {
+      setLoginModalOpen(true);
+      return;
+    }
+    toggleSelectItem(id);
+    logDebug("QuestionList", "항목 선택 토글", { questionId: id });
+  }, [toggleSelectItem, isAuthenticated]);
 
   // 카드 클릭 핸들러
   const handleCardClick = useCallback((id) => {
-    if (!isLoggedIn) {
+    logDebug("QuestionList", "카드 클릭", { questionId: id });
+    
+    if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
     }
     
     const item = visibleResults.find((item) => item.id === id);
     if (item?.interviewId) {
+      logDebug("QuestionList", "인터뷰 결과로 이동", { interviewId: item.interviewId });
       navigate(`/interview-result/${item.interviewId}`);
+    } else {
+      logDebug("QuestionList", "인터뷰 ID 없음", { questionId: id, item });
     }
-  }, [navigate, visibleResults, isLoggedIn]);
+  }, [navigate, visibleResults, isAuthenticated]);
 
   // 모달 확인 후 실제 삭제 실행
-  const executeDelete = useCallback(() => {
-    markAsDeleted(selected, userId);
-    setConfirmModalOpen(false);
-    const selectedCount = Object.values(selected).filter(Boolean).length;
-    setTimeout(() => alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`), 100);
-  }, [markAsDeleted, selected, userId]);
+  const executeDelete = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    const selectedIds = Object.entries(selected)
+      .filter(([, isSelected]) => isSelected)
+      .map(([id]) => id);
+      
+    logDebug("QuestionList", "삭제 실행", { selectedIds });
+    
+    try {
+      // 인증된 요청으로 삭제 실행
+      logDebug("QuestionList", "삭제 API 호출", { count: selectedIds.length });
+      
+      await authFetch(`/interview/batch-delete`, {
+        method: 'POST',
+        data: { ids: selectedIds, userId }
+      });
+      
+      logDebug("QuestionList", "삭제 API 성공", { count: selectedIds.length });
+      
+      // UI 업데이트
+      markAsDeleted(selected, userId);
+      setConfirmModalOpen(false);
+      
+      const selectedCount = selectedIds.length;
+      setTimeout(() => alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`), 100);
+    } catch (error) {
+      logDebug("QuestionList", "삭제 API 실패", { 
+        error: error.message, 
+        status: error.response?.status,
+        details: error.response?.data
+      });
+      console.error("삭제 실패:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  }, [authFetch, markAsDeleted, selected, isAuthenticated, userId]);
 
   // 항목 삭제 핸들러
   const handleDeleteItems = useCallback(() => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       setLoginModalOpen(true);
       return;
     }
@@ -237,7 +317,7 @@ const QuestionList = () => {
     // 모달 표시
     setConfirmMessage(`선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`);
     setConfirmModalOpen(true);
-  }, [selected, isLoggedIn]);
+  }, [selected, isAuthenticated]);
   
   // 로그인 페이지 이동
   const handleLogin = useCallback(() => {
@@ -246,11 +326,19 @@ const QuestionList = () => {
 
   // 컴포넌트 마운트 시 최초 1회만 데이터 로드
   useEffect(() => {
-    if (!initialDataLoaded && isLoggedIn && userId) {
-      fetchQuestions(0, filters.type, userId);
+    logDebug("QuestionList", "초기 데이터 로드 체크", { 
+      initialDataLoaded, 
+      isAuthenticated, 
+      userId, 
+      filterType: filters.type 
+    });
+    
+    if (!initialDataLoaded && isAuthenticated && userId) {
+      logDebug("QuestionList", "초기 데이터 로드 시작", { userId, filterType: filters.type });
+      loadQuestions(0, filters.type);
       setInitialDataLoaded(true);
     }
-  }, [initialDataLoaded, fetchQuestions, filters.type, isLoggedIn, userId]);
+  }, [initialDataLoaded, loadQuestions, filters.type, isAuthenticated, userId]);
 
   // 삭제 모드에서 ESC 키 처리
   useEffect(() => {
@@ -267,7 +355,7 @@ const QuestionList = () => {
   const isEmpty = visibleResults.length === 0 && !loading;
   
   // 로그인하지 않은 상태에서는 로그인 요청 UI만 표시
-  if (!isLoggedIn) {
+  if (!isAuthenticated) {
     return (
       <div className="max-w-9xl mx-auto w-full px-2 pt-6 sm:px-3">
         <div className="flex flex-col items-center justify-center py-20">
@@ -300,7 +388,7 @@ const QuestionList = () => {
           onFilterChange={handleFilterChange}
           isDeleteMode={isDeleteMode}
           onDeleteToggle={() => {
-            if (!isLoggedIn) {
+            if (!isAuthenticated) {
               setLoginModalOpen(true);
               return;
             }
