@@ -10,7 +10,7 @@ export const loginInfo = create(
       setLoginState: (bool) => set({ loginState: bool }),
       setUserName: (name) => set({ userName: name }),
       setUserId: (id) => set({ userId: id }),
-      logout: () => set({ loginState: false, userName: "" }),
+      logout: () => set({ loginState: false, userId: null, userName: "" }),
     }),
     {
       name: "login-info-storage",
