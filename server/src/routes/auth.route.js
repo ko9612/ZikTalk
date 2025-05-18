@@ -11,7 +11,7 @@ router.post("/signin", authController.signin);
 router.post("/logout", authController.logout);
 
 // refresh token 재발급
-// router.post("/refresh-token", authController.refreshTokenReissue);
+router.post("/refresh", authController.refreshToken);
 
 // 회원가입
 router.post("/signup", authController.signup);

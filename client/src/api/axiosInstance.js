@@ -8,22 +8,40 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn("토큰이 만료되었습니다.");
+    const originalRequest = error.config;
+
+    // accessToken 만료
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
       try {
-        // refresh token 재발급 -> 실패시 로그아웃으로 수정해야 함
-        await axiosInstance.post("/logout");
+        // refreshToken으로 새로운 accessToken 요청
+        const { data } = await axiosInstance.post("/auth/refresh", null, {
+          withCredentials: true, // 쿠키에 있는 refreshToken 보내기
+        });
 
-        loginInfo.getState().logout();
+        const newAccessToken = data.accessToken;
 
-        window.location.href = "/signin";
-      } catch (e) {
-        console.log("자동 로그아웃 실패: ", e);
+        // 새 accessToken을 axios 전역 헤더에 설정
+        axiosInstance.defaults.headers.common["Authorization"] =
+          `Bearer ${newAccessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+        // 실패 요청 재시도
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // refresh 실패 시 로그아웃
+        const { logout } = loginInfo.getState();
+        logout();
+
+        window.location.href = "/login";
+
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   },
 );
