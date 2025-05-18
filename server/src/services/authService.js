@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt, { hash } from "bcrypt";
 import { PrismaClient } from "@prisma/client";
-import { createTransport } from "nodemailer";
+import { sendEmail } from "./emailService.js";
 
 const prisma = new PrismaClient();
 
@@ -90,25 +90,9 @@ export const generateVerificationCode = () => {
 
 // 이메일 인증 번호 발송
 export const sendVerificationEmail = async (email, verificationCode) => {
-  try {
-    const transporter = createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        type: "OAuth2",
-        user: process.env.GMAIL_OAUTH_USER,
-        clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
-      },
-    });
-    const mailOptions = {
-      from: process.env.GMAIL_OAUTH_USER,
-      to: email,
-      subject: "[ZikTalk] 직톡 회원가입 이메일 인증 메일입니다.",
-      html: `
+  await sendEmail(email, {
+    subject: "[ZikTalk] 직톡 회원가입 이메일 인증 메일입니다.",
+    html: `
         <div style="text-align: center; font-family: Arial, sans-serif;">
         <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
           <h2>ZikTalk 회원가입 인증번호</h2>
@@ -118,18 +102,12 @@ export const sendVerificationEmail = async (email, verificationCode) => {
           <p>감사합니다.<br/>ZikTalk 팀 드림</p>
         </div>
       `,
-      attachments: [
-        {
-          filename: "logo.png",
-          path: "./src/assets/images/logo.webp",
-          cid: "logo",
-        },
-      ],
-    };
-
-    await transporter.sendMail(mailOptions);
-  } catch (e) {
-    console.error(e);
-    throw e;
-  }
+    attachments: [
+      {
+        filename: "logo.png",
+        path: "./src/assets/images/logo.webp",
+        cid: "logo",
+      },
+    ],
+  });
 };

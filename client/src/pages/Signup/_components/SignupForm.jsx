@@ -21,6 +21,7 @@ const SignupForm = () => {
   const [authSuccess, setAuthSuccess] = useState(false); // 이메일 인증 성공 여부
   const [authOpen, setAuthOpen] = useState(false); // 이메일 인증 창 열고닫기
   const [disabled, setDisabled] = useState(false); // 인증 버튼 비활성화 여부
+  const [inputDisabled, setInputDisabled] = useState(false); // 인증 input 비활성화 여부
   const [countdown, setCountdown] = useState(180); // 남은 시간 (초)
   const [verificationCode, setVerificationCode] = useState("");
 
@@ -92,12 +93,14 @@ const SignupForm = () => {
   // 이메일 인증 하기
   const handleAuthOpen = async () => {
     setDisabled(true);
+    setInputDisabled(true);
 
     // 이메일 유효성 검사
     const emailValid = await trigger("email");
 
     if (!emailValid) {
       setDisabled(false);
+      setInputDisabled(false);
       return;
     }
 
@@ -236,6 +239,7 @@ const SignupForm = () => {
                       message: "이메일 형식이 올바르지 않습니다.",
                     },
                   })}
+                  disabled={inputDisabled}
                   placeholder="example@example.com"
                   labelClassName={`${labelStyle} w-3/4`}
                 >
