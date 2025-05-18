@@ -36,7 +36,6 @@ export const loginUser = async (data) => {
 };
 
 export const generateTokens = (user) => {
-  console.log(user);
   const accessToken = jwt.sign(
     { userId: user.userId, userName: user.userName },
     process.env.JWT_SECRET,
