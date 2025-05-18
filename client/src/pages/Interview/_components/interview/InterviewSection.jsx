@@ -115,7 +115,11 @@ const InterviewSection = () => {
           onStopRecording={onStopRecording}
         />
       ) : (
-        <Timer qes={question.qes} />
+        <>
+          <Timer qes={question.qes} />
+          {/*배포 테스트 임시*/}
+          {transcript}
+        </>
       )}
     </section>
   );
