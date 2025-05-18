@@ -9,6 +9,7 @@ import RoleSetup from "./_components/setting/RoleSetup";
 import PreCheckStep from "./_components/setting/PreCheckStep";
 import InterviewSection from "./_components/interview/InterviewSection";
 import { useVideoRecord } from "@/hooks/useRecord";
+import useNavigationBlocker from "@/hooks/useNavigationBlocker";
 
 const index = () => {
   const resetAll = useInterviewStore((state) => state.resetAll);
@@ -19,16 +20,16 @@ const index = () => {
   );
   const { releaseCamera } = useVideoRecord();
 
-  useEffect(() => {
+  useNavigationBlocker({
     // 컴포넌트 언마운트(페이지 이탈) 시 초기화
-    return () => {
+    onCleanup: () => {
       resetNavigation();
       resetAll();
       resetDevices();
       resetInterview();
       releaseCamera();
-    };
-  }, [resetNavigation, resetAll]);
+    },
+  });
 
   // 컴포넌트 맵핑 객체
   const COMPONENTS = {
