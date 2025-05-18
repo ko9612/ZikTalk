@@ -97,6 +97,7 @@ const SignupForm = () => {
     const emailValid = await trigger("email");
 
     if (!emailValid) {
+      setDisabled(false);
       return;
     }
 
