@@ -41,17 +41,17 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       setUserId(null);
       return;
     }
-    
+
     try {
       const decoded = jwtDecode(token);
       const userIdFromToken = decoded.userId || decoded.sub || decoded.id;
-      
+
       if (!userIdFromToken) {
         setIsLoggedIn(false);
         setUserId(null);
         return;
       }
-      
+
       setIsLoggedIn(true);
       setUserId(userIdFromToken);
     } catch (err) {
@@ -62,7 +62,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
   const fetchBookmarkedQuestions = useCallback(async () => {
     if (!isLoggedIn || !userId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -74,7 +74,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       const response = await fetchBookmarks();
-      
+
       if (!response || !response.questions) {
         setError("서버 응답 형식이 올바르지 않습니다.");
         setQuestions([]);
@@ -93,7 +93,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
               recommendation: q.recommended,
               bookmarked: q.bookmarked || false,
               interviewId: q.interviewId,
-              userId: q.userId
+              userId: q.userId,
             }))
             .filter((q) => q.bookmarked && q.userId === userId)
         : [];
@@ -110,10 +110,10 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleBookmarkToggle = useCallback(
     async (id) => {
       if (!isLoggedIn || !userId) {
-        navigate('/signin');
+        navigate("/signin");
         return;
       }
-      
+
       try {
         setQuestions((prev) => {
           const index = prev.findIndex((q) => q.id === id);
@@ -156,7 +156,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
     return sortedQuestions.filter((q) => {
       if (q.userId && q.userId !== userId) return false;
-      
+
       const jobMatch = filters.job === "직군·직무" || q.career === filters.job;
       const typeMatch =
         filters.questionType === "질문유형" || q.type === filters.questionType;
@@ -171,7 +171,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const loadPageData = useCallback(
     (page) => {
       if (!isLoggedIn || !userId) return;
-      
+
       setLoading(true);
       const startIndex = (page - 1) * PAGE_SIZE;
       const endIndex = startIndex + PAGE_SIZE;
@@ -193,10 +193,10 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handlePageChange = useCallback(
     (newPage) => {
       if (!isLoggedIn || !userId) {
-        navigate('/signin');
+        navigate("/signin");
         return;
       }
-      
+
       setCurrentPage(newPage);
       loadPageData(newPage);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -204,26 +204,29 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     [loadPageData, isLoggedIn, userId, navigate],
   );
 
-  const toggleOpen = useCallback((id) => {
-    if (!isLoggedIn || !userId) {
-      navigate('/signin');
-      return;
-    }
-    
-    setOpenIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((openId) => openId !== id)
-        : [...prev, id],
-    );
-  }, [isLoggedIn, userId, navigate]);
+  const toggleOpen = useCallback(
+    (id) => {
+      if (!isLoggedIn || !userId) {
+        navigate("/signin");
+        return;
+      }
+
+      setOpenIds((prev) =>
+        prev.includes(id)
+          ? prev.filter((openId) => openId !== id)
+          : [...prev, id],
+      );
+    },
+    [isLoggedIn, userId, navigate],
+  );
 
   const handleJobFilterChange = useCallback(
     (value) => {
       if (!isLoggedIn || !userId) {
-        navigate('/signin');
+        navigate("/signin");
         return;
       }
-      
+
       updateFilter("job", value);
       setCurrentPage(1);
     },
@@ -233,10 +236,10 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleTypeFilterChange = useCallback(
     (value) => {
       if (!isLoggedIn || !userId) {
-        navigate('/signin');
+        navigate("/signin");
         return;
       }
-      
+
       updateFilter("questionType", value);
       setCurrentPage(1);
     },

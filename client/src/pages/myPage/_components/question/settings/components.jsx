@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaTrash } from "react-icons/fa";
-import { BsFillTrash2Fill } from "react-icons/bs";
 import { IoMdClose } from "react-icons/io";
 import { IoCheckmarkSharp } from "react-icons/io5";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import { ResultCard } from "@/components/common/ResultCard";
 import { SORT_OPTIONS } from "@/components/common/useFilter";
-import { twMerge } from "tailwind-merge";
 import { TEXT_COLORS } from "@/pages/myPage/_components/question/settings/constants";
 
 export const Header = React.memo(({ showDescription = true }) => (
@@ -27,30 +25,42 @@ export const Header = React.memo(({ showDescription = true }) => (
 ));
 
 // 애니메이션 버튼 컴포넌트
-const AnimatedButton = ({ onClick, className, title, children, animationType = "scale-in" }) => {
+const AnimatedButton = ({
+  onClick,
+  className,
+  title,
+  children,
+  animationType = "scale-in",
+}) => {
   return (
     <button
       onClick={onClick}
-      className={`${className} animate-${animationType} relative overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg active:scale-95 focus:outline-none`}
+      className={`${className} animate-${animationType} relative overflow-hidden transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg focus:outline-none active:scale-95`}
       title={title}
     >
       {children}
       {/* 내부 글로우 효과 */}
-      <span className="absolute inset-0 rounded-full bg-white/20 animate-ripple"></span>
+      <span className="animate-ripple absolute inset-0 rounded-full bg-white/20"></span>
       {/* 외부 엣지 효과 */}
-      <span className="absolute inset-0 rounded-full shadow-inner opacity-30"></span>
+      <span className="absolute inset-0 rounded-full opacity-30 shadow-inner"></span>
     </button>
   );
 };
 
 export const FilterBar = React.memo(
-  ({ filterValue, onFilterChange, isDeleteMode, onDeleteToggle, onDeleteConfirm }) => {
+  ({
+    filterValue,
+    onFilterChange,
+    isDeleteMode,
+    onDeleteToggle,
+    onDeleteConfirm,
+  }) => {
     // 삭제 모드 변경될 때 애니메이션을 위한 상태
     const [showDeleteButton, setShowDeleteButton] = useState(true);
     const [showActionButtons, setShowActionButtons] = useState(false);
     const [isFlashing, setIsFlashing] = useState(false);
     const trashButtonRef = useRef(null);
-    
+
     // 삭제 모드 변경 감지
     useEffect(() => {
       if (isDeleteMode) {
@@ -63,13 +73,13 @@ export const FilterBar = React.memo(
         setTimeout(() => setShowDeleteButton(true), 300);
       }
     }, [isDeleteMode]);
-    
+
     // 쓰레기통 버튼 클릭 핸들러
     const handleTrashButtonClick = (e) => {
       // 플래시 효과 적용
       setIsFlashing(true);
       setTimeout(() => setIsFlashing(false), 500);
-      
+
       // 약간 지연 후 삭제 모드 토글 (플래시 효과 보이게)
       setTimeout(() => {
         onDeleteToggle(e);
@@ -89,13 +99,13 @@ export const FilterBar = React.memo(
             keepOpenOnSelect={true}
           />
         </div>
-        <div className="flex items-center justify-center h-14 w-14 relative">
+        <div className="relative flex h-14 w-14 items-center justify-center">
           <div className="absolute inset-0 flex items-center justify-center">
             {/* 쓰레기통 아이콘 (삭제 모드 아닐 때) */}
             {showDeleteButton && !isDeleteMode && (
               <AnimatedButton
                 onClick={handleTrashButtonClick}
-                className={`bg-zik-main/10 text-zik-main hover:bg-zik-main/20 flex h-9 w-9 min-w-9 items-center justify-center rounded-full border border-none shadow-md outline-none focus:outline-none z-10 ${isFlashing ? 'btn-flash' : ''}`}
+                className={`bg-zik-main/10 text-zik-main hover:bg-zik-main/20 z-10 flex h-9 w-9 min-w-9 items-center justify-center rounded-full border border-none shadow-md outline-none focus:outline-none ${isFlashing ? "btn-flash" : ""}`}
                 title="삭제 모드"
                 animationType="rotate-in"
                 ref={trashButtonRef}
@@ -104,26 +114,26 @@ export const FilterBar = React.memo(
               </AnimatedButton>
             )}
           </div>
-          
+
           {/* 취소/확인 버튼 (삭제 모드일 때) */}
           {showActionButtons && isDeleteMode && (
             <div className="absolute inset-0">
               {/* 트래시 버튼 위치 표시 (애니메이션 시작점) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-9 w-9 z-0">
+              <div className="absolute top-1/2 left-1/2 z-0 h-9 w-9 -translate-x-1/2 -translate-y-1/2">
                 {/* 취소 버튼 (왼쪽으로) */}
                 <AnimatedButton
                   onClick={onDeleteToggle}
-                  className="bg-gray-300 hover:bg-gray-400 text-white flex h-8 w-8 min-w-8 items-center justify-center rounded-full border border-none shadow-lg outline-none focus:outline-none absolute z-10"
+                  className="absolute z-10 flex h-8 w-8 min-w-8 items-center justify-center rounded-full border border-none bg-gray-300 text-white shadow-lg outline-none hover:bg-gray-400 focus:outline-none"
                   title="취소"
                   animationType="orbit-left"
                 >
                   <IoMdClose size={16} className="mx-auto" />
                 </AnimatedButton>
-                
+
                 {/* 확인 버튼 (위쪽으로) */}
                 <AnimatedButton
                   onClick={onDeleteConfirm}
-                  className="bg-zik-main hover:bg-indigo-600 text-white flex h-8 w-8 min-w-8 items-center justify-center rounded-full border border-none shadow-lg outline-none focus:outline-none absolute z-10"
+                  className="bg-zik-main absolute z-10 flex h-8 w-8 min-w-8 items-center justify-center rounded-full border border-none text-white shadow-lg outline-none hover:bg-indigo-600 focus:outline-none"
                   title="삭제 확인"
                   animationType="orbit-right"
                 >
@@ -135,7 +145,7 @@ export const FilterBar = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 export const ResultGrid = React.memo(

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import CommonModal from "@/components/common/Modal/CommonModal";
 import QuestionList from "@/pages/myPage/_components/question/QuestionList";
 import QuestionBookmarkList from "@/pages/myPage/_components/bookmark/QuestionBookmarkList";
 import EmptyQuestionList from "@/pages/myPage/_components/question/EmptyQuestionList";
@@ -17,16 +15,8 @@ const tabs = [
 const MyPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [cookies] = useCookies(["token"]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const currentPath = location.pathname.split("/").pop() || "result-list";
-  const token = cookies.token;
-
-  useEffect(() => {
-    if (!token || typeof token !== "string") {
-      setShowLoginModal(true);
-    }
-  }, [token]);
 
   const renderContent = () => {
     switch (currentPath) {
@@ -50,36 +40,23 @@ const MyPage = () => {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
-      {!token ? (
-        <CommonModal
-          isOpen={showLoginModal}
-          onClose={() => navigate("/")}
-          btnText="로그인"
-          btnHandler={() => navigate("/signin")}
-          title="로그인 필요"
-          subText="마이페이지를 이용하려면 로그인이 필요합니다."
-        />
-      ) : (
-        <>
-          <nav className="mb-8 flex flex-wrap justify-center gap-4 sm:justify-start sm:gap-8">
-            {tabs.map((tab) => (
-              <NavLink
-                key={tab.path}
-                to={tab.path}
-                className={({ isActive }) =>
-                  "px-3 py-2 text-sm font-medium sm:text-lg sm:font-semibold" +
-                  (isActive
-                    ? " border-b-2 border-indigo-400 text-indigo-500"
-                    : " text-gray-400")
-                }
-              >
-                {tab.name}
-              </NavLink>
-            ))}
-          </nav>
-          {renderContent()}
-        </>
-      )}
+      <nav className="mb-8 flex flex-wrap justify-center gap-4 sm:justify-start sm:gap-8">
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.path}
+            to={tab.path}
+            className={({ isActive }) =>
+              "px-3 py-2 text-sm font-medium sm:text-lg sm:font-semibold" +
+              (isActive
+                ? " border-b-2 border-indigo-400 text-indigo-500"
+                : " text-gray-400")
+            }
+          >
+            {tab.name}
+          </NavLink>
+        ))}
+      </nav>
+      {renderContent()}
     </div>
   );
 };
