@@ -121,6 +121,7 @@ const SignupForm = () => {
 
       setVerificationCode("");
       setDisabled(false);
+      setInputDisabled(false);
 
       return;
     }
