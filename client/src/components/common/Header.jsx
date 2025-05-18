@@ -1,32 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Button from "./Button";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import { Link, useLocation } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { useLogout } from "@/hooks/useAuth";
-import { jwtDecode } from "jwt-decode";
+import { loginInfo } from "@/store/loginStore";
+import useLogout from "@/hooks/useAuth";
 
 const Header = () => {
   const { pathname } = useLocation();
-  const [cookies] = useCookies(["token"]);
-  const [username, setUsername] = useState("");
+  const { loginState, userName } = loginInfo();
 
   const logout = useLogout();
-
-  useEffect(() => {
-    const token = cookies.token;
-
-    if (!token || typeof token !== "string") {
-      console.log("토큰이 없거나 유효하지 않습니다.");
-      return;
-    }
-    try {
-      const decoded = jwtDecode(token);
-      setUsername(decoded.userName || "사용자");
-    } catch (err) {
-      console.error("토큰 디코딩 실패:", err);
-    }
-  }, [cookies.token]);
 
   return (
     <header>
@@ -50,7 +33,7 @@ const Header = () => {
                 면접 연습
               </Link>
             </li>
-            {cookies.token ? (
+            {loginState ? (
               <>
                 <li>
                   <Link to="/mypage/result-list">
@@ -58,7 +41,7 @@ const Header = () => {
                       color="white"
                       className="!px-3 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
                     >
-                      {username} 님
+                      {userName} 님
                     </Button>
                   </Link>
                 </li>

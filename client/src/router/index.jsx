@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import Layout from "../components/common/Layout";
 import NotFoundPage from "@/components/common/NotFoundPage";
 import LoadingPage from "@/components/common/LoadingPage";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 
 const Landing = lazy(() => import("../pages/Landing"));
 const Interview = lazy(() => import("../pages/Interview"));
@@ -41,20 +42,24 @@ const router = createBrowserRouter([
       },
       {
         path: "/mypage/*",
-        element: withSuspense(MyPage),
+        element: <ProtectedRoute>{withSuspense(MyPage)}</ProtectedRoute>,
       },
       {
         path: "/interview-result/:resultId",
-        element: withSuspense(InterviewResult),
+        element: (
+          <ProtectedRoute>{withSuspense(InterviewResult)}</ProtectedRoute>
+        ),
       },
       {
         path: "/interview",
         element: (
-          <Suspense fallback={<LoadingPage />}>
-            <InterviewLayout>
-              <Interview />
-            </InterviewLayout>
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingPage />}>
+              <InterviewLayout>
+                <Interview />
+              </InterviewLayout>
+            </Suspense>
+          </ProtectedRoute>
         ),
       },
       {

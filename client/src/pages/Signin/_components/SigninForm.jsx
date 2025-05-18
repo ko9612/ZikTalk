@@ -9,6 +9,7 @@ import Google from "@/assets/images/google.svg";
 import { signin } from "@/api/signApi";
 import { useCookies } from "react-cookie";
 import { useEffect } from "react";
+import { loginInfo } from "@/store/loginStore";
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
@@ -22,10 +23,8 @@ const SigninForm = () => {
   const [rememberEmail, setRememberEmail] = useState(false); // 이메일 기억하기
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
-  const [cookies, setCookie, removeCookie] = useCookies([
-    "rememberEmail",
-    "token",
-  ]);
+  const [cookies, setCookie, removeCookie] = useCookies(["rememberEmail"]);
+  const { setLoginState, setUserName } = loginInfo();
 
   const navigate = useNavigate();
 
@@ -43,25 +42,17 @@ const SigninForm = () => {
     }
 
     const data = {
-      email: email,
-      password: password,
+      email,
+      password,
     };
 
     try {
-      const token = await signin(data);
-      
-      // 토큰을 쿠키에 저장 (서버 인증에 사용)
-      setCookie("token", token, { 
-        path: "/", 
-        maxAge: 3600, 
-        sameSite: "lax",
-        secure: window.location.protocol === 'https:'
-      });
-      
-      // 토큰을 로컬 스토리지에도 저장 (axiosInstance에서 사용)
-      localStorage.setItem("accessToken", token);
-      
+      const { userName } = await signin(data);
+
       setSigninFail(false);
+      setLoginState(true);
+      setUserName(userName);
+
       navigate("/");
     } catch (e) {
       if (

@@ -7,6 +7,12 @@ const router = express.Router();
 // 로그인
 router.post("/signin", authController.signin);
 
+// 로그아웃
+router.post("/logout", authController.logout);
+
+// refresh token 재발급
+// router.post("/refresh-token", authController.refreshTokenReissue);
+
 // 회원가입
 router.post("/signup", authController.signup);
 

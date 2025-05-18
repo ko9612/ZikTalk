@@ -9,26 +9,18 @@ const prisma = new PrismaClient();
 
 // 인증 미들웨어
 export const authenticate = (req, res, next) => {
+  const token = req.cookies.accessToken;
+
+  if (!token) {
+    return res.status(401).json({ message: "유효한 인증 형식이 아닙니다." });
+  }
+
   try {
-    // 헤더에서 토큰 가져오기
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: "인증 토큰이 필요합니다." });
-    }
-
-    // "Bearer 토큰" 형식에서 토큰 추출
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ message: "유효한 인증 형식이 아닙니다." });
-    }
-
     // 토큰 검증
-    const secret = process.env.JWT_SECRET || "your-secret-key";
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 요청 객체에 사용자 정보 추가
     req.user = decoded;
-
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {

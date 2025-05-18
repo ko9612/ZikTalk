@@ -5,9 +5,14 @@ const BASE_URL = "http://localhost:5001/api";
 
 export const signin = async (data) => {
   try {
-    const res = await axios.post(`${BASE_URL}/signin`, data);
-    const token = res.data.user.token;
-    return token;
+    const res = await axios.post(`${BASE_URL}/signin`, data, {
+      withCredentials: true,
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const { userName } = res.data;
+
+    return { userName };
   } catch (e) {
     console.error("로그인 중 오류 발생", e);
     throw e;
