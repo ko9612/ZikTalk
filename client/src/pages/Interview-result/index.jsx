@@ -6,6 +6,7 @@ import FaqItem from "@/components/common/FaqItem";
 import { useEffect } from "react";
 import axiosInstance from "@/api/axiosInstance";
 import { useParams } from "react-router-dom";
+import videoPlayer from "@/api/videoPlayer";
 
 const careerType = {
   JOB: "직무",
@@ -85,6 +86,8 @@ const Index = () => {
       );
     }
   };
+
+  const videoUrl = videoPlayer(`${selectedQuestion}`);
 
   useEffect(() => {
     axiosInstance
@@ -179,7 +182,7 @@ const Index = () => {
                   <video
                     className="w-full rounded-lg border"
                     controls
-                    src={selectedQuestion}
+                    src={videoUrl}
                   />
                 ) : (
                   <div className="w-full text-center text-gray-500">
