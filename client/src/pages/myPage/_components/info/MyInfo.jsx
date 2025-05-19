@@ -47,11 +47,9 @@ const MyInfo = () => {
   // 경력 옵션
   const careerOptions = [
     { value: "신입", label: "신입" },
-    { value: "1년차", label: "1년차" },
-    { value: "2년차", label: "2년차" },
-    { value: "3년차", label: "3년차" },
-    { value: "4년차", label: "4년차" },
-    { value: "5년차 이상", label: "5년차 이상" },
+    { value: "1 ~ 3년", label: "1 ~ 3년" },
+    { value: "4 ~ 7년", label: "4 ~ 7년" },
+    { value: "7년 이상", label: "7년 이상" },
   ];
   
   // 로컬 스토리지에서 토큰 복원 시도
@@ -98,9 +96,13 @@ const MyInfo = () => {
         role: userData.role || "",
         career: userData.career === 0 
           ? "신입"
-          : userData.career >= 5 
-            ? "5년차 이상" 
-            : `${userData.career}년차`
+          : userData.career === 2
+            ? "1 ~ 3년"
+          : userData.career === 5
+            ? "4 ~ 7년"
+          : userData.career >= 7
+            ? "7년 이상"
+            : "신입"
       }));
       setSelectedJob(userData.role || "");
       if (updateUserName && userData.name) updateUserName(userData.name);
@@ -108,9 +110,13 @@ const MyInfo = () => {
       if (setUserCareer && userData.career !== undefined) {
         const careerText = userData.career === 0 
           ? "신입"
-          : userData.career >= 5 
-            ? "5년차 이상" 
-            : `${userData.career}년차`;
+          : userData.career === 2
+            ? "1 ~ 3년"
+          : userData.career === 5
+            ? "4 ~ 7년"
+          : userData.career >= 7
+            ? "7년 이상"
+            : "신입";
         setUserCareer(careerText);
       }
     } catch (err) {
@@ -134,9 +140,13 @@ const MyInfo = () => {
             role: data.role || "",
             career: data.career === 0 
               ? "신입"
-              : data.career >= 5 
-                ? "5년차 이상" 
-                : `${data.career}년차`
+              : data.career === 2
+                ? "1 ~ 3년"
+              : data.career === 5
+                ? "4 ~ 7년"
+              : data.career >= 7
+                ? "7년 이상"
+              : "신입"
           }));
           
           // 선택된 직무 업데이트
@@ -148,9 +158,13 @@ const MyInfo = () => {
           if (setUserCareer && data.career !== undefined) {
             const careerText = data.career === 0 
               ? "신입"
-              : data.career >= 5 
-                ? "5년차 이상" 
-                : `${data.career}년차`;
+              : data.career === 2
+                ? "1 ~ 3년"
+              : data.career === 5
+                ? "4 ~ 7년"
+              : data.career >= 7
+                ? "7년 이상"
+                : "신입";
             setUserCareer(careerText);
           }
           
@@ -254,9 +268,11 @@ const MyInfo = () => {
         // 직무 업데이트
         role: form.role,
         // 경력 업데이트 - 문자열을 숫자로 변환
-        career: form.career === "신입" ? 0 : 
-                form.career === "5년차 이상" ? 5 : 
-                parseInt(form.career),
+        career: form.career === "신입" ? 0 :
+          form.career === "1 ~ 3년" ? 2 :
+          form.career === "4 ~ 7년" ? 5 :
+          form.career === "7년 이상" ? 7 :
+          0,
         // 사용자 ID
         userId: userId
       };

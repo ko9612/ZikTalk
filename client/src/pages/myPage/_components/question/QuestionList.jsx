@@ -27,6 +27,7 @@ const QuestionList = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selected, setSelected] = useState({});
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [error, setError] = useState(null);
@@ -126,8 +127,8 @@ const QuestionList = () => {
   );
 
   const loadMoreResults = useCallback(() => {
-    if (loading || !hasMore) return;
-    setLoading(true);
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
     setTimeout(() => {
       setPage((prev) => {
         const nextPage = prev + 1;
@@ -135,11 +136,11 @@ const QuestionList = () => {
         const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
         setVisibleResults(nextVisible);
         setHasMore(nextVisible.length < sorted.length);
-        setLoading(false);
+        setLoadingMore(false);
         return nextPage;
       });
     }, 300);
-  }, [loading, hasMore, allQuestions, filters.type, sortResults]);
+  }, [loading, loadingMore, hasMore, allQuestions, filters.type, sortResults]);
 
   const handleBookmarkToggle = useCallback(async (id, e) => {
     if (e) {
@@ -190,14 +191,14 @@ const QuestionList = () => {
   }, [allQuestions, filters.type, page, updateVisibleResults]);
 
   const handleScroll = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (loading || loadingMore || !hasMore) return;
     const scrollHeight = document.documentElement.scrollHeight;
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const clientHeight = document.documentElement.clientHeight;
-    if (scrollHeight - scrollTop - clientHeight < 100) {
+    if (scrollHeight - scrollTop - clientHeight < 50) {
       loadMoreResults();
     }
-  }, [loading, hasMore, loadMoreResults]);
+  }, [loading, loadingMore, hasMore, loadMoreResults]);
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll);
@@ -254,7 +255,17 @@ const QuestionList = () => {
           </div>
 
           {loading && <LoadingIndicator />}
-          {!hasMore && !loading && visibleResults.length > 0 && (
+          
+          {loadingMore && (
+            <div 
+              className="my-4 flex w-full justify-center" 
+              ref={loadingRef}
+            >
+              <LoadingIndicator />
+            </div>
+          )}
+          
+          {!hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
             <div className="scroll-spacer my-10 h-2 w-full">
               <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm">
                 더 이상 불러올 데이터가 없습니다

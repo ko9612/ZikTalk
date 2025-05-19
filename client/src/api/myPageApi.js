@@ -33,28 +33,96 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
       }
     }
     
-    const params = {
+    // 기본 파라미터 - 필터 없음
+    const baseParams = {
       page,
       pageSize,
       bookmarked: true,
       userId: userId
     };
-
+    
+    // 필터 적용 여부 확인
+    const hasFilters = (filters.job && filters.job !== "직군·직무") || 
+                      (filters.questionType && filters.questionType !== "질문유형");
+    
+    // 필터 적용된 파라미터
+    let params = { ...baseParams };
+    
     // 필터 값이 있는 경우에만 파라미터에 추가
-    if (filters.job) {
+    if (filters.job && filters.job !== "직군·직무") {
+      // 직무/직군 필터링을 위해 role 또는 career로 전달
       params.role = filters.job;
+      // 아래 필드도 동일하게 설정 (서버측에서 OR 조건으로 처리)
       params.career = filters.job;
+      
+      console.log('[BOOKMARK API] 직군/직무 필터링:', filters.job);
     }
-    if (filters.questionType) {
+    
+    if (filters.questionType && filters.questionType !== "질문유형") {
+      // 질문 유형 필터링
       params.type = filters.questionType === "직무" ? "JOB" : "PERSONALITY";
+      console.log('[BOOKMARK API] 질문 유형 필터링:', params.type);
+    }
+    
+    // 페이지 정보 확실하게 보장 (중복 체크)
+    if (typeof page === 'number' && page > 0) {
+      params.page = page;
+    } else {
+      params.page = 1;
     }
     
     console.log('[BOOKMARK API] 요청 파라미터:', params);
     
-    const response = await axiosInstance.get(`/mypage/bookmarks`, { params });
-    console.log('[BOOKMARK API] 응답:', response.data);
-    
-    return response.data;
+    try {
+      // 필터를 적용하여 API 호출 시도
+      const response = await axiosInstance.get(`/mypage/bookmarks`, { params });
+      console.log('[BOOKMARK API] 응답:', response.data);
+      return response.data;
+    } catch (filterError) {
+      // 필터 적용 시 오류가 발생한 경우
+      console.error('[BOOKMARK API] 필터 적용 중 오류 발생:', filterError);
+      
+      if (hasFilters) {
+        // 필터가 적용되어 있었다면, 필터 없이 재시도
+        console.log('[BOOKMARK API] 필터 없이 재시도합니다.');
+        const fallbackResponse = await axiosInstance.get(`/mypage/bookmarks`, { params: baseParams });
+        
+        // 클라이언트 측에서 필터링 수행
+        const filteredData = { ...fallbackResponse.data };
+        
+        if (filters.job && filters.job !== "직군·직무") {
+          const jobFilter = filters.job;
+          console.log('[BOOKMARK API] 클라이언트 측 직무 필터링:', jobFilter);
+          
+          filteredData.questions = filteredData.questions.filter(q => 
+            (q.role === jobFilter) || 
+            (q.interview?.role === jobFilter) || 
+            (q.career === jobFilter)
+          );
+        }
+        
+        if (filters.questionType && filters.questionType !== "질문유형") {
+          const typeValue = filters.questionType === "직무" ? "JOB" : "PERSONALITY";
+          console.log('[BOOKMARK API] 클라이언트 측 유형 필터링:', typeValue);
+          
+          filteredData.questions = filteredData.questions.filter(q => 
+            q.type === typeValue
+          );
+        }
+        
+        // 클라이언트 측 필터링 결과 반환
+        console.log('[BOOKMARK API] 클라이언트 측 필터링 결과:', filteredData.questions.length);
+        
+        // 필터링된 결과의 페이지네이션 정보 업데이트
+        filteredData.totalCount = filteredData.questions.length;
+        filteredData.totalPages = Math.max(1, Math.ceil(filteredData.totalCount / pageSize));
+        
+        return filteredData;
+      }
+      
+      // 필터가 없었는데도 오류가 발생한 경우 오류 전파
+      throw filterError;
+    }
   } catch (err) {
     console.error('[BOOKMARK API] 오류:', err);
     throw err;

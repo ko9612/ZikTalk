@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/useToast";
 import {
   PAGE_SIZE,
   TEXT_COLORS,
-  FilterComponent,
   TableHeader,
   LoadingIndicator,
 } from "./settings";
@@ -59,11 +58,13 @@ const useBookmarkListState = () => {
         }
       }
 
-      // 필터 값 변환
+      // 필터 값 변환 - 서버로 전송할 필터 파라미터
       const filterParams = {
         job: filters.job !== "직군·직무" ? filters.job : undefined,
         questionType: filters.questionType !== "질문유형" ? filters.questionType : undefined
       };
+      
+      console.log("[DEBUG] 서버로 전송할 필터 파라미터:", filterParams);
 
       console.log("[DEBUG] 북마크 API 호출 파라미터:", { 
         page: pageNum, 
@@ -96,34 +97,24 @@ const useBookmarkListState = () => {
               interviewId: q.interviewId,
               userId: q.userId,
             }))
-            .filter((q) => {
-              // 기본 필터: 사용자 ID와 북마크 상태
-              if (q.userId !== userId || !q.bookmarked) return false;
-              
-              // 직군/직무 필터
-              if (filters.job && filters.job !== "직군·직무") {
-                if (q.career !== filters.job) return false;
-              }
-              
-              // 질문 유형 필터
-              if (filters.questionType && filters.questionType !== "질문유형") {
-                if (q.type !== filters.questionType) return false;
-              }
-              
-              return true;
-            })
+            // 클라이언트 측 필터링은 서버에서 이미 필터링된 데이터에 대해 수행하면 안 됨
+            // 기본적인 사용자 ID 및 북마크 상태 확인만 유지
+            .filter((q) => q.userId === userId && q.bookmarked)
         : [];
 
-      console.log("[DEBUG] 필터링된 북마크 질문 수:", formattedQuestions.length);
+      console.log("[DEBUG] 처리된 북마크 질문 수:", formattedQuestions.length);
       
       setVisibleResults(formattedQuestions);
       
+      // 전체 페이지 수 계산 (서버 응답에서 제공하지 않는 경우)
       if (response.totalPages) {
         setTotalPages(response.totalPages);
-      } else if (response.total) {
-        setTotalPages(Math.ceil(response.total / PAGE_SIZE));
+      } else if (response.totalCount) {
+        setTotalPages(Math.ceil(response.totalCount / PAGE_SIZE));
       } else {
-        setTotalPages(Math.max(1, Math.ceil(formattedQuestions.length / PAGE_SIZE)));
+        // 페이지 정보가 없는 경우 현재 결과 수로 예상 계산
+        const totalItemCount = formattedQuestions.length;
+        setTotalPages(Math.max(1, Math.ceil(totalItemCount / PAGE_SIZE)));
       }
       
       setCurrentPage(pageNum);
@@ -291,17 +282,94 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     { value: '직군·직무', label: '직군·직무' }
   ]);
 
-  // 북마크 데이터가 변경될 때마다 직군·직무 옵션 동적 생성
+  // 모든 사용 가능한 직군/직무 옵션을 저장
+  const [allAvailableJobOptions, setAllAvailableJobOptions] = useState([]);
+
+  // 모든 가능한 직군·직무 옵션을 로드하는 함수
+  const loadAllJobOptions = useCallback(async () => {
+    try {
+      console.log("[직군·직무 옵션] 전체 옵션 로드 시도");
+      
+      // 기본 옵션 항상 포함
+      const defaultOption = { value: '직군·직무', label: '직군·직무' };
+      
+      // 이미 로드된 옵션이 있으면 사용
+      if (allAvailableJobOptions.length > 1) {
+        console.log("[직군·직무 옵션] 기존 옵션 재사용:", allAvailableJobOptions.length);
+        setDynamicJobOptions([defaultOption, ...allAvailableJobOptions]);
+        return;
+      }
+      
+      // 필터 없이 북마크 데이터 로드 시도
+      if (userId) {
+        try {
+          console.log("[직군·직무 옵션] 모든 북마크 데이터 조회 시도");
+          const response = await fetchBookmarks(1, 100, { job: undefined, questionType: undefined }, userId);
+          
+          if (response && response.questions && response.questions.length > 0) {
+            // 모든 직군·직무 값 추출
+            const allRoles = response.questions
+              .map(q => q.interview?.role || q.role || q.career || null)
+              .filter(Boolean);
+            
+            // 중복 제거
+            const uniqueRoles = Array.from(new Set(allRoles));
+            console.log("[직군·직무 옵션] 추출된 고유 직군·직무:", uniqueRoles);
+            
+            // 옵션 변환 및 저장
+            const roleOptions = uniqueRoles.map(role => ({ value: role, label: role }));
+            setAllAvailableJobOptions(roleOptions);
+            
+            // 드롭다운 업데이트
+            setDynamicJobOptions([defaultOption, ...roleOptions]);
+          }
+        } catch (err) {
+          console.error("[직군·직무 옵션] 로드 오류:", err);
+          // 오류 발생 시 기본 옵션만 유지
+          setDynamicJobOptions([defaultOption]);
+        }
+      }
+    } catch (err) {
+      console.error("[직군·직무 옵션] 처리 오류:", err);
+    }
+  }, [userId, allAvailableJobOptions]);
+
+  // 컴포넌트 마운트 시 모든 직군·직무 옵션 로드
   useEffect(() => {
-    // visibleResults에서 career(직무) 값 추출
-    const uniqueRoles = Array.from(
-      new Set(state.visibleResults.map(q => q.career).filter(Boolean))
-    );
-    setDynamicJobOptions([
-      { value: '직군·직무', label: '직군·직무' },
-      ...uniqueRoles.map(role => ({ value: role, label: role }))
-    ]);
-  }, [state.visibleResults]);
+    if (userId && loginState) {
+      loadAllJobOptions();
+    }
+  }, [userId, loginState, loadAllJobOptions]);
+
+  // 북마크 데이터가 변경될 때 현재 필터링된 결과에 없는 옵션도 유지
+  useEffect(() => {
+    if (allAvailableJobOptions.length > 0) {
+      setDynamicJobOptions([
+        { value: '직군·직무', label: '직군·직무' },
+        ...allAvailableJobOptions
+      ]);
+    } else {
+      // 아직 모든 옵션이 로드되지 않은 경우 현재 결과에서 옵션 추출
+      const originalData = state.visibleResults;
+      
+      // 현재 결과에서 사용 가능한 직군·직무 옵션 생성
+      const uniqueRoles = Array.from(
+        new Set(originalData.map(q => q.career).filter(Boolean))
+      );
+      
+      setDynamicJobOptions([
+        { value: '직군·직무', label: '직군·직무' },
+        ...uniqueRoles.map(role => ({ value: role, label: role }))
+      ]);
+    }
+  }, [state.visibleResults, allAvailableJobOptions]);
+  
+  // 질문 유형 옵션 
+  const questionTypeOptions = [
+    { value: '질문유형', label: '질문유형' },
+    { value: '직무', label: '직무' },
+    { value: '인성', label: '인성' }
+  ];
 
   // 페이지 변경 핸들러
   const handlePageChange = useCallback((pageNum) => {
@@ -327,15 +395,25 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       
       // 로딩 상태 설정
       setLoading(true);
+      setError(null);
       
       // 필터 상태 업데이트
       updateFilter("job", value);
       
       // 필터 변경 시 1페이지로 이동하고 데이터 새로 로드
       setCurrentPage(1);
-      fetchBookmarkedQuestions(1, { ...filters, job: value }, userId);
+      
+      // 서버에 요청 전송
+      fetchBookmarkedQuestions(1, { ...filters, job: value }, userId)
+        .catch(err => {
+          console.error("[필터 변경 오류]", err);
+          // 에러 발생 시 빈 결과 표시하고 사용자에게 알림
+          setVisibleResults([]);
+          setError(`필터 적용 중 오류가 발생했습니다: ${err.message || "알 수 없는 오류"}`);
+          setLoading(false);
+        });
     },
-    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage, setError, setVisibleResults],
   );
 
   // 필터 변경 핸들러 - questionType
@@ -350,15 +428,25 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       
       // 로딩 상태 설정
       setLoading(true);
+      setError(null);
       
       // 필터 상태 업데이트
       updateFilter("questionType", value);
       
       // 필터 변경 시 1페이지로 이동하고 데이터 새로 로드
       setCurrentPage(1);
-      fetchBookmarkedQuestions(1, { ...filters, questionType: value }, userId);
+      
+      // 서버에 요청 전송
+      fetchBookmarkedQuestions(1, { ...filters, questionType: value }, userId)
+        .catch(err => {
+          console.error("[필터 변경 오류]", err);
+          // 에러 발생 시 빈 결과 표시하고 사용자에게 알림
+          setVisibleResults([]);
+          setError(`필터 적용 중 오류가 발생했습니다: ${err.message || "알 수 없는 오류"}`);
+          setLoading(false);
+        });
     },
-    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage, setError, setVisibleResults],
   );
 
   // 북마크 토글 핸들러
@@ -494,34 +582,28 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         질문 북마크
       </h2>
 
-      <div className="flex justify-between items-center mb-4">
-        <FilterComponent
-          filters={filters}
-          onJobFilterChange={handleJobFilterChange}
-          onTypeFilterChange={handleTypeFilterChange}
-          jobOptions={dynamicJobOptions}
-        />
+      <div className="flex justify-between items-center mb-4 ">
+        <div className="flex space-x-2">
+          <FilterDropdown 
+            value={filters.job}
+            onChange={handleJobFilterChange}
+            options={dynamicJobOptions}
+            className=" text-gray-500"
+            buttonWidth="flex mr-14 h-10 w-auto min-w-24 gap-5 items-center justify-between truncate  border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+            dropdownWidth="w-auto"
+          />
+          
+          <FilterDropdown 
+            value={filters.questionType}
+            onChange={handleTypeFilterChange}
+            options={questionTypeOptions}
+            className=" text-gray-500"
+            buttonWidth="flex h-10 w-auto min-w-24  gap-7 items-center justify-between truncate border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+            dropdownWidth="w-auto"
+          />
+        </div>
         
-        <button 
-          className="ml-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm flex items-center"
-          onClick={() => {
-            console.log("[새로고침] 버튼 클릭");
-            if (loginState && userId) {
-              // 로딩 상태 표시
-              setLoading(true);
-              // 데이터 다시 로드
-              fetchBookmarkedQuestions(currentPage, filters, userId);
-              // 성공 메시지
-              showToast("북마크 목록을 새로고침했습니다", "success");
-            }
-          }}
-          disabled={loading}
-        >
-          {loading ? "로딩 중..." : "새로고침"}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
+       
       </div>
 
       {error && (

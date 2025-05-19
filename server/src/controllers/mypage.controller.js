@@ -9,38 +9,89 @@ export const getMyBookmarks = async (req, res) => {
   try {
     // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
     const userId = req.query.userId || req.user?.id;
+    
+    // 페이지네이션 파라미터
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    const skip = (page - 1) * pageSize;
+    
+    console.log(`[서버] 북마크 조회 - 페이지: ${page}, 사이즈: ${pageSize}, 유저ID: ${userId}`);
+    console.log(`[서버] 북마크 필터 - 쿼리 파라미터:`, req.query);
 
     // userId가 없으면 401 에러 반환
     if (!userId) {
       return res.status(401).json({ message: "인증이 필요합니다." });
     }
 
-    // 현재 사용자의 면접만 조회
-    const interviews = await prisma.interview.findMany({
-      where: {
-        userId: userId,
-      },
-      include: {
-        questions: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    // 현재 사용자의 질문만 조회
-    const questions = await prisma.question.findMany({
-      where: {
-        userId: userId,
-      },
-      include: {
-        interview: true,
-      },
-      orderBy: { order: "asc" },
-    });
-
-    res.status(200).json({
-      interviews: interviews,
-      questions: questions,
-    });
+    // 기본 필터링 조건 - 사용자 ID 및 북마크 상태
+    const where = { 
+      userId,
+      bookmarked: true 
+    };
+    
+    try {
+      // 직군/직무 필터
+      if (req.query.role || req.query.career) {
+        const jobValue = req.query.role || req.query.career;
+        console.log(`[서버] 직군/직무 필터 적용:`, jobValue);
+        
+        // 단순화된 필터링 방식 사용 (안전한 접근법)
+        // role 또는 interview.role과 일치하는 항목 필터링
+        where.OR = [
+          { role: jobValue },
+          { interview: { role: jobValue } }
+        ];
+      }
+      
+      // 질문 유형 필터
+      if (req.query.type) {
+        console.log(`[서버] 질문 유형 필터 적용:`, req.query.type);
+        where.type = req.query.type;
+      }
+    } catch (filterError) {
+      console.error("[서버] 필터 적용 중 오류:", filterError);
+      // 필터 오류 발생 시 기본 조건만 사용
+      where.OR = undefined;
+    }
+    
+    console.log(`[서버] 최종 쿼리 조건:`, JSON.stringify(where, null, 2));
+    
+    try {
+      // 총 질문 수 조회 (페이지네이션용)
+      const totalCount = await prisma.question.count({
+        where
+      });
+      
+      console.log(`[서버] 북마크 총 개수:`, totalCount);
+      
+      // 현재 페이지 데이터 조회
+      const questions = await prisma.question.findMany({
+        where,
+        include: {
+          interview: true,
+        },
+        orderBy: { order: "asc" },
+        skip,
+        take: pageSize
+      });
+      
+      console.log(`[서버] 현재 페이지 데이터 개수:`, questions.length);
+      
+      // 페이지네이션 정보 포함하여 응답
+      res.status(200).json({
+        questions,
+        totalCount,
+        currentPage: page,
+        pageSize,
+        totalPages: Math.ceil(totalCount / pageSize)
+      });
+    } catch (dbError) {
+      console.error("[서버] 데이터베이스 쿼리 오류:", dbError);
+      return res.status(500).json({ 
+        message: "데이터 조회 중 오류가 발생했습니다.",
+        error: dbError.message 
+      });
+    }
   } catch (error) {
     console.error("북마크 조회 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
@@ -157,6 +208,12 @@ export const updateUserInfo = async (req, res) => {
         // 문자열인 경우 변환 로직 적용
         if (career === "신입") {
           careerValue = 0;
+        } else if (career === "1 ~ 3년") {
+          careerValue = 2; // 1~3년 중간값
+        } else if (career === "4 ~ 7년") {
+          careerValue = 5; // 4~7년 중간값
+        } else if (career === "7년 이상") {
+          careerValue = 7;
         } else if (career.includes("년차")) {
           // '1년차', '2년차' 등에서 숫자만 추출
           const match = career.match(/(\d+)/);
@@ -166,8 +223,6 @@ export const updateUserInfo = async (req, res) => {
         } else if (!isNaN(parseInt(career))) {
           // 숫자 문자열인 경우 변환
           careerValue = parseInt(career, 10);
-        } else if (career === "5년차 이상") {
-          careerValue = 5;
         }
         console.log(`[서버] 경력 타입: 문자열, 값: ${career}`);
       } else {
