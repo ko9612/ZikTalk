@@ -76,7 +76,7 @@ const FaqItem = ({
                 isExpanded ? "max-h-0 opacity-0" : "max-h-[1000px] opacity-100"
               }`}
             >
-              {question + question + question}
+              {question}
             </div>
           </div>
           <div className="z-10 flex items-center justify-center gap-2 max-sm:absolute max-sm:top-2 max-sm:right-3">
