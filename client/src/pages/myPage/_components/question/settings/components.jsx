@@ -150,7 +150,6 @@ export const FilterBar = React.memo(
 export const ResultGrid = React.memo(
   ({
     visibleResults,
-    lastElementRef,
     isDeleteMode,
     selected,
     handleSelectToggle,
@@ -158,11 +157,10 @@ export const ResultGrid = React.memo(
     handleCardClick,
   }) => (
     <div className="grid min-h-[500px] grid-cols-1 sm:grid-cols-2 sm:gap-6 sm:pt-4.5 lg:grid-cols-3">
-      {visibleResults.map((item, idx) => (
+      {visibleResults.map((item) => (
         <div
           key={item.id}
           className={isDeleteMode ? "" : "group"}
-          ref={idx === visibleResults.length - 1 ? lastElementRef : null}
         >
           <ResultCard
             item={item}

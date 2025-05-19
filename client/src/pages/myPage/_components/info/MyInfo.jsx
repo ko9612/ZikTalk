@@ -28,11 +28,11 @@ const MyInfo = () => {
   // 사용자 정보 초기화
   const [form, setForm] = useState({
     name: userName || "사용자",
-    email: "test@example.com", // 더미 이메일 데이터
+    email: "", // 초기값을 빈 문자열로 설정
     password: "",
     passwordCheck: "",
-    role: "프론트엔드 개발자", // 더미 역할 데이터
-    career: "신입",
+    role: "", // 초기값을 빈 문자열로 설정
+    career: "", // 초기값을 빈 문자열로 설정
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -78,60 +78,67 @@ const MyInfo = () => {
       setError("로그인이 필요한 기능입니다.");
       return;
     }
-    
+
+    // [추가] 인증 헤더 복원
+    const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+    if (!hasAuthHeader) {
+      const storedToken = localStorage.getItem("accessToken");
+      if (storedToken) {
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        console.log("[MyInfo] accessToken 복원 완료");
+      } else {
+        setError("인증 정보가 없습니다. 로그인 후 다시 시도해주세요.");
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError(null);
     
     try {
-      // 서버 API 호출 대신 모의 데이터 사용
-      console.log("[테스트] 사용자 정보 API 호출 제거, 로컬 데이터만 사용");
+      // 서버에서 실제 사용자 정보 가져오기
+      const userData = await fetchUserInfo(userId);
       
-      // 모의 데이터
-      const mockData = {
-        name: userName || "사용자",
-        email: "test@example.com",
-        role: form.role || "프론트엔드 개발자",
-        career: form.career === "신입" ? 0 : 
-                form.career === "5년차 이상" ? 5 : 
-                parseInt(form.career || "0")
-      };
+      if (!userData) {
+        throw new Error("사용자 정보를 가져올 수 없습니다.");
+      }
       
       // 폼 업데이트
       setForm(prev => ({
         ...prev,
-        name: mockData.name,
-        email: mockData.email,
-        role: mockData.role,
-        career: mockData.career === 0 
+        name: userData.name || userName || "사용자",
+        email: userData.email || "",
+        role: userData.role || "",
+        career: userData.career === 0 
           ? "신입"
-          : mockData.career >= 5 
+          : userData.career >= 5 
             ? "5년차 이상" 
-            : `${mockData.career}년차`
+            : `${userData.career}년차`
       }));
       
       // 선택된 직무 업데이트
-      setSelectedJob(mockData.role);
+      setSelectedJob(userData.role || "");
       
       // Zustand 스토어도 업데이트
-      if (updateUserName && mockData.name) updateUserName(mockData.name);
-      if (setUserRole && mockData.role) setUserRole(mockData.role);
-      if (setUserCareer && mockData.career !== undefined) {
-        const careerText = mockData.career === 0 
+      if (updateUserName && userData.name) updateUserName(userData.name);
+      if (setUserRole && userData.role) setUserRole(userData.role);
+      if (setUserCareer && userData.career !== undefined) {
+        const careerText = userData.career === 0 
           ? "신입"
-          : mockData.career >= 5 
+          : userData.career >= 5 
             ? "5년차 이상" 
-            : `${mockData.career}년차`;
+            : `${userData.career}년차`;
         setUserCareer(careerText);
       }
       
-      console.log("[테스트] 로컬 데이터로 사용자 정보 설정 완료");
+      console.log("[사용자 정보 로드 성공]:", userData);
     } catch (err) {
-      console.error("[테스트] 로컬 데이터 처리 중 오류:", err);
+      console.error("[사용자 정보 로드 실패]:", err);
       setError(`사용자 정보 처리 오류: ${err.message || "알 수 없는 오류"}`);
     } finally {
       setIsLoading(false);
     }
-  }, [userId, updateUserName, setUserRole, setUserCareer, form.role, form.career, userName]);
+  }, [userId, updateUserName, setUserRole, setUserCareer, userName]);
   
   // 컴포넌트 마운트 시 사용자 정보 가져오기
   React.useEffect(() => {
@@ -522,12 +529,14 @@ const MyInfo = () => {
               <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
                 경력
               </div>
-              <div className="relative">
+              <div className="relative ">
                 <FilterDropdown
                   value={form.career}
                   onChange={handleCareerChange}
                   options={careerOptions}
-                  className="w-36 rounded-lg text-gray-500"
+                  className="rounded-lg  text-gray-500"
+                  buttonWidth="flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+                  dropdownWidth="w-full"
                 />
               </div>
             </div>

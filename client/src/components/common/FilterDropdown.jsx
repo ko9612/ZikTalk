@@ -32,6 +32,8 @@ const FilterDropdown = ({
   ],
   className = "",
   keepOpenOnSelect = false,
+  dropdownWidth = "w-full",
+  buttonWidth = "w-36",
   ...props
 }) => {
   const [open, setOpen] = useState(false);
@@ -69,7 +71,7 @@ const FilterDropdown = ({
     <div className={`relative ${className}`} ref={ref}>
       <button
         type="button"
-        className={`border-zik-border text-zik-text hover:bg-zik-border/10 flex w-36 items-center justify-between rounded-full border bg-white px-3 py-2 text-sm font-medium focus:outline-none ${open ? "ring-zik-main ring-2" : ""} overflow-hidden text-ellipsis whitespace-nowrap`}
+        className={`border-zik-border text-zik-text hover:bg-zik-border/10 flex ${buttonWidth} items-center justify-between rounded-full border bg-white px-3 py-2 text-sm font-medium focus:outline-none ${open ? "ring-zik-main ring-2" : ""} overflow-hidden text-ellipsis whitespace-nowrap`}
         onClick={() => setOpen(!open)}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -96,7 +98,7 @@ const FilterDropdown = ({
         </span>
       </button>
       <div
-        className={`absolute z-11 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
+        className={`absolute z-11 mt-1 ${dropdownWidth} overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg transition-all duration-300 ease-in-out ${
           open
             ? "max-h-80 scale-100 transform opacity-100"
             : "pointer-events-none max-h-0 scale-95 transform opacity-0"

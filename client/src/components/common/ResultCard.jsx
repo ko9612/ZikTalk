@@ -164,7 +164,7 @@ export const ActionButton = ({
     >
       <FaStar
         className={`h-5 w-5 transition-all duration-200 ease-in-out ${
-          item.bookmarked
+          item.bookmarked === true
             ? "text-zik-main scale-110"
             : "hover:text-zik-main/80 text-zik-text/10"
         }`}
