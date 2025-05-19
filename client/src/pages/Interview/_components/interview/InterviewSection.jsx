@@ -118,8 +118,6 @@ const InterviewSection = () => {
             brouswerAble={browserSupportsSpeechRecognition}
             startVoiceRecording={startVoiceRecording}
           />
-          {/*배포 테스트 임시*/}
-          {transcript}
         </>
       )}
     </section>
