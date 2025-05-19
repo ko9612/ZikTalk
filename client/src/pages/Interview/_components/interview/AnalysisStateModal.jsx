@@ -9,6 +9,7 @@ import Button from "@/components/common/Button";
 import { useQuestionStore } from "@/store/store";
 import { createInterview, getInterviewFeedback } from "@/api/interviewApi";
 import { useInterviewStore } from "@/store/interviewSetupStore";
+import { loginInfo } from "@/store/loginStore";
 
 const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,6 +18,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   const ratio = useInterviewStore((state) => state.ratio);
   const { interviewId, questions, answers, video } = useQuestionStore();
   const userId = useInterviewStore((state) => state.userId);
+  const userName = loginInfo((state) => state.userName);
 
   // gpt 피드백 요청
   const requestFeedback = async () => {
@@ -119,7 +121,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
           <>
             <AnalysisCompleteIcon />
             <p className="text-center text-base font-semibold sm:text-xl">
-              User님의 답변 분석이 완료되었습니다!
+              {userName}님의 답변 분석이 완료되었습니다!
             </p>
             <Link to={`/interview-result/${interviewId}`}>
               <Button shape="bar" className="px-8" data-skip-block="true">
