@@ -44,14 +44,26 @@ export const useVideoRecord = () => {
     mediaRecorderRef.current?.stop();
   };
 
-  const releaseCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        track.stop(); // 각 트랙 (비디오/오디오) 중지
+  const releaseCamera = (...streams) => {
+    streams.forEach((stream) => {
+      if (!stream) return;
+      stream.getTracks().forEach((track) => {
+        if (track.readyState === "live") {
+          try {
+            track.stop();
+          } catch (e) {
+            console.warn("트랙 정지 실패:", e);
+          }
+        }
       });
-      streamRef.current = null;
-    }
-  };
+    });
+  //   if (streamRef.current) {
+  //     streamRef.current.getTracks().forEach((track) => {
+  //       track.stop(); // 각 트랙 (비디오/오디오) 중지
+  //     });
+  //     streamRef.current = null;
+  //   }
+  // };
 
   return { startVideoRecording, stopVideoRecording, releaseCamera };
 };
