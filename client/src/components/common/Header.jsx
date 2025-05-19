@@ -89,6 +89,7 @@ const Header = () => {
                       color="violet"
                       onClick={logout}
                       className="!px-3 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
+                      data-skip-block="true"
                     >
                       로그아웃
                     </Button>

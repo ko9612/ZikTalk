@@ -27,6 +27,7 @@ const Button = ({
   disabled = false,
   onClick,
   className,
+  ...rest
 }) => {
   return (
     <button
@@ -40,6 +41,7 @@ const Button = ({
         disabled && "cursor-not-allowed opacity-50",
         className,
       )}
+      {...rest}
     >
       {children}
     </button>

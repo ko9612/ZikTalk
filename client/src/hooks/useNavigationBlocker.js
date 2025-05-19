@@ -116,6 +116,8 @@ const useNavigationBlocker = ({ onCleanup = () => {}, enabled = true }) => {
 
   const preventNavigation = (event) => {
     const eTarget = event.target;
+    if (eTarget.closest("[data-skip-block='true']")) return;
+
     const tagName = eTarget.tagName.toLowerCase();
     const type = eTarget.getAttribute("type");
     const isFormControl =
