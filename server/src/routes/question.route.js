@@ -1,5 +1,6 @@
 import express from 'express';
 import * as questionController from '../controllers/question.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -19,6 +20,6 @@ router.put('/:id', questionController.updateQuestion);
 router.delete('/:id', questionController.deleteQuestion);
 
 // 북마크 토글
-router.patch('/:id/bookmark', questionController.toggleBookmark);
+router.patch("/:id/bookmark", authenticate, questionController.toggleBookmark);
 
 export default router; 
