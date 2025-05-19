@@ -31,10 +31,24 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
       return { questions: [] };
     }
     
+    // 인증 헤더 확인 및 복원
+    const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+    if (!hasAuthHeader) {
+      console.log('[BOOKMARK API] 인증 헤더가 없습니다. 토큰 복원 시도...');
+      const storedToken = localStorage.getItem("accessToken");
+      if (storedToken) {
+        console.log('[BOOKMARK API] 토큰 복원 성공');
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+      } else {
+        console.warn('[BOOKMARK API] 저장된 토큰 없음');
+        return { questions: [], error: '인증 정보가 없습니다. 로그인 후 다시 시도해주세요.' };
+      }
+    }
+    
     const params = {
       page,
       pageSize,
-      bookmarked: filters.bookmarked, // 명시적으로 북마크 값 전달
+      bookmarked: true, // 항상 북마크된 항목만 가져오도록 고정
       userId: userId, // 토큰에서 추출한 userId 전달
       job: filters.job !== "직군·직무" ? filters.job : undefined,
       type:
@@ -45,6 +59,7 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
     
     console.log('[BOOKMARK API] 요청 파라미터:', params);
     console.log('[BOOKMARK API] 요청 URL:', `${serverUrl}/mypage/bookmarks`);
+    console.log('[BOOKMARK API] 인증 헤더:', axiosInstance.defaults.headers.common["Authorization"]);
     
     // 요청 타임아웃 설정
     const timeoutId = setTimeout(() => {
@@ -171,16 +186,57 @@ export const fetchQuestions = async (
 };
 
 // 질문 북마크 토글
-export const toggleQuestionBookmark = async (questionId, bookmarked) => {
+export const toggleQuestionBookmark = async (questionId, bookmarked, userId = null) => {
   try {
+    console.log("[toggleQuestionBookmark] 호출:", { questionId, bookmarked, userId });
+    
+    // 토큰 유효성 확인
+    const hasToken = !!axiosInstance.defaults.headers.common["Authorization"];
+    if (!hasToken) {
+      const storedToken = localStorage.getItem("accessToken");
+      if (storedToken) {
+        console.log("[toggleQuestionBookmark] 토큰 복원");
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+      } else {
+        console.warn("[toggleQuestionBookmark] 저장된 토큰 없음");
+      }
+    }
+    
+    // userId 확인 (함수 인자로 전달되지 않은 경우 로그인 스토어에서 가져오기)
+    let effectiveUserId = userId;
+    if (!effectiveUserId) {
+      try {
+        effectiveUserId = loginInfo.getState().userId;
+        console.log("[toggleQuestionBookmark] 스토어에서 userId 가져옴:", effectiveUserId);
+      } catch (e) {
+        console.warn("[toggleQuestionBookmark] 스토어에서 userId를 가져올 수 없음:", e);
+      }
+    }
+    
     const response = await axiosInstance.patch(
       `/questions/${questionId}/bookmark`,
       {
         bookmarked,
+        userId: effectiveUserId // 사용자 ID 추가
       },
     );
+    console.log("[toggleQuestionBookmark] 응답:", response.data);
     return response.data;
   } catch (err) {
+    console.error("[toggleQuestionBookmark] 오류:", err);
+    
+    // 401 인증 오류 및 CORS 문제 관련 특별 처리
+    if (err.response?.status === 401 || err.message?.includes("Network Error")) {
+      console.warn("[toggleQuestionBookmark] 인증 오류 또는 네트워크 문제:", err.message);
+      
+      // UI에 오류 표시용 객체 반환
+      return {
+        success: false,
+        message: "인증에 문제가 발생했습니다. 새로고침 후 다시 시도해주세요.",
+        error: err.message
+      };
+    }
+    
     throw err;
   }
 };
@@ -206,13 +262,13 @@ export const toggleInterviewBookmark = async (
 };
 
 // 사용자 정보 조회
-export const fetchUserInfo = async () => {
+export const fetchUserInfo = async (userId) => {
   console.log("[fetchUserInfo] 호출 시작");
   try {
-    console.log("[fetchUserInfo] 요청 URL:", `/mypage/user`);
+    console.log("[fetchUserInfo] 요청 URL:", `/mypage/user?userId=${userId}`);
     console.log("[fetchUserInfo] Authorization 헤더:", axiosInstance.defaults.headers.common["Authorization"]);
     
-    const response = await axiosInstance.get(`/mypage/user`);
+    const response = await axiosInstance.get(`/mypage/user?userId=${userId}`);
     console.log("[fetchUserInfo] 성공적으로 응답 받음:", response.status);
     console.log("[fetchUserInfo] 응답 데이터:", response.data);
     

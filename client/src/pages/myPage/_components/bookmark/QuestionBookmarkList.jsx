@@ -1,10 +1,10 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteScroll } from "@/components/common/useInfiniteScroll";
 import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { loginInfo } from "@/store/loginStore";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
+import { useToast } from "@/hooks/useToast";
 import {
   PAGE_SIZE,
   TEXT_COLORS,
@@ -14,12 +14,13 @@ import {
 } from "./settings";
 import FaqItem from "@/components/common/FaqItem";
 import axiosInstance from "@/api/axiosInstance";
+import Pagination from "@/components/common/Pagination";
 
 // 북마크 질문 목록 상태 관리 훅
 const useBookmarkListState = () => {
-  const [page, setPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [visibleResults, setVisibleResults] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
@@ -38,24 +39,38 @@ const useBookmarkListState = () => {
       return;
     }
     
-    if (pageNum > 0 && !hasMore) {
-      console.log("[DEBUG] 더 이상 불러올 데이터가 없습니다");
-      return;
-    }
-    
     try {
       setLoading(true);
       setError(null);
+      
+      // Authorization 헤더 확인 및 복원
+      const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+      console.log("[북마크 로드] 인증 헤더 존재:", hasAuthHeader);
+      
+      if (!hasAuthHeader) {
+        console.log("[북마크 로드] 인증 헤더가 없습니다. 토큰 복원 시도...");
+        const storedToken = localStorage.getItem('accessToken');
+        if (storedToken) {
+          console.log("[북마크 로드] 로컬 스토리지에서 토큰 복원 성공");
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        } else {
+          console.warn("[북마크 로드] 토큰 복원 실패");
+          setError("인증 정보가 없습니다. 로그인 후 다시 시도해주세요.");
+          setLoading(false);
+          return;
+        }
+      }
 
       console.log("[DEBUG] 북마크 API 호출 파라미터:", { 
-        page: pageNum + 1, 
+        page: pageNum, 
         pageSize: PAGE_SIZE, 
-        filters: { ...filters, bookmarked: true }, 
+        filters: { ...filters },
         userId,
-        loadingState: loading 
+        loadingState: loading,
+        authHeader: axiosInstance.defaults.headers.common["Authorization"]
       });
       
-      const response = await fetchBookmarks(pageNum + 1, PAGE_SIZE, { ...filters, bookmarked: true }, userId);
+      const response = await fetchBookmarks(pageNum, PAGE_SIZE, { ...filters }, userId);
       console.log("[DEBUG] 북마크 API 응답:", response);
 
       if (!response || !response.questions) {
@@ -73,38 +88,55 @@ const useBookmarkListState = () => {
               question: q.content,
               answer: q.myAnswer,
               recommendation: q.recommended,
-              bookmarked: true,
+              bookmarked: q.bookmarked,
               interviewId: q.interviewId,
               userId: q.userId,
             }))
-            .filter((q) => q.userId === userId)
+            .filter((q) => q.userId === userId && q.bookmarked === true)
         : [];
 
       console.log("[DEBUG] 필터링된 북마크 질문 수:", formattedQuestions.length);
       
-      if (pageNum === 0) {
-        setVisibleResults(formattedQuestions);
+      // 현재 페이지의 데이터로 설정
+      setVisibleResults(formattedQuestions);
+      
+      // 전체 페이지 수 설정 (response.totalPages가 있으면 사용하고, 없으면 계산)
+      if (response.totalPages) {
+        setTotalPages(response.totalPages);
+      } else if (response.total) {
+        setTotalPages(Math.ceil(response.total / PAGE_SIZE));
       } else {
-        setVisibleResults(prev => [...prev, ...formattedQuestions]);
+        // 서버에서 전체 페이지 정보를 제공하지 않는 경우 최소 1페이지로 설정
+        setTotalPages(Math.max(1, Math.ceil(formattedQuestions.length / PAGE_SIZE)));
       }
       
-      setPage(pageNum);
-      setHasMore(formattedQuestions.length === PAGE_SIZE);
+      setCurrentPage(pageNum);
       setLoading(false);
     } catch (err) {
       console.error("[ERROR] 북마크 데이터 로딩 오류:", err);
       
-      // 인증 오류 처리 (401, CORS 오류 등)를 완화
-      if (err.response && err.response.status === 401) {
-        setError("로그인 세션에 문제가 발생했습니다. 페이지를 새로고침 해보세요.");
-        // 로그아웃하지 않고 에러 메시지만 표시
+      // 인증 오류 처리 (401, CORS 오류 등)
+      if (err.isLoggedOut || 
+          (err.response && err.response.status === 401) ||
+          err.message.includes("Network Error")) {
+        setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        
+        // 로그인 상태 확인 및 갱신
+        const { logout } = loginInfo.getState();
+        if (logout) {
+          console.log("[인증 오류] 로그인 세션이 만료되어 로그아웃 처리합니다.");
+          logout();
+          
+          // 헤더 초기화
+          delete axiosInstance.defaults.headers.common["Authorization"];
+        }
       } else {
         setError(`질문 데이터 로딩 오류: ${err.message || "알 수 없는 오류"}`);
       }
       
       setLoading(false);
     }
-  }, [hasMore, loading]);
+  }, [loading]);
 
   // 북마크 토글
   const toggleBookmark = useCallback(async (id, userId) => {
@@ -115,6 +147,12 @@ const useBookmarkListState = () => {
     }
 
     try {
+      // 현재 북마크 상태 확인 후 반대 값 계산
+      const itemToToggle = visibleResults.find(q => q.id === id);
+      if (!itemToToggle) return false;
+      
+      const newBookmarkState = !itemToToggle.bookmarked;
+      
       setVisibleResults((prev) => {
         const index = prev.findIndex((q) => q.id === id);
         if (index === -1) return prev;
@@ -122,17 +160,20 @@ const useBookmarkListState = () => {
         const updated = [...prev];
         updated[index] = {
           ...updated[index],
-          bookmarked: !updated[index].bookmarked,
+          bookmarked: newBookmarkState,
         };
         return updated;
       });
 
-      console.log("[DEBUG] 북마크 토글 API 호출:", id, "사용자 ID:", userId);
-      await toggleQuestionBookmark(id, userId);
+      console.log("[DEBUG] 북마크 토글 API 호출:", id, "사용자 ID:", userId, "새 상태:", newBookmarkState);
+      // 계산된 새로운 북마크 상태 전달
+      await toggleQuestionBookmark(id, newBookmarkState);
       console.log("[DEBUG] 북마크 토글 성공");
       
-      // 북마크 목록에서 제거
-      setVisibleResults((prev) => prev.filter((q) => q.id !== id));
+      // 북마크가 해제된 경우에만 목록에서 제거
+      if (!newBookmarkState) {
+        setVisibleResults((prev) => prev.filter((q) => q.id !== id));
+      }
       
       return true;
     } catch (err) {
@@ -148,7 +189,7 @@ const useBookmarkListState = () => {
       
       return false;
     }
-  }, []);
+  }, [visibleResults, toggleQuestionBookmark]);
 
   // 확장 토글
   const toggleOpen = useCallback((id) => {
@@ -161,9 +202,9 @@ const useBookmarkListState = () => {
 
   return {
     state: {
-      page,
+      currentPage,
+      totalPages,
       visibleResults,
-      hasMore,
       loading,
       error,
       openIds,
@@ -173,14 +214,38 @@ const useBookmarkListState = () => {
     toggleOpen,
     setLoading,
     setError,
+    setVisibleResults,
+    setCurrentPage,
   };
 };
 
 const QuestionBookmarkList = ({ testEmpty }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const userId = loginInfo((state) => state.userId);
   const loginState = loginInfo((state) => state.loginState);
+  
+  // 컴포넌트 마운트 시 인증 토큰 복원 시도
+  useEffect(() => {
+    const restoreToken = () => {
+      const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+      if (!hasAuthHeader) {
+        console.log("[인증] 페이지 로드 시 토큰 복원 시도");
+        const storedToken = localStorage.getItem('accessToken');
+        if (storedToken) {
+          console.log("[인증] 토큰 복원 성공");
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+          return true;
+        }
+        console.warn("[인증] 토큰 복원 실패");
+        return false;
+      }
+      return true;
+    };
+    
+    restoreToken();
+  }, []);
   
   // userId 확인 로깅
   useEffect(() => {
@@ -198,73 +263,30 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     toggleOpen,
     setLoading,
     setError,
+    setVisibleResults,
+    setCurrentPage,
   } = useBookmarkListState();
 
   const {
-    page,
+    currentPage,
+    totalPages,
     visibleResults,
-    hasMore,
     loading,
     error,
     openIds,
   } = state;
 
-  // 추가 데이터 로드 함수
-  const loadMoreResults = useCallback(() => {
-    if (!loginState) {
-      console.log("[스크롤] 로그인 상태가 아님");
+  // 페이지 변경 핸들러
+  const handlePageChange = useCallback((pageNum) => {
+    if (!loginState || !userId) {
+      navigate("/signin");
       return;
     }
     
-    if (!userId) {
-      console.log("[스크롤] 사용자 ID가 없음");
-      return;
-    }
-    
-    if (loading) {
-      console.log("[스크롤] 이미 로딩 중");
-      return;
-    }
-    
-    if (!hasMore) {
-      console.log("[스크롤] 더 이상 불러올 데이터가 없음");
-      return;
-    }
-    
-    // testEmpty가 true면 데이터를 가져오지 않음
-    if (testEmpty) {
-      console.log("[스크롤] testEmpty가 true라 데이터를 가져오지 않음");
-      return;
-    }
-    
-    console.log("[스크롤] 추가 데이터 로드 시작", {
-      page: page + 1,
-      userId,
-      filterJob: filters.job,
-      filterType: filters.questionType
-    });
-    
-    fetchBookmarkedQuestions(page + 1, filters, userId);
-  }, [
-    page,
-    filters,
-    fetchBookmarkedQuestions,
-    loading,
-    hasMore,
-    loginState,
-    userId,
-    testEmpty,
-  ]);
-
-  // 무한 스크롤 훅 사용
-  const {
-    lastElementRef,
-    userScrolled,
-    setUserScrolled,
-    debounceScrollAction,
-    isDelaying,
-    resetAllStates,
-  } = useInfiniteScroll(loadMoreResults, hasMore, loading, setLoading);
+    console.log(`[페이지네이션] 페이지 변경: ${currentPage} → ${pageNum}`);
+    setCurrentPage(pageNum);
+    fetchBookmarkedQuestions(pageNum, filters, userId);
+  }, [currentPage, fetchBookmarkedQuestions, filters, loginState, userId, navigate, setCurrentPage]);
 
   // 필터 변경 핸들러 - job
   const handleJobFilterChange = useCallback(
@@ -275,11 +297,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       console.log(`[필터] 직무 필터 변경: ${filters.job} → ${value}`);
-
-      // 상태 초기화
-      if (typeof resetAllStates === 'function') {
-        resetAllStates();
-      }
       
       // 로딩 상태 설정
       setLoading(true);
@@ -287,27 +304,10 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       // 필터 상태 업데이트
       updateFilter("job", value);
       
-      // 스크롤 플래그 설정
-      setUserScrolled(true);
-      
-      // 새 필터로 데이터 로드
-      fetchBookmarkedQuestions(0, { ...filters, job: value }, userId);
-      
-      // 디바운싱
-      debounceScrollAction();
+      // 필터 변경 시 1페이지로 이동
+      fetchBookmarkedQuestions(1, { ...filters, job: value }, userId);
     },
-    [
-      updateFilter,
-      filters,
-      fetchBookmarkedQuestions,
-      loginState,
-      userId,
-      navigate,
-      resetAllStates,
-      setLoading,
-      setUserScrolled,
-      debounceScrollAction,
-    ],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading],
   );
 
   // 필터 변경 핸들러 - questionType
@@ -319,11 +319,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       console.log(`[필터] 질문 유형 필터 변경: ${filters.questionType} → ${value}`);
-
-      // 상태 초기화
-      if (typeof resetAllStates === 'function') {
-        resetAllStates();
-      }
       
       // 로딩 상태 설정
       setLoading(true);
@@ -331,27 +326,10 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       // 필터 상태 업데이트
       updateFilter("questionType", value);
       
-      // 스크롤 플래그 설정
-      setUserScrolled(true);
-      
-      // 새 필터로 데이터 로드
-      fetchBookmarkedQuestions(0, { ...filters, questionType: value }, userId);
-      
-      // 디바운싱
-      debounceScrollAction();
+      // 필터 변경 시 1페이지로 이동
+      fetchBookmarkedQuestions(1, { ...filters, questionType: value }, userId);
     },
-    [
-      updateFilter,
-      filters,
-      fetchBookmarkedQuestions,
-      loginState,
-      userId,
-      navigate,
-      resetAllStates,
-      setLoading,
-      setUserScrolled,
-      debounceScrollAction,
-    ],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading],
   );
 
   // 북마크 토글 핸들러
@@ -365,20 +343,81 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       }
 
       try {
-        // Authorization 헤더 확인
-        const authHeader = axiosInstance.defaults.headers.common["Authorization"];
-        if (!authHeader) {
-          console.warn("[북마크 토글] Authorization 헤더가 없음");
-          setError("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
-          navigate("/signin");
-          return;
+        // Authorization 헤더 확인 및 복원
+        const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+        console.log("[북마크 토글] 인증 헤더 존재:", hasAuthHeader);
+        
+        if (!hasAuthHeader) {
+          console.log("[북마크 토글] 인증 헤더가 없습니다. 토큰 복원 시도...");
+          const storedToken = localStorage.getItem('accessToken');
+          if (storedToken) {
+            console.log("[북마크 토글] 로컬 스토리지에서 토큰 복원 성공");
+            axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+          } else {
+            console.warn("[북마크 토글] 토큰 복원 실패");
+            setError("인증 정보가 없습니다. 새로고침 후 다시 시도해주세요.");
+            return;
+          }
         }
 
-        console.log("[북마크 토글] 시작, ID:", id, "사용자 ID:", userId);
-        const result = await toggleBookmark(id, userId);
-        console.log("[북마크 토글] 결과:", result ? "성공" : "실패");
+        // 현재 아이템 찾기
+        const currentItem = visibleResults.find(item => item.id === id);
+        
+        // 현재 아이템이 없는 경우(이미 목록에서 제거된 경우) 새로운 아이템 생성
+        const isExistingItem = !!currentItem;
+        
+        // 북마크 상태 토글 (현재 목록에 없는 경우 기본값 false에서 true로 변경)
+        const newBookmarkState = isExistingItem ? !currentItem.bookmarked : true;
+        console.log("[북마크 토글] 시작, ID:", id, "사용자 ID:", userId, "새 상태:", newBookmarkState, "목록에 존재:", isExistingItem);
+        
+        // API 직접 호출 - userId 명시적 전달
+        const result = await toggleQuestionBookmark(id, newBookmarkState, userId);
+        console.log("[북마크 토글] API 응답:", result);
+        
+        // 성공 여부 확인
+        if (result && result.success === false) {
+          throw new Error(result.message || "북마크 토글 실패");
+        }
+        
+        if (isExistingItem) {
+          // 기존 아이템이 목록에 있는 경우
+          if (!newBookmarkState) {
+            // 북마크 해제된 경우 목록에서 제거
+            setVisibleResults(prev => prev.filter(item => item.id !== id));
+            console.log("[북마크 토글] 북마크 해제로 인해 목록에서 제거됨:", id);
+          } else {
+            // 북마크 설정된 경우 - 현재 목록에서 상태만 업데이트
+            setVisibleResults(prev => 
+              prev.map(item => 
+                item.id === id ? {...item, bookmarked: true} : item
+              )
+            );
+            console.log("[북마크 토글] 북마크 설정됨, 목록에 유지:", id);
+          }
+        } else {
+          // 현재 목록에 없는 아이템의 북마크를 true로 설정한 경우 
+          if (newBookmarkState) {
+            console.log("[북마크 토글] 새로운 북마크 아이템, 자동 새로고침 없음:", id);
+            showToast("북마크가 설정되었습니다. 새로고침하면 목록에 표시됩니다.", "success");
+            
+            // 자동 새로고침 없이 사용자에게 알림만 표시
+            // 페이지 새로고침이나 수동 새로고침 버튼 클릭으로 데이터를 새로 불러오도록 안내
+          }
+        }
+        
+        console.log("[북마크 토글] 성공");
       } catch (err) {
         console.error("[ERROR] 북마크 토글 중 예외 발생:", err);
+        
+        // UI 상태 복원 (필요한 경우)
+        const currentItem = visibleResults.find(item => item.id === id);
+        if (currentItem) {
+          setVisibleResults(prev => 
+            prev.map(item => 
+              item.id === id ? {...item, bookmarked: !item.bookmarked} : item
+            )
+          );
+        }
         
         // 인증 오류 처리
         if (err.isLoggedOut || (err.response && err.response.status === 401)) {
@@ -389,7 +428,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         }
       }
     },
-    [toggleBookmark, loginState, userId, navigate, setError],
+    [loginState, userId, navigate, setError, visibleResults, showToast],
   );
 
   // 컴포넌트 마운트 시 최초 1회만 데이터 로드
@@ -399,7 +438,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       console.log("[초기화] 북마크 데이터 로드 시작, 사용자 ID:", userId);
       
       // 데이터 로드 시도
-      fetchBookmarkedQuestions(0, filters, userId);
+      fetchBookmarkedQuestions(1, filters, userId);
       setInitialDataLoaded(true);
     } else if (!initialDataLoaded) {
       console.log("[초기화] 데이터 로드 건너뜀:", { 
@@ -426,11 +465,34 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         질문 북마크
       </h2>
 
-      <FilterComponent
-        filters={filters}
-        onJobFilterChange={handleJobFilterChange}
-        onTypeFilterChange={handleTypeFilterChange}
-      />
+      <div className="flex justify-between items-center mb-4">
+        <FilterComponent
+          filters={filters}
+          onJobFilterChange={handleJobFilterChange}
+          onTypeFilterChange={handleTypeFilterChange}
+        />
+        
+        <button 
+          className="ml-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm flex items-center"
+          onClick={() => {
+            console.log("[새로고침] 버튼 클릭");
+            if (loginState && userId) {
+              // 로딩 상태 표시
+              setLoading(true);
+              // 데이터 다시 로드
+              fetchBookmarkedQuestions(currentPage, filters, userId);
+              // 성공 메시지
+              showToast("북마크 목록을 새로고침했습니다", "success");
+            }
+          }}
+          disabled={loading}
+        >
+          {loading ? "로딩 중..." : "새로고침"}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
 
       {error && (
         <div className="my-4 rounded-md bg-red-50 p-4 text-red-500">
@@ -456,7 +518,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                 
                 if (loginState && userId) {
                   // 데이터 다시 로드 시도
-                  fetchBookmarkedQuestions(0, filters, userId);
+                  fetchBookmarkedQuestions(currentPage, filters, userId);
                 } else {
                   navigate("/signin");
                 }
@@ -482,12 +544,12 @@ const QuestionBookmarkList = ({ testEmpty }) => {
           <TableHeader />
 
           <div className="mb-4 h-full overflow-y-hidden rounded-lg">
-            {loading && visibleResults.length === 0 ? (
+            {loading ? (
               <LoadingIndicator />
             ) : (
               <div className="min-h-[350px] p-2">
                 {visibleResults.map((item, index) => (
-                  <div key={item.id} ref={index === visibleResults.length - 1 ? lastElementRef : null}>
+                  <div key={item.id}>
                     <FaqItem
                       id={item.id}
                       displayId={index + 1}
@@ -506,21 +568,14 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                 ))}
               </div>
             )}
-
-            {loading && visibleResults.length > 0 && <LoadingIndicator />}
             
-            {hasMore && !loading && visibleResults.length > 0 && (
-              <div className="my-10 flex w-full items-center justify-center">
-                <span className="text-zik-text/60 cursor-pointer text-sm">
-                  아래로 스크롤하여 더 보기
-                </span>
-              </div>
-            )}
-            
-            {!hasMore && !loading && visibleResults.length > 0 && (
-              <div className="scroll-spacer my-10 h-2 w-full">
-                <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm"></div>
-              </div>
+            {/* 페이지네이션 컴포넌트 추가 */}
+            {!isEmpty && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             )}
           </div>
         </>

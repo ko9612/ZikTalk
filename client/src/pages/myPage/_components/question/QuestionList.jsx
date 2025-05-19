@@ -1,6 +1,5 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteScroll } from "@/components/common/useInfiniteScroll";
 import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
 import EmptyQuestionList from "./EmptyQuestionList";
 import {
@@ -9,10 +8,11 @@ import {
   ResultGrid,
   LoadingIndicator,
   ScrollPrompt,
-  useQuestionListState,
 } from "./settings";
 import { loginInfo } from "@/store/loginStore";
 import CommonModal from "@/components/common/Modal/CommonModal";
+import { SCROLL_BATCH_SIZE } from "./settings/constants";
+import { fetchInterviewsWithFirstQuestion } from "@/api/myPageApi";
 
 const QuestionList = () => {
   const navigate = useNavigate();
@@ -23,223 +23,183 @@ const QuestionList = () => {
   const userId = loginInfo((state) => state.userId);
   const loginState = loginInfo((state) => state.loginState);
 
-  const {
-    state,
-    fetchQuestions,
-    toggleQuestionBookmark,
-    setLoading,
-    toggleSelectItem,
-    toggleDeleteMode,
-    markAsDeleted,
-  } = useQuestionListState();
+  // 전체 데이터 저장
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [visibleResults, setVisibleResults] = useState([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState({});
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [error, setError] = useState(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayedResults, setDisplayedResults] = useState([]);
 
-  const {
-    page,
-    visibleResults,
-    hasMore,
-    loading,
-    selected,
-    isDeleteMode,
-    error,
-  } = state;
+  const observerRef = useRef(null);
+  const loadingRef = useRef(null);
 
-  // 로컬 스토리지에서 숨겨진 항목 제거
-  useEffect(() => {
-    localStorage.removeItem("hiddenQuestions");
+  // 전체 데이터 fetch
+  const fetchAllQuestions = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchInterviewsWithFirstQuestion(1, 1000, "date", undefined, true, userId);
+      if (!data) throw new Error("데이터를 불러올 수 없습니다.");
+      // 데이터 가공
+      const formatted = data.map((interview, index) => {
+        const firstQuestion = interview.questions?.[0] || null;
+        return {
+          id: `${interview.id}-${index}`,
+          originalId: interview.id,
+          interviewId: interview.id,
+          title: interview.role || "미분류",
+          content: firstQuestion?.content || "",
+          answer: firstQuestion?.myAnswer || "",
+          recommendation: firstQuestion?.recommended || "",
+          score: interview.totalScore || 0,
+          desc: "score",
+          date: new Date(interview.createdAt).toISOString().slice(0, 10).replace(/-/g, "."),
+          createdAt: interview.createdAt,
+          type: firstQuestion?.type === "PERSONALITY" ? "인성" : "직무",
+          bookmarked: interview.bookmarked || false,
+          interviewData: interview,
+          userId: interview.userId || userId,
+          summary: interview.summary || "",
+        };
+      });
+      setAllQuestions(formatted);
+    } catch (err) {
+      setError("데이터 로드 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  // 정렬 함수
+  const sortResults = useCallback((results, type) => {
+    if (type === SORT_OPTIONS.BOOKMARK) {
+      return [...results].sort((a, b) => {
+        if (a.bookmarked !== b.bookmarked) {
+          return a.bookmarked ? -1 : 1;
+        }
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    } else {
+      return [...results].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
   }, []);
 
-  // 추가 데이터 로드 함수
-  const loadMoreResults = useCallback(() => {
-    if (loading || !hasMore || !loginState || !userId) return;
-    fetchQuestions(page + 1, filters.type, userId);
-  }, [
-    page,
-    filters.type,
-    fetchQuestions,
-    loading,
-    hasMore,
-    loginState,
-    userId,
-  ]);
-
-  // 무한 스크롤 훅 사용
-  const {
-    lastElementRef,
-    userScrolled,
-    setUserScrolled,
-    debounceScrollAction,
-    isDelaying,
-    resetAllStates,
-  } = useInfiniteScroll(loadMoreResults, hasMore, loading, setLoading);
+  // 필터/정렬 적용 후 visibleResults 계산
+  const updateVisibleResults = useCallback((resetPage = false) => {
+    const sorted = sortResults(allQuestions, filters.type);
+    const nextPage = resetPage ? 0 : page;
+    const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
+    setVisibleResults(nextVisible);
+    setHasMore(nextVisible.length < sorted.length);
+    if (resetPage) setPage(0);
+  }, [allQuestions, filters.type, page, sortResults]);
 
   // 필터 변경 핸들러
-  const handleFilterChange = useCallback(
-    (type) => {
-      if (type === filters.type || !loginState || !userId) return;
+  const handleFilterChange = useCallback((type) => {
+    if (type === filters.type) return;
+    setIsTransitioning(true);
+    updateFilter("type", type);
+    updateVisibleResults(true);
+    // 애니메이션 완료 후 상태 초기화
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 300);
+  }, [filters.type, updateFilter, updateVisibleResults]);
 
-      console.log(`[필터] 필터 변경 시작: ${filters.type} → ${type}`);
-
-      // 먼저 모든 상태 리셋 (이전 필터 관련 상태 초기화)
-      if (typeof resetAllStates === 'function') {
-        resetAllStates();
-      }
-      
-      // 로딩 상태 설정 (로딩 인디케이터 표시)
-      setLoading(true);
-      
-      // 필터 상태 업데이트
-      updateFilter("type", type);
-
-      // 스크롤 플래그 설정 - true로 유지 (스크롤 감지 활성화)
-      setUserScrolled(true);
-
-      // 새로운 필터로 데이터 로드 (페이지 번호 0으로 리셋)
-      fetchQuestions(0, type, userId);
-
-      // 스크롤 액션 디바운싱 - 데이터 로드 후 지연 설정
-      debounceScrollAction();
-      
-      // 상태 정리를 위한 단계적 검사 및 초기화
-      const sequence = [
-        // 1단계: 400ms 후 스크롤 활성화
-        () => {
-          console.log("[필터] 단계 1: 스크롤 감지 활성화");
-          setUserScrolled(true);
-        },
-        
-        // 2단계: 800ms 후 디바운싱 상태 확인 및 강제 초기화 
-        () => {
-          console.log("[필터] 단계 2: 디바운싱 상태 초기화");
-          if (typeof resetAllStates === 'function') {
-            resetAllStates();
-          }
-        },
-        
-        // 3단계: 1500ms 후 최종 상태 확인 및 필요시 재초기화
-        () => {
-          console.log("[필터] 단계 3: 최종 상태 확인");
-          setUserScrolled(true);
-          if (typeof resetAllStates === 'function') {
-            resetAllStates();
-          }
-          // 로딩이 계속되고 있다면 강제 종료
-          setLoading(false);
-        },
-        
-        // 4단계: 2200ms 후 스크롤 이벤트 다시 트리거
-        () => {
-          console.log("[필터] 단계 4: 스크롤 이벤트 재트리거");
-          // 강제로 스크롤 이벤트 발생시켜 체크 유도
-          window.dispatchEvent(new Event('scroll'));
-          setUserScrolled(true);
-        }
-      ];
-      
-      // 각 단계 순차 실행 - 타이밍 증가
-      sequence.forEach((step, index) => {
-        setTimeout(step, 500 + (index * 600));
+  // 무한 스크롤: 다음 페이지 로드
+  const loadMoreResults = useCallback(() => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    setTimeout(() => {
+      setPage((prev) => {
+        const nextPage = prev + 1;
+        const sorted = sortResults(allQuestions, filters.type);
+        const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
+        setVisibleResults(nextVisible);
+        setHasMore(nextVisible.length < sorted.length);
+        setLoading(false);
+        return nextPage;
       });
-    },
-    [
-      updateFilter,
-      fetchQuestions,
-      filters.type,
-      setUserScrolled,
-      debounceScrollAction,
-      loginState,
-      userId,
-      resetAllStates,
-      setLoading,
-    ],
-  );
-
-  // 항목 선택 토글
-  const handleSelectToggle = useCallback(
-    (id) => {
-      toggleSelectItem(id);
-    },
-    [toggleSelectItem, loginState],
-  );
+    }, 300);
+  }, [loading, hasMore, allQuestions, filters.type, sortResults]);
 
   // 북마크 토글
-  const handleBookmarkToggle = useCallback(
-    (id, e) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      // 현재 필터 모드 확인
-      const isBookmarkMode = filters.type === SORT_OPTIONS.BOOKMARK;
-
-      toggleQuestionBookmark(id, userId)
-        .then((result) => {
-          // 북마크 모드에서는 상태 변경 후 전체 데이터 리로드 불필요
-          // 이미 toggleQuestionBookmark 내부에서 올바르게 처리됨
-        })
-        .catch((err) => {
-          console.error("북마크 토글 실패:", err);
-        });
-    },
-    [toggleQuestionBookmark, filters.type, loginState, userId],
-  );
+  const handleBookmarkToggle = useCallback(async (id, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      setAllQuestions((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, bookmarked: !item.bookmarked } : item
+        )
+      );
+    } catch (err) {
+      setError("북마크 토글 실패");
+    }
+  }, []);
 
   // 카드 클릭 핸들러
-  const handleCardClick = useCallback(
-    (id) => {
-      const item = visibleResults.find((item) => item.id === id);
-      if (item?.interviewId) {
-        navigate(`/interview-result/${item.interviewId}`);
-      }
-    },
-    [navigate, visibleResults, loginState],
-  );
-
-  // 모달 확인 후 실제 삭제 실행
-  const executeDelete = useCallback(() => {
-    markAsDeleted(selected, userId);
-    setConfirmModalOpen(false);
-    const selectedCount = Object.values(selected).filter(Boolean).length;
-    setTimeout(
-      () => alert(`${selectedCount}개의 면접 결과가 삭제되었습니다.`),
-      100,
-    );
-  }, [markAsDeleted, selected, userId]);
-
-  // 항목 삭제 핸들러
-  const handleDeleteItems = useCallback(() => {
-    const selectedCount = Object.values(selected).filter(Boolean).length;
-    if (selectedCount === 0) {
-      alert("삭제할 항목을 선택해주세요.");
-      return;
+  const handleCardClick = useCallback((id) => {
+    const item = visibleResults.find((item) => item.id === id);
+    if (item?.interviewId) {
+      navigate(`/interview-result/${item.interviewId}`);
     }
+  }, [navigate, visibleResults]);
 
-    // 모달 표시
-    setConfirmMessage(
-      `선택한 ${selectedCount}개의 면접 결과를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,
-    );
-    setConfirmModalOpen(true);
-  }, [selected, loginState]);
-
-  // 컴포넌트 마운트 시 최초 1회만 데이터 로드
-  useEffect(() => {
-    if (!initialDataLoaded && loginState && userId) {
-      fetchQuestions(0, filters.type, userId);
-      setInitialDataLoaded(true);
-    }
-  }, [initialDataLoaded, fetchQuestions, filters.type, loginState, userId]);
-
-  // 삭제 모드에서 ESC 키 처리
+  // 삭제 모드 ESC
   useEffect(() => {
     if (!isDeleteMode) return;
-
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") toggleDeleteMode();
+      if (e.key === "Escape") setIsDeleteMode(false);
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isDeleteMode, toggleDeleteMode]);
+  }, [isDeleteMode]);
+
+  // 최초 데이터 로드
+  useEffect(() => {
+    if (!initialDataLoaded && loginState && userId) {
+      fetchAllQuestions().then(() => {
+        setInitialDataLoaded(true);
+      });
+    }
+  }, [initialDataLoaded, fetchAllQuestions, loginState, userId]);
+
+  // allQuestions, filters.type, page 변경 시 visibleResults 갱신
+  useEffect(() => {
+    updateVisibleResults();
+  }, [allQuestions, filters.type, page, updateVisibleResults]);
+
+  // 스크롤 이벤트 핸들러
+  const handleScroll = useCallback(() => {
+    if (loading || !hasMore) return;
+
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    // 스크롤이 하단에서 100px 이내에 도달했을 때
+    if (scrollHeight - scrollTop - clientHeight < 100) {
+      loadMoreResults();
+    }
+  }, [loading, hasMore, loadMoreResults]);
+
+  // 스크롤 이벤트 리스너 설정
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   const isEmpty = visibleResults.length === 0 && !loading;
 
@@ -252,10 +212,8 @@ const QuestionList = () => {
           filterValue={filters.type}
           onFilterChange={handleFilterChange}
           isDeleteMode={isDeleteMode}
-          onDeleteToggle={() => {
-            toggleDeleteMode();
-          }}
-          onDeleteConfirm={handleDeleteItems}
+          onDeleteToggle={() => setIsDeleteMode((v) => !v)}
+          onDeleteConfirm={() => {}}
         />
       )}
 
@@ -269,21 +227,27 @@ const QuestionList = () => {
         <EmptyQuestionList />
       ) : (
         <>
-          <ResultGrid
-            visibleResults={visibleResults}
-            lastElementRef={lastElementRef}
-            isDeleteMode={isDeleteMode}
-            selected={selected}
-            handleSelectToggle={handleSelectToggle}
-            handleBookmarkToggle={handleBookmarkToggle}
-            handleCardClick={handleCardClick}
-          />
+          <div 
+            className={`transition-all duration-300 ease-in-out ${
+              isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'
+            }`}
+          >
+            <ResultGrid
+              visibleResults={visibleResults}
+              isDeleteMode={isDeleteMode}
+              selected={selected}
+              handleSelectToggle={() => {}}
+              handleBookmarkToggle={handleBookmarkToggle}
+              handleCardClick={handleCardClick}
+            />
+          </div>
 
           {loading && <LoadingIndicator />}
-          {hasMore && !loading && visibleResults.length > 0 && <ScrollPrompt />}
           {!hasMore && !loading && visibleResults.length > 0 && (
             <div className="scroll-spacer my-10 h-2 w-full">
-              <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm"></div>
+              <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm">
+                더 이상 불러올 데이터가 없습니다
+              </div>
             </div>
           )}
         </>
@@ -296,7 +260,7 @@ const QuestionList = () => {
           title="삭제 확인"
           subText={confirmMessage}
           btnText="삭제하기"
-          btnHandler={executeDelete}
+          btnHandler={() => {}}
         />
       )}
     </div>

@@ -47,9 +47,19 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading,
       }
     }
     
-    // 로딩 중이거나 더 로드할 데이터가 없으면 중단
-    if (loading || !hasMore || !userScrolled) {
-      console.log('[스크롤] 로드 중단:', { loading, hasMore, userScrolled });
+    // 로딩 중이거나 사용자가 스크롤하지 않았으면 중단
+    if (loading || !userScrolled) {
+      console.log('[스크롤] 로드 중단:', { loading, userScrolled });
+      return;
+    }
+    
+    // hasMore 확인 - 북마크 필터로 인해 hasMore가 false라도 강제 확인을 위한 조건 추가
+    if (!hasMore && !debugRef.current.hasForceScrollCheck) {
+      console.log('[스크롤] 더 로드할 데이터가 없음, 강제 확인 플래그:', debugRef.current.hasForceScrollCheck);
+      // 강제 확인 플래그 활성화
+      debugRef.current.hasForceScrollCheck = true;
+    } else if (!hasMore) {
+      console.log('[스크롤] 더 로드할 데이터가 없고 강제 확인도 완료함');
       return;
     }
     
@@ -316,7 +326,7 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading,
       scrollEndTimerRef.current = null;
     }
     
-    // 필터 변경 시 강제 확인 플래그 초기화
+    // 필터 변경 시 강제 확인 플래그 초기화 - 매번 새로 시도할 수 있도록
     debugRef.current.hasForceScrollCheck = false;
     
     // 모든 상태 초기화
@@ -331,6 +341,7 @@ export const useInfiniteScroll = (loadMoreResults, hasMore, loading, setLoading,
     setTimeout(() => {
       // 스크롤 상태 다시 확인하고 필요하면 수동 활성화
       setUserScrolled(true);
+      window.dispatchEvent(new Event('scroll')); // 스크롤 이벤트 트리거
       checkScrollPositionForLoad('reset');
     }, 200);
   }, [setLoading, checkScrollPositionForLoad]);
