@@ -10,6 +10,8 @@ import { useVideoRecord } from "@/hooks/useRecord";
 import useNavigationBlocker from "@/hooks/useNavigationBlocker";
 import ScreenSizeGuide from "@/components/common/ScreenSizeGuide";
 import InterviewTab from "@/components/common/InterviewTab";
+import { useEffect } from "react";
+import { getInterviewUserInfo } from "@/api/interviewApi";
 
 const index = () => {
   const resetAll = useInterviewStore((state) => state.resetAll);
@@ -18,6 +20,9 @@ const index = () => {
   const { currentComponent, resetNavigation } = useSetupNavigationStore(
     (state) => state,
   );
+  const setLevel = useInterviewStore((state) => state.setLevel);
+  const setCareer = useInterviewStore((state) => state.setCareer);
+  const setUserId = useInterviewStore((state) => state.setUserId);
   const { releaseCamera } = useVideoRecord();
 
   useNavigationBlocker({
@@ -39,6 +44,22 @@ const index = () => {
     PreCheckStep: <PreCheckStep />,
     InterviewSection: <InterviewSection />,
   };
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        const userData = await getInterviewUserInfo();
+        console.log(userData);
+        setLevel(userData.career);
+        setCareer(userData.role);
+        setUserId(userData.userId);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   // 현재 컴포넌트 반환 (없으면 기본값으로 DeviceSetup)
   return (

@@ -1,17 +1,18 @@
-// 1. 비즈니스 로직 처리
-// 비즈니스 규칙을 기반으로 데이터를 처리
-// 데이터 검증, 권한 체크, 복잡한 계산 로직 등을 포함
-
-// 2. 데이터베이스 상호작용
-// Prisma 또는 다른 데이터베이스 클라이언트와 직접 상호작용하여 데이터를 생성, 조회, 수정, 삭제
-// 트랜잭션 처리나 복잡한 데이터 연관 관계를 관리
-
-// 3. 에러 처리
-// 데이터베이스와의 상호작용 중 발생하는 에러를 명확하게 정의하여 컨트롤러로 전달
-
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+// 인터뷰 페이지 접근 시, 유저 데이터 조회
+export const getInterviewUserInfo = async (userId) => {
+  return await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      career: true,
+      role: true,
+    },
+  });
+};
 
 // 모든 면접 조회
 export const getAllInterviews = async (userId = null) => {

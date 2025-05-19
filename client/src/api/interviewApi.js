@@ -67,3 +67,15 @@ export const createInterview = async (data) => {
     console.error(error);
   }
 };
+
+// 면접 페이지 접근 시 유저 정보 받아오기
+export const getInterviewUserInfo = async () => {
+  try {
+    const response = await axiosInstance.get(
+      `${serverUrl}/interview/user-info`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
