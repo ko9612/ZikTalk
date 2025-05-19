@@ -104,7 +104,7 @@ const FaqItem = ({
             </span>
             {career && (
               <div
-                className={`mr-2 ml-5 w-24 rounded-full px-2 py-0.5 text-start text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-1 sm:ml-6 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
+                className={`mr-1 ml-6 w-24 rounded-full px-2 py-0.5 text-start text-xs font-bold whitespace-nowrap ${textColors.normal} sm:mr-1 sm:ml-6 sm:w-[100px] sm:px-2 sm:py-1 sm:text-base`}
               >
                 {career}
               </div>

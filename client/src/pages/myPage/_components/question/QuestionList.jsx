@@ -22,8 +22,6 @@ const QuestionList = () => {
   const [confirmMessage, setConfirmMessage] = useState("");
   const userId = loginInfo((state) => state.userId);
   const loginState = loginInfo((state) => state.loginState);
-
-  // 전체 데이터 저장
   const [allQuestions, setAllQuestions] = useState([]);
   const [visibleResults, setVisibleResults] = useState([]);
   const [page, setPage] = useState(0);
@@ -35,11 +33,9 @@ const QuestionList = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayedResults, setDisplayedResults] = useState([]);
-
   const observerRef = useRef(null);
   const loadingRef = useRef(null);
 
-  // 전체 데이터 fetch
   const fetchAllQuestions = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -47,7 +43,6 @@ const QuestionList = () => {
     try {
       const data = await fetchInterviewsWithFirstQuestion(1, 1000, "date", undefined, true, userId);
       if (!data) throw new Error("데이터를 불러올 수 없습니다.");
-      // 데이터 가공
       const formatted = data.map((interview, index) => {
         const firstQuestion = interview.questions?.[0] || null;
         return {
@@ -77,7 +72,6 @@ const QuestionList = () => {
     }
   }, [userId]);
 
-  // 정렬 함수
   const sortResults = useCallback((results, type) => {
     if (type === SORT_OPTIONS.BOOKMARK) {
       return [...results].sort((a, b) => {
@@ -91,7 +85,6 @@ const QuestionList = () => {
     }
   }, []);
 
-  // 필터/정렬 적용 후 visibleResults 계산
   const updateVisibleResults = useCallback((resetPage = false) => {
     const sorted = sortResults(allQuestions, filters.type);
     const nextPage = resetPage ? 0 : page;
@@ -101,19 +94,16 @@ const QuestionList = () => {
     if (resetPage) setPage(0);
   }, [allQuestions, filters.type, page, sortResults]);
 
-  // 필터 변경 핸들러
   const handleFilterChange = useCallback((type) => {
     if (type === filters.type) return;
     setIsTransitioning(true);
     updateFilter("type", type);
     updateVisibleResults(true);
-    // 애니메이션 완료 후 상태 초기화
     setTimeout(() => {
       setIsTransitioning(false);
     }, 300);
   }, [filters.type, updateFilter, updateVisibleResults]);
 
-  // 무한 스크롤: 다음 페이지 로드
   const loadMoreResults = useCallback(() => {
     if (loading || !hasMore) return;
     setLoading(true);
@@ -130,7 +120,6 @@ const QuestionList = () => {
     }, 300);
   }, [loading, hasMore, allQuestions, filters.type, sortResults]);
 
-  // 북마크 토글
   const handleBookmarkToggle = useCallback(async (id, e) => {
     if (e) {
       e.preventDefault();
@@ -147,7 +136,6 @@ const QuestionList = () => {
     }
   }, []);
 
-  // 카드 클릭 핸들러
   const handleCardClick = useCallback((id) => {
     const item = visibleResults.find((item) => item.id === id);
     if (item?.interviewId) {
@@ -155,7 +143,6 @@ const QuestionList = () => {
     }
   }, [navigate, visibleResults]);
 
-  // 삭제 모드 ESC
   useEffect(() => {
     if (!isDeleteMode) return;
     const handleKeyDown = (e) => {
@@ -165,7 +152,6 @@ const QuestionList = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isDeleteMode]);
 
-  // 최초 데이터 로드
   useEffect(() => {
     if (!initialDataLoaded && loginState && userId) {
       fetchAllQuestions().then(() => {
@@ -174,26 +160,20 @@ const QuestionList = () => {
     }
   }, [initialDataLoaded, fetchAllQuestions, loginState, userId]);
 
-  // allQuestions, filters.type, page 변경 시 visibleResults 갱신
   useEffect(() => {
     updateVisibleResults();
   }, [allQuestions, filters.type, page, updateVisibleResults]);
 
-  // 스크롤 이벤트 핸들러
   const handleScroll = useCallback(() => {
     if (loading || !hasMore) return;
-
     const scrollHeight = document.documentElement.scrollHeight;
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const clientHeight = document.documentElement.clientHeight;
-
-    // 스크롤이 하단에서 100px 이내에 도달했을 때
     if (scrollHeight - scrollTop - clientHeight < 100) {
       loadMoreResults();
     }
   }, [loading, hasMore, loadMoreResults]);
 
-  // 스크롤 이벤트 리스너 설정
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => {
