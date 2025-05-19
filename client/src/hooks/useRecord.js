@@ -57,13 +57,13 @@ export const useVideoRecord = () => {
         }
       });
     });
-  //   if (streamRef.current) {
-  //     streamRef.current.getTracks().forEach((track) => {
-  //       track.stop(); // 각 트랙 (비디오/오디오) 중지
-  //     });
-  //     streamRef.current = null;
-  //   }
-  // };
+    //   if (streamRef.current) {
+    //     streamRef.current.getTracks().forEach((track) => {
+    //       track.stop(); // 각 트랙 (비디오/오디오) 중지
+    //     });
+    //     streamRef.current = null;
+    //   }
+  };
 
   return { startVideoRecording, stopVideoRecording, releaseCamera };
 };
