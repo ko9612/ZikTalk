@@ -15,6 +15,9 @@ const router = express.Router();
 
 // 순서 중요: 특정 경로를 와일드카드 패턴보다 먼저 정의
 
+// 인터뷰 페이지 접근 시 유저 정보 조회
+router.get("/user-info", authenticate, interviewController.fetchUserInfo);
+
 // 모든 면접 조회
 router.get("/", interviewController.getAllInterviews);
 

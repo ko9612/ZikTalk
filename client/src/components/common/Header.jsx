@@ -53,8 +53,8 @@ const Header = () => {
                     <ul className="border-zik-border absolute right-0 z-50 mt-2 w-28 rounded-md border bg-white shadow-lg">
                       <li>
                         <Link to="/mypage/result-list">
-                          <p className="text-zik-main hover:bg-zik-main/10 py-2 text-center text-sm font-medium">
-                            {userName} 님
+                          <p className="text-zik-main hover:bg-zik-main/10 overflow-hidden p-2 text-center text-sm font-medium text-nowrap text-ellipsis">
+                            {userName}
                           </p>
                         </Link>
                       </li>
@@ -75,9 +75,11 @@ const Header = () => {
                   <Link to="/mypage/result-list">
                     <Button
                       color="white"
-                      className="!px-3 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
+                      className="w-28 !p-2 text-sm font-medium md:!p-3 md:text-base lg:text-lg"
                     >
-                      {userName} 님
+                      <p className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {userName}
+                      </p>
                     </Button>
                   </Link>
                 </li>

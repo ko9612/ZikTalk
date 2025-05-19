@@ -66,12 +66,12 @@ const DiffSetup = () => {
 
       <ul className="w-2xl space-y-4">
         {levels.map((levelOption) => {
-          const isSelected = level === levelOption.label;
+          const isSelected = level === levelOption.stars - 1;
 
           return (
             <li
               key={levelOption.label}
-              onClick={() => setLevel(levelOption.label)}
+              onClick={() => setLevel(levelOption.stars - 1)}
               className={clsx(
                 "border-zik-border flex h-20 cursor-pointer flex-col justify-center overflow-hidden rounded-xl border px-6 py-4 transition-all duration-300 ease-in-out",
                 {

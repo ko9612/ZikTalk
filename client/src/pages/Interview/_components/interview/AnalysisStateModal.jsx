@@ -9,7 +9,6 @@ import Button from "@/components/common/Button";
 import { useQuestionStore } from "@/store/store";
 import { createInterview, getInterviewFeedback } from "@/api/interviewApi";
 import { useInterviewStore } from "@/store/interviewSetupStore";
-import { loginInfo } from "@/store/loginStore";
 
 const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,7 +16,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
   const career = useInterviewStore((state) => state.career);
   const ratio = useInterviewStore((state) => state.ratio);
   const { interviewId, questions, answers, video } = useQuestionStore();
-  const userId = loginInfo((state) => state.userId);
+  const userId = useInterviewStore((state) => state.userId);
 
   // gpt 피드백 요청
   const requestFeedback = async () => {
@@ -86,6 +85,7 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
     const runAnalysis = async () => {
       const feedback = await requestFeedback();
       if (feedback) {
+        console.log(userId);
         await postResultData(feedback);
       }
     };

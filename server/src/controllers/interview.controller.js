@@ -57,12 +57,12 @@ export const getAllInterviews = async (req, res) => {
   try {
     // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
     const userId = req.query.userId || req.user?.id;
-    
+
     // userId가 없으면 401 에러 반환
     if (!userId) {
       return res.status(401).json({ message: "인증이 필요합니다." });
     }
-    
+
     const interviews = await interviewDBService.getAllInterviews(userId);
     res.status(200).json(interviews);
   } catch (error) {
@@ -76,7 +76,7 @@ export const getAllInterviewsWithFirstQuestion = async (req, res) => {
   try {
     // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
     const userId = req.query.userId || req.user?.id;
-    
+
     // userId가 없으면 401 에러 반환
     if (!userId) {
       return res.status(401).json({ message: "인증이 필요합니다." });
@@ -201,9 +201,15 @@ export const batchDeleteInterviews = async (req, res) => {
         .json({ message: "삭제할 면접 ID 목록이 필요합니다." });
     }
 
-    console.log(`배치 삭제 요청: 사용자 ID: ${authenticatedUserId}, ${ids.length}개의 면접`, ids);
+    console.log(
+      `배치 삭제 요청: 사용자 ID: ${authenticatedUserId}, ${ids.length}개의 면접`,
+      ids
+    );
 
-    const result = await interviewDBService.batchDeleteInterviews(ids, authenticatedUserId);
+    const result = await interviewDBService.batchDeleteInterviews(
+      ids,
+      authenticatedUserId
+    );
 
     res.status(200).json({
       message: `${result.deletedInterviews}개의 면접과 ${result.deletedQuestions}개의 질문이 삭제되었습니다.`,
@@ -222,13 +228,17 @@ export const toggleBookmark = async (req, res) => {
     const { id } = req.params;
     const { bookmarked, userId } = req.body;
     const authenticatedUserId = userId || req.user?.id;
-    
+
     // userId가 없으면 401 에러 반환
     if (!authenticatedUserId) {
       return res.status(401).json({ message: "인증이 필요합니다." });
     }
-    
-    const updated = await interviewDBService.toggleBookmark(id, bookmarked, authenticatedUserId);
+
+    const updated = await interviewDBService.toggleBookmark(
+      id,
+      bookmarked,
+      authenticatedUserId
+    );
 
     if (!updated) {
       return res.status(404).json({ message: "면접을 찾을 수 없습니다." });
@@ -237,6 +247,22 @@ export const toggleBookmark = async (req, res) => {
     res.status(200).json(updated);
   } catch (error) {
     console.error("북마크 토글 오류:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+
+// 인터뷰 페이지 유저 정보 조회
+export const fetchUserInfo = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await interviewDBService.getInterviewUserInfo(userId);
+    res.status(200).json({
+      userId: user.id,
+      career: user.career,
+      role: user.role,
+    });
+  } catch (error) {
+    console.error("유저 정보 전송 실패:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
