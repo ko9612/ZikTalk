@@ -41,7 +41,14 @@ const QuestionList = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchInterviewsWithFirstQuestion(1, 1000, "date", undefined, true, userId);
+      const data = await fetchInterviewsWithFirstQuestion(
+        1,
+        1000,
+        "date",
+        undefined,
+        true,
+        userId,
+      );
       if (!data) throw new Error("데이터를 불러올 수 없습니다.");
       const formatted = data.map((interview, index) => {
         const firstQuestion = interview.questions?.[0] || null;
@@ -55,7 +62,10 @@ const QuestionList = () => {
           recommendation: firstQuestion?.recommended || "",
           score: interview.totalScore || 0,
           desc: "score",
-          date: new Date(interview.createdAt).toISOString().slice(0, 10).replace(/-/g, "."),
+          date: new Date(interview.createdAt)
+            .toISOString()
+            .slice(0, 10)
+            .replace(/-/g, "."),
           createdAt: interview.createdAt,
           type: firstQuestion?.type === "PERSONALITY" ? "인성" : "직무",
           bookmarked: interview.bookmarked || false,
@@ -81,28 +91,39 @@ const QuestionList = () => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
     } else {
-      return [...results].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      return [...results].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
     }
   }, []);
 
-  const updateVisibleResults = useCallback((resetPage = false) => {
-    const sorted = sortResults(allQuestions, filters.type);
-    const nextPage = resetPage ? 0 : page;
-    const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
-    setVisibleResults(nextVisible);
-    setHasMore(nextVisible.length < sorted.length);
-    if (resetPage) setPage(0);
-  }, [allQuestions, filters.type, page, sortResults]);
+  // 필터/정렬 적용 후 visibleResults 계산
+  const updateVisibleResults = useCallback(
+    (resetPage = false) => {
+      const sorted = sortResults(allQuestions, filters.type);
+      const nextPage = resetPage ? 0 : page;
+      const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
+      setVisibleResults(nextVisible);
+      setHasMore(nextVisible.length < sorted.length);
+      if (resetPage) setPage(0);
+    },
+    [allQuestions, filters.type, page, sortResults],
+  );
 
-  const handleFilterChange = useCallback((type) => {
-    if (type === filters.type) return;
-    setIsTransitioning(true);
-    updateFilter("type", type);
-    updateVisibleResults(true);
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
-  }, [filters.type, updateFilter, updateVisibleResults]);
+  // 필터 변경 핸들러
+  const handleFilterChange = useCallback(
+    (type) => {
+      if (type === filters.type) return;
+      setIsTransitioning(true);
+      updateFilter("type", type);
+      updateVisibleResults(true);
+      // 애니메이션 완료 후 상태 초기화
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    },
+    [filters.type, updateFilter, updateVisibleResults],
+  );
 
   const loadMoreResults = useCallback(() => {
     if (loading || !hasMore) return;
@@ -128,20 +149,24 @@ const QuestionList = () => {
     try {
       setAllQuestions((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, bookmarked: !item.bookmarked } : item
-        )
+          item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
+        ),
       );
     } catch (err) {
       setError("북마크 토글 실패");
     }
   }, []);
 
-  const handleCardClick = useCallback((id) => {
-    const item = visibleResults.find((item) => item.id === id);
-    if (item?.interviewId) {
-      navigate(`/interview-result/${item.interviewId}`);
-    }
-  }, [navigate, visibleResults]);
+  // 카드 클릭 핸들러
+  const handleCardClick = useCallback(
+    (id) => {
+      const item = visibleResults.find((item) => item.id === id);
+      if (item?.interviewId) {
+        navigate(`/interview-result/${item.interviewId}`);
+      }
+    },
+    [navigate, visibleResults],
+  );
 
   useEffect(() => {
     if (!isDeleteMode) return;
@@ -175,9 +200,9 @@ const QuestionList = () => {
   }, [loading, hasMore, loadMoreResults]);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
 
@@ -207,19 +232,25 @@ const QuestionList = () => {
         <EmptyQuestionList />
       ) : (
         <>
-          <div 
+          <div
             className={`transition-all duration-300 ease-in-out ${
-              isTransitioning ? 'opacity-50 scale-[0.98]' : 'opacity-100 scale-100'
+              isTransitioning
+                ? "scale-[0.98] opacity-50"
+                : "scale-100 opacity-100"
             }`}
           >
-            <ResultGrid
-              visibleResults={visibleResults}
-              isDeleteMode={isDeleteMode}
-              selected={selected}
-              handleSelectToggle={() => {}}
-              handleBookmarkToggle={handleBookmarkToggle}
-              handleCardClick={handleCardClick}
-            />
+            {!loading ? (
+              <ResultGrid
+                visibleResults={visibleResults}
+                isDeleteMode={isDeleteMode}
+                selected={selected}
+                handleSelectToggle={() => {}}
+                handleBookmarkToggle={handleBookmarkToggle}
+                handleCardClick={handleCardClick}
+              />
+            ) : (
+              <div className="h-28 w-full" />
+            )}
           </div>
 
           {loading && <LoadingIndicator />}
