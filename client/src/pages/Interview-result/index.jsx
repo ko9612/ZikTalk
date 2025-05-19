@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import axiosInstance from "@/api/axiosInstance";
 import { useParams } from "react-router-dom";
 import videoPlayer from "@/api/videoPlayer";
+import LoadingPage from "@/components/common/LoadingPage";
 
 const careerType = {
   JOB: "직무",
@@ -20,9 +21,11 @@ const Index = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [result, setResult] = useState(null);
   const [isQuestions, setIsQuestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { resultId } = useParams();
   const navigate = useNavigate();
+  const { resultId } = useParams();
+  const videoUrl = videoPlayer(`${selectedQuestion}`);
 
   const {
     role,
@@ -87,8 +90,6 @@ const Index = () => {
     }
   };
 
-  const videoUrl = videoPlayer(`${selectedQuestion}`);
-
   useEffect(() => {
     axiosInstance
       .get(`/interview/${resultId}`)
@@ -97,7 +98,12 @@ const Index = () => {
         setIsQuestions(res.data.questions);
       })
       .catch((e) => console.error("결과 가져오기 실패", e));
+    setIsLoading(false);
   }, [resultId]);
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center p-7">
@@ -177,10 +183,10 @@ const Index = () => {
           <div id="delPdf2">
             <h3 className={titleStyle}>면접 영상</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <BoxStyle title="" className="min-h-[200px]">
+              <BoxStyle title="" className="max-h-[410px] min-h-[200px]">
                 {selectedQuestion ? (
                   <video
-                    className="w-full rounded-lg border"
+                    className="h-50 max-h-[300px] w-full sm:h-96"
                     controls
                     src={videoUrl}
                   />
