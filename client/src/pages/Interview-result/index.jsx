@@ -96,9 +96,9 @@ const Index = () => {
       .then((res) => {
         setResult(res.data);
         setIsQuestions(res.data.questions);
+        setIsLoading(false);
       })
       .catch((e) => console.error("결과 가져오기 실패", e));
-    setIsLoading(false);
   }, [resultId]);
 
   if (isLoading) {
