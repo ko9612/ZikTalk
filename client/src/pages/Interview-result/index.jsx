@@ -224,7 +224,7 @@ const Index = () => {
                 <FaqItem
                   key={index}
                   id={index + 1}
-                  career={careerType[item.type] || item.type}
+                  type={careerType[item.type] || item.type}
                   question={item.content}
                   answer={item.myAnswer}
                   recommendation={item.recommended}
