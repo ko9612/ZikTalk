@@ -7,13 +7,14 @@ export const FilterComponent = ({
   filters,
   onJobFilterChange,
   onTypeFilterChange,
+  jobOptions,
 }) => (
   <div className="flex items-center justify-between gap-1 pb-4 sm:pb-6">
     <div className="flex w-full items-center justify-between gap-5 sm:justify-start">
       <FilterDropdown
         value={filters.job}
         onChange={onJobFilterChange}
-        options={JOB_OPTIONS}
+        options={jobOptions}
         className="w-36"
       />
       <FilterDropdown
@@ -33,8 +34,8 @@ export const TableHeader = () => (
   >
     <div className="text-start">No</div>
     <div className="pl-6 text-start">직무</div>
-    <div className="pl-3 text-center">유형</div>
-    <div className="pl-6 text-left">질문</div>
+    <div className="pl-5 text-center">유형</div>
+    <div className="pl-8 text-left">질문</div>
     <div className="flex justify-center">즐겨찾기</div>
   </div>
 );

@@ -18,29 +18,17 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
   console.log('[BOOKMARK API] 호출 시작 - 파라미터:', { page, pageSize, filters, userId });
   
   try {
-    // 로그인 정보가 없는 경우 빈 데이터 반환
     if (!userId) {
       console.log('[BOOKMARK API] 사용자 ID가 없어 빈 결과 반환');
-      console.warn('[BOOKMARK API] 호출 문제 디버그:', { 
-        userId: userId,
-        userIdType: typeof userId,
-        hasFilters: !!filters,
-        filtersType: typeof filters,
-        page: page
-      });
       return { questions: [] };
     }
     
-    // 인증 헤더 확인 및 복원
     const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
     if (!hasAuthHeader) {
-      console.log('[BOOKMARK API] 인증 헤더가 없습니다. 토큰 복원 시도...');
       const storedToken = localStorage.getItem("accessToken");
       if (storedToken) {
-        console.log('[BOOKMARK API] 토큰 복원 성공');
         axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
       } else {
-        console.warn('[BOOKMARK API] 저장된 토큰 없음');
         return { questions: [], error: '인증 정보가 없습니다. 로그인 후 다시 시도해주세요.' };
       }
     }
@@ -48,68 +36,28 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
     const params = {
       page,
       pageSize,
-      bookmarked: true, // 항상 북마크된 항목만 가져오도록 고정
-      userId: userId, // 토큰에서 추출한 userId 전달
-      job: filters.job !== "직군·직무" ? filters.job : undefined,
-      type:
-        filters.questionType !== "질문유형"
-          ? filters.questionType
-          : undefined,
+      bookmarked: true,
+      userId: userId
     };
+
+    // 필터 값이 있는 경우에만 파라미터에 추가
+    if (filters.job) {
+      params.role = filters.job;
+      params.career = filters.job;
+    }
+    if (filters.questionType) {
+      params.type = filters.questionType === "직무" ? "JOB" : "PERSONALITY";
+    }
     
     console.log('[BOOKMARK API] 요청 파라미터:', params);
-    console.log('[BOOKMARK API] 요청 URL:', `${serverUrl}/mypage/bookmarks`);
-    console.log('[BOOKMARK API] 인증 헤더:', axiosInstance.defaults.headers.common["Authorization"]);
     
-    // 요청 타임아웃 설정
-    const timeoutId = setTimeout(() => {
-      console.log('[BOOKMARK API] 요청 시간 초과 (3초)');
-      throw new Error('요청 시간 초과');
-    }, 3000);
+    const response = await axiosInstance.get(`/mypage/bookmarks`, { params });
+    console.log('[BOOKMARK API] 응답:', response.data);
     
-    try {
-      const response = await axiosInstance.get(`/mypage/bookmarks`, {
-        params,
-      });
-      
-      // 타임아웃 취소
-      clearTimeout(timeoutId);
-      
-      console.log('[BOOKMARK API] 응답 상태 코드:', response.status);
-      console.log('[BOOKMARK API] 응답 데이터 헤더:', response.headers);
-      console.log('[BOOKMARK API] 응답 데이터:', response.data);
-      
-      // 응답 데이터 유효성 검사
-      if (!response.data) {
-        console.warn('[BOOKMARK API] 응답 데이터가 없음');
-        return { questions: [] };
-      }
-      
-      if (!response.data.questions) {
-        console.warn('[BOOKMARK API] 유효하지 않은 응답 형식:', response.data);
-        // questions 속성이 없으면 빈 배열로 추가
-        return { ...response.data, questions: [] };
-      }
-      
-      console.log('[BOOKMARK API] 받은 질문 수:', response.data.questions.length);
-      return response.data;
-    } catch (innerError) {
-      clearTimeout(timeoutId);
-      console.error('[BOOKMARK API] 내부 에러:', innerError.message);
-      
-      // 인증 에러 처리 개선 - 401 에러가 발생해도 단순 빈 배열만 반환
-      if (innerError.response && innerError.response.status === 401) {
-        console.warn('[BOOKMARK API] 인증 문제 발생 (401), 에러:', innerError.message);
-        return { questions: [], error: '인증 문제가 발생했습니다.' };
-      }
-      
-      // 에러 발생 시 빈 questions 배열 반환
-      return { questions: [] };
-    }
-  } catch (outerError) {
-    console.error('[BOOKMARK API] 외부 에러:', outerError.message);
-    // 모든 예외 상황에서 빈 questions 배열 반환
-    return { questions: [] };
+    return response.data;
+  } catch (err) {
+    console.error('[BOOKMARK API] 오류:', err);
+    throw err;
   }
 };
 
@@ -274,14 +222,6 @@ export const fetchUserInfo = async (userId) => {
     
     return response.data;
   } catch (err) {
-    // 404 오류 (사용자가 존재하지 않음)인 경우 더 구체적인 오류 메시지 제공
-    if (err.response && err.response.status === 404) {
-      console.log(
-        "[fetchUserInfo] 사용자 정보를 찾을 수 없습니다. 로그아웃 상태일 수 있습니다.",
-      );
-      return null; // 오류 대신 null 반환하여 호출자가 처리할 수 있도록 함
-    }
-    
     console.error("[fetchUserInfo] 사용자 정보 가져오기 실패:", err);
     console.error("[fetchUserInfo] 오류 상세:", {
       status: err.response?.status,
@@ -289,6 +229,7 @@ export const fetchUserInfo = async (userId) => {
       message: err.message
     });
     
+    // 404 오류를 포함한 모든 오류를 그대로 전파
     throw err;
   }
 };

@@ -15,6 +15,7 @@ import {
 import FaqItem from "@/components/common/FaqItem";
 import axiosInstance from "@/api/axiosInstance";
 import Pagination from "@/components/common/Pagination";
+import FilterDropdown from '@/components/common/FilterDropdown';
 
 // 북마크 질문 목록 상태 관리 훅
 const useBookmarkListState = () => {
@@ -48,29 +49,32 @@ const useBookmarkListState = () => {
       console.log("[북마크 로드] 인증 헤더 존재:", hasAuthHeader);
       
       if (!hasAuthHeader) {
-        console.log("[북마크 로드] 인증 헤더가 없습니다. 토큰 복원 시도...");
         const storedToken = localStorage.getItem('accessToken');
         if (storedToken) {
-          console.log("[북마크 로드] 로컬 스토리지에서 토큰 복원 성공");
           axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
         } else {
-          console.warn("[북마크 로드] 토큰 복원 실패");
           setError("인증 정보가 없습니다. 로그인 후 다시 시도해주세요.");
           setLoading(false);
           return;
         }
       }
 
+      // 필터 값 변환
+      const filterParams = {
+        job: filters.job !== "직군·직무" ? filters.job : undefined,
+        questionType: filters.questionType !== "질문유형" ? filters.questionType : undefined
+      };
+
       console.log("[DEBUG] 북마크 API 호출 파라미터:", { 
         page: pageNum, 
         pageSize: PAGE_SIZE, 
-        filters: { ...filters },
+        filters: filterParams,
         userId,
         loadingState: loading,
         authHeader: axiosInstance.defaults.headers.common["Authorization"]
       });
       
-      const response = await fetchBookmarks(pageNum, PAGE_SIZE, { ...filters }, userId);
+      const response = await fetchBookmarks(pageNum, PAGE_SIZE, filterParams, userId);
       console.log("[DEBUG] 북마크 API 응답:", response);
 
       if (!response || !response.questions) {
@@ -83,7 +87,7 @@ const useBookmarkListState = () => {
         ? response.questions
             .map((q) => ({
               id: q.id,
-              career: q.interview?.role || "미분류",
+              career: q.interview?.role || q.role || "미분류",
               type: q.type === "JOB" ? "직무" : "인성",
               question: q.content,
               answer: q.myAnswer,
@@ -92,21 +96,33 @@ const useBookmarkListState = () => {
               interviewId: q.interviewId,
               userId: q.userId,
             }))
-            .filter((q) => q.userId === userId && q.bookmarked === true)
+            .filter((q) => {
+              // 기본 필터: 사용자 ID와 북마크 상태
+              if (q.userId !== userId || !q.bookmarked) return false;
+              
+              // 직군/직무 필터
+              if (filters.job && filters.job !== "직군·직무") {
+                if (q.career !== filters.job) return false;
+              }
+              
+              // 질문 유형 필터
+              if (filters.questionType && filters.questionType !== "질문유형") {
+                if (q.type !== filters.questionType) return false;
+              }
+              
+              return true;
+            })
         : [];
 
       console.log("[DEBUG] 필터링된 북마크 질문 수:", formattedQuestions.length);
       
-      // 현재 페이지의 데이터로 설정
       setVisibleResults(formattedQuestions);
       
-      // 전체 페이지 수 설정 (response.totalPages가 있으면 사용하고, 없으면 계산)
       if (response.totalPages) {
         setTotalPages(response.totalPages);
       } else if (response.total) {
         setTotalPages(Math.ceil(response.total / PAGE_SIZE));
       } else {
-        // 서버에서 전체 페이지 정보를 제공하지 않는 경우 최소 1페이지로 설정
         setTotalPages(Math.max(1, Math.ceil(formattedQuestions.length / PAGE_SIZE)));
       }
       
@@ -115,19 +131,14 @@ const useBookmarkListState = () => {
     } catch (err) {
       console.error("[ERROR] 북마크 데이터 로딩 오류:", err);
       
-      // 인증 오류 처리 (401, CORS 오류 등)
       if (err.isLoggedOut || 
           (err.response && err.response.status === 401) ||
           err.message.includes("Network Error")) {
         setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
         
-        // 로그인 상태 확인 및 갱신
         const { logout } = loginInfo.getState();
         if (logout) {
-          console.log("[인증 오류] 로그인 세션이 만료되어 로그아웃 처리합니다.");
           logout();
-          
-          // 헤더 초기화
           delete axiosInstance.defaults.headers.common["Authorization"];
         }
       } else {
@@ -276,6 +287,22 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     openIds,
   } = state;
 
+  const [dynamicJobOptions, setDynamicJobOptions] = useState([
+    { value: '직군·직무', label: '직군·직무' }
+  ]);
+
+  // 북마크 데이터가 변경될 때마다 직군·직무 옵션 동적 생성
+  useEffect(() => {
+    // visibleResults에서 career(직무) 값 추출
+    const uniqueRoles = Array.from(
+      new Set(state.visibleResults.map(q => q.career).filter(Boolean))
+    );
+    setDynamicJobOptions([
+      { value: '직군·직무', label: '직군·직무' },
+      ...uniqueRoles.map(role => ({ value: role, label: role }))
+    ]);
+  }, [state.visibleResults]);
+
   // 페이지 변경 핸들러
   const handlePageChange = useCallback((pageNum) => {
     if (!loginState || !userId) {
@@ -304,10 +331,11 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       // 필터 상태 업데이트
       updateFilter("job", value);
       
-      // 필터 변경 시 1페이지로 이동
+      // 필터 변경 시 1페이지로 이동하고 데이터 새로 로드
+      setCurrentPage(1);
       fetchBookmarkedQuestions(1, { ...filters, job: value }, userId);
     },
-    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage],
   );
 
   // 필터 변경 핸들러 - questionType
@@ -326,10 +354,11 @@ const QuestionBookmarkList = ({ testEmpty }) => {
       // 필터 상태 업데이트
       updateFilter("questionType", value);
       
-      // 필터 변경 시 1페이지로 이동
+      // 필터 변경 시 1페이지로 이동하고 데이터 새로 로드
+      setCurrentPage(1);
       fetchBookmarkedQuestions(1, { ...filters, questionType: value }, userId);
     },
-    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading],
+    [updateFilter, filters, fetchBookmarkedQuestions, loginState, userId, navigate, setLoading, setCurrentPage],
   );
 
   // 북마크 토글 핸들러
@@ -470,6 +499,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
           filters={filters}
           onJobFilterChange={handleJobFilterChange}
           onTypeFilterChange={handleTypeFilterChange}
+          jobOptions={dynamicJobOptions}
         />
         
         <button 
