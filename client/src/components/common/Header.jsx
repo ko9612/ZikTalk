@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "./Button";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import { Link, useLocation } from "react-router-dom";
 import { loginInfo } from "@/store/loginStore";
 import useLogout from "@/hooks/useAuth";
+import { FaCircleUser, FaRegCircleUser } from "react-icons/fa6";
+import { twMerge } from "tailwind-merge";
 
 const Header = () => {
   const { pathname } = useLocation();
   const { loginState, userName } = loginInfo();
-
+  const [showInfoDrop, setShowInfoDrop] = useState(false);
   const logout = useLogout();
 
   return (
@@ -35,7 +37,41 @@ const Header = () => {
             </li>
             {loginState ? (
               <>
-                <li>
+                <button
+                  onClick={() => setShowInfoDrop(!showInfoDrop)}
+                  className="relative block sm:hidden"
+                >
+                  {!showInfoDrop ? (
+                    <FaRegCircleUser
+                      size={25}
+                      className="text-zik-main hover:bg-zik-main/15 rounded-full"
+                    />
+                  ) : (
+                    <FaCircleUser size={25} className="text-zik-main" />
+                  )}
+                  {showInfoDrop && (
+                    <ul className="border-zik-border absolute right-0 z-50 mt-2 w-28 rounded-md border bg-white shadow-lg">
+                      <li>
+                        <Link to="/mypage/result-list">
+                          <p className="text-zik-main hover:bg-zik-main/10 py-2 text-center text-sm font-medium">
+                            {userName} 님
+                          </p>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/">
+                          <p
+                            onClick={logout}
+                            className="text-zik-text hover:bg-zik-main/10 py-2 text-center text-sm font-medium"
+                          >
+                            로그아웃
+                          </p>
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </button>
+                <li className="hidden sm:block">
                   <Link to="/mypage/result-list">
                     <Button
                       color="white"
@@ -45,7 +81,7 @@ const Header = () => {
                     </Button>
                   </Link>
                 </li>
-                <li>
+                <li className="hidden sm:block">
                   <Link to="/">
                     <Button
                       color="violet"

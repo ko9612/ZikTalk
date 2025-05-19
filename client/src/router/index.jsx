@@ -8,7 +8,6 @@ import ProtectedRoute from "@/components/common/ProtectedRoute";
 const Landing = lazy(() => import("../pages/Landing"));
 const Interview = lazy(() => import("../pages/Interview"));
 const Test = lazy(() => import("../pages/Test"));
-const InterviewLayout = lazy(() => import("@/pages/Interview/InterViewLayout"));
 const Signin = lazy(() => import("@/pages/Signin"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const InterviewResult = lazy(() => import("@/pages/Interview-result"));
@@ -52,15 +51,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/interview",
-        element: (
-          <ProtectedRoute>
-            <Suspense fallback={<LoadingPage />}>
-              <InterviewLayout>
-                <Interview />
-              </InterviewLayout>
-            </Suspense>
-          </ProtectedRoute>
-        ),
+        element: <ProtectedRoute>{withSuspense(Interview)}</ProtectedRoute>,
       },
       {
         path: "/test",
