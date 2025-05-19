@@ -18,6 +18,7 @@ const titleStyle =
 const Index = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [result, setResult] = useState(null);
+  const [isQuestions, setIsQuestions] = useState([]);
 
   const { resultId } = useParams();
   const navigate = useNavigate();
@@ -33,7 +34,6 @@ const Index = () => {
     jobScore,
     jobEval,
     createdAt,
-    questions,
   } = result || {};
 
   const formattedDate = createdAt
@@ -61,10 +61,38 @@ const Index = () => {
   const { graphState: jobGraphState, graphColor: jobGraphColor } =
     getGrade(jobScore);
 
+  // 북마크
+  const bookmarkHandler = async (index) => {
+    const question = isQuestions[index];
+    const updatedBookmark = !question.bookmarked;
+
+    setIsQuestions((prev) =>
+      prev.map((q, i) =>
+        i === index ? { ...q, bookmarked: updatedBookmark } : q,
+      ),
+    );
+
+    try {
+      await axiosInstance.patch(`/questions/${question.id}/bookmark`, {});
+    } catch (e) {
+      console.error("북마크 업데이트 실패", e);
+
+      // 북마크 변경사항 저장 실패 시 롤백
+      setIsQuestions((prev) =>
+        prev.map((q, i) =>
+          i === index ? { ...q, bookmarked: !updatedBookmark } : q,
+        ),
+      );
+    }
+  };
+
   useEffect(() => {
     axiosInstance
       .get(`/interview/${resultId}`)
-      .then((res) => setResult(res.data))
+      .then((res) => {
+        setResult(res.data);
+        setIsQuestions(res.data.questions);
+      })
       .catch((e) => console.error("결과 가져오기 실패", e));
   }, [resultId]);
 
@@ -160,8 +188,8 @@ const Index = () => {
 
               <BoxStyle title="질문" className="max-h-[410px] w-full">
                 <ul className="flex flex-col">
-                  {questions &&
-                    questions.map((item, index) => (
+                  {isQuestions &&
+                    isQuestions.map((item, index) => (
                       <li
                         key={index}
                         className="border-zik-border hover:bg-zik-main/10 block max-w-full cursor-pointer truncate border-b p-4"
@@ -180,8 +208,8 @@ const Index = () => {
 
           <h3 className={titleStyle}>질문</h3>
           <div>
-            {questions &&
-              questions.map((item, index) => (
+            {isQuestions &&
+              isQuestions.map((item, index) => (
                 <FaqItem
                   key={index}
                   id={index + 1}
@@ -189,6 +217,8 @@ const Index = () => {
                   question={item.content}
                   answer={item.myAnswer}
                   recommendation={item.recommended}
+                  isStarred={item.bookmarked}
+                  onStarToggle={() => bookmarkHandler(index)}
                 />
               ))}
           </div>
