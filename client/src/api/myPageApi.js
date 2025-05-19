@@ -96,6 +96,13 @@ export const fetchBookmarks = async (page = 1, pageSize = 10, filters = {}, user
     } catch (innerError) {
       clearTimeout(timeoutId);
       console.error('[BOOKMARK API] 내부 에러:', innerError.message);
+      
+      // 인증 에러 처리 개선 - 401 에러가 발생해도 단순 빈 배열만 반환
+      if (innerError.response && innerError.response.status === 401) {
+        console.warn('[BOOKMARK API] 인증 문제 발생 (401), 에러:', innerError.message);
+        return { questions: [], error: '인증 문제가 발생했습니다.' };
+      }
+      
       // 에러 발생 시 빈 questions 배열 반환
       return { questions: [] };
     }

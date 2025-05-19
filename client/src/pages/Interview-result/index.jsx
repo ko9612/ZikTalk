@@ -6,6 +6,7 @@ import FaqItem from "@/components/common/FaqItem";
 import { useEffect } from "react";
 import axiosInstance from "@/api/axiosInstance";
 import { useParams } from "react-router-dom";
+import videoPlayer from "@/api/videoPlayer";
 
 const careerType = {
   JOB: "직무",
@@ -18,6 +19,7 @@ const titleStyle =
 const Index = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [result, setResult] = useState(null);
+  const [isQuestions, setIsQuestions] = useState([]);
 
   const { resultId } = useParams();
   const navigate = useNavigate();
@@ -33,7 +35,6 @@ const Index = () => {
     jobScore,
     jobEval,
     createdAt,
-    questions,
   } = result || {};
 
   const formattedDate = createdAt
@@ -61,10 +62,40 @@ const Index = () => {
   const { graphState: jobGraphState, graphColor: jobGraphColor } =
     getGrade(jobScore);
 
+  // 북마크
+  const bookmarkHandler = async (index) => {
+    const question = isQuestions[index];
+    const updatedBookmark = !question.bookmarked;
+
+    setIsQuestions((prev) =>
+      prev.map((q, i) =>
+        i === index ? { ...q, bookmarked: updatedBookmark } : q,
+      ),
+    );
+
+    try {
+      await axiosInstance.patch(`/questions/${question.id}/bookmark`, {});
+    } catch (e) {
+      console.error("북마크 업데이트 실패", e);
+
+      // 북마크 변경사항 저장 실패 시 롤백
+      setIsQuestions((prev) =>
+        prev.map((q, i) =>
+          i === index ? { ...q, bookmarked: !updatedBookmark } : q,
+        ),
+      );
+    }
+  };
+
+  const videoUrl = videoPlayer(`${selectedQuestion}`);
+
   useEffect(() => {
     axiosInstance
       .get(`/interview/${resultId}`)
-      .then((res) => setResult(res.data))
+      .then((res) => {
+        setResult(res.data);
+        setIsQuestions(res.data.questions);
+      })
       .catch((e) => console.error("결과 가져오기 실패", e));
   }, [resultId]);
 
@@ -77,7 +108,7 @@ const Index = () => {
             <button
               type="button"
               onClick={() => navigate("/mypage/result-list")}
-              className="text-zik-main flex items-center text-xs font-semibold sm:text-base md:text-lg"
+              className="text-zik-main flex items-center text-[9px] font-semibold sm:text-base md:text-lg"
               id="delPdf1"
             >
               <svg
@@ -97,10 +128,12 @@ const Index = () => {
               </svg>
               분석결과리스트
             </button>
-            <h2 className="text-zik-text text-2xl font-bold sm:text-3xl md:text-4xl">
+            <h2 className="text-zik-text max-w-[200px] text-center text-xl font-bold break-words sm:max-w-full sm:text-3xl md:text-4xl">
               {role}
             </h2>
-            <p className="text-zik-text text-xs md:text-sm">{interviewDate}</p>
+            <p className="text-zik-text text-[9px] sm:text-xs md:text-sm">
+              {interviewDate}
+            </p>
           </div>
 
           <h3 className={titleStyle}>종합 분석</h3>
@@ -149,7 +182,7 @@ const Index = () => {
                   <video
                     className="w-full rounded-lg border"
                     controls
-                    src={selectedQuestion}
+                    src={videoUrl}
                   />
                 ) : (
                   <div className="w-full text-center text-gray-500">
@@ -160,8 +193,8 @@ const Index = () => {
 
               <BoxStyle title="질문" className="max-h-[410px] w-full">
                 <ul className="flex flex-col">
-                  {questions &&
-                    questions.map((item, index) => (
+                  {isQuestions &&
+                    isQuestions.map((item, index) => (
                       <li
                         key={index}
                         className="border-zik-border hover:bg-zik-main/10 block max-w-full cursor-pointer truncate border-b p-4"
@@ -180,8 +213,8 @@ const Index = () => {
 
           <h3 className={titleStyle}>질문</h3>
           <div>
-            {questions &&
-              questions.map((item, index) => (
+            {isQuestions &&
+              isQuestions.map((item, index) => (
                 <FaqItem
                   key={index}
                   id={index + 1}
@@ -189,6 +222,8 @@ const Index = () => {
                   question={item.content}
                   answer={item.myAnswer}
                   recommendation={item.recommended}
+                  isStarred={item.bookmarked}
+                  onStarToggle={() => bookmarkHandler(index)}
                 />
               ))}
           </div>

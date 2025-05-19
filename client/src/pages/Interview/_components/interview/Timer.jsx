@@ -11,7 +11,7 @@ import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
 
-const Timer = ({ qes }) => {
+const Timer = ({ qes, browserAble, startVoiceRecording }) => {
   const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
@@ -42,6 +42,12 @@ const Timer = ({ qes }) => {
       setTimeout(() => {
         setIsLoading(false);
         setIsReplying(true);
+        if (isReplying) {
+          if (!browserAble) {
+            alert("Browser doesn't support speech recognition.");
+          }
+          startVoiceRecording();
+        }
       }, 500);
     }
   };

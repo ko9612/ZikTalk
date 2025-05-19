@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import AnalysisCompleteIcon from "./AnalysisCompleteIcon";
-import MainLogo from "@/assets/images/logo.svg";
+import MainLogo from "@/assets/images/logo.webp";
 import { Link } from "react-router-dom";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import Button from "@/components/common/Button";

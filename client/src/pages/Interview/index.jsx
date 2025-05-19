@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from "react";
-// import { useLocation } from "react-router-dom";
 import { useQuestionStore, useSetupNavigationStore } from "@/store/store";
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import { useMediaDeviceStore } from "@/store/mediaDeviceStore";
@@ -10,6 +8,8 @@ import PreCheckStep from "./_components/setting/PreCheckStep";
 import InterviewSection from "./_components/interview/InterviewSection";
 import { useVideoRecord } from "@/hooks/useRecord";
 import useNavigationBlocker from "@/hooks/useNavigationBlocker";
+import ScreenSizeGuide from "@/components/common/ScreenSizeGuide";
+import InterviewTab from "@/components/common/InterviewTab";
 
 const index = () => {
   const resetAll = useInterviewStore((state) => state.resetAll);
@@ -41,7 +41,19 @@ const index = () => {
   };
 
   // 현재 컴포넌트 반환 (없으면 기본값으로 DeviceSetup)
-  return <>{COMPONENTS[currentComponent] || <DeviceSetup />}</>;
+  return (
+    <>
+      <div className="block xl:hidden">
+        <ScreenSizeGuide />
+      </div>
+      <div className="hidden h-full w-full flex-col items-center xl:flex">
+        <InterviewTab />
+        <div className="mx-auto flex h-full w-full max-w-[1200px] px-6 xl:px-0">
+          {COMPONENTS[currentComponent] || <DeviceSetup />}
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default index;

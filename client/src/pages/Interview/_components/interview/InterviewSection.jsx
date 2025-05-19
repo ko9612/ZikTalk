@@ -40,6 +40,10 @@ const InterviewSection = () => {
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
 
+  const startVoiceRecording = SpeechRecognition.startListening({
+    continuous: true,
+    language: "ko",
+  });
   const onStopRecording = useCallback(() => {
     SpeechRecognition.stopListening();
     SpeechRecognition.abortListening();
@@ -92,14 +96,7 @@ const InterviewSection = () => {
 
   useEffect(() => {
     if (isReplying) {
-      if (!browserSupportsSpeechRecognition) {
-        alert("Browser doesn't support speech recognition.");
-      }
       startVideoRecording(interviewId, curNum);
-      SpeechRecognition.startListening({
-        continuous: true,
-        language: "ko",
-      });
     } else {
       stopVideoRecording();
     }
@@ -115,7 +112,13 @@ const InterviewSection = () => {
           onStopRecording={onStopRecording}
         />
       ) : (
-        <Timer qes={question.qes} />
+        <>
+          <Timer
+            qes={question.qes}
+            brouswerAble={browserSupportsSpeechRecognition}
+            startVoiceRecording={startVoiceRecording}
+          />
+        </>
       )}
     </section>
   );
