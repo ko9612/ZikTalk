@@ -105,7 +105,7 @@ const Index = () => {
             <button
               type="button"
               onClick={() => navigate("/mypage/result-list")}
-              className="text-zik-main flex items-center text-xs font-semibold sm:text-base md:text-lg"
+              className="text-zik-main flex items-center text-[9px] font-semibold sm:text-base md:text-lg"
               id="delPdf1"
             >
               <svg
@@ -125,10 +125,12 @@ const Index = () => {
               </svg>
               분석결과리스트
             </button>
-            <h2 className="text-zik-text text-2xl font-bold sm:text-3xl md:text-4xl">
+            <h2 className="text-zik-text max-w-[200px] text-center text-xl font-bold break-words sm:max-w-full sm:text-3xl md:text-4xl">
               {role}
             </h2>
-            <p className="text-zik-text text-xs md:text-sm">{interviewDate}</p>
+            <p className="text-zik-text text-[9px] sm:text-xs md:text-sm">
+              {interviewDate}
+            </p>
           </div>
 
           <h3 className={titleStyle}>종합 분석</h3>
