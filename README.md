@@ -1,56 +1,188 @@
-### 🐣branch 
+# Project
+<div align="center">
+<img src="https://github.com/user-attachments/assets/ff524be1-f864-4273-b5ba-7d5ffeddf5f7" style="width:80px; height:auto;"/> <br/>
+<img src="https://github.com/user-attachments/assets/7fcb892d-e857-4de9-aedd-5e5060e406df" style="width:300px; height:auto;"/>
 
-- main ← dev ← feat or fix
-- `feat/이름-featureName`
-    - `feat/minho-Nav`
-- bug fix: `fix/이름-내용`
-- merge 이후 브랜치 삭제하기
+<br></br>
+### 직무 맞춤형 면접, Zik Talk에서 완벽 대비!
+Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 환경에서 다양한 직무와 난이도의 질문을 제공합니다. 사용자는 음성 인식을 통해 실시간 답변을 기록하고, AI 피드백을 통해 자신의 강점과 약점을 파악할 수 있으며, 이를 통해 면접 역량을 체계적으로 향상시킬 수 있습니다.
+<br></br>
 
-<hr>
+ 
+## 팀원 소개 및 역할분담
+<table>
+  <tr>
+    <th width="250">고하나</th>
+    <th width="250">김세준</th>
+    <th width="250">임소현</th>
+    <th width="250">한재우</th>
+  </tr>
+  <tr align="center">
+    <td><img src="https://avatars.githubusercontent.com/u/75575781?v=4" width="100" height="100"></td>
+    <td><img src="https://avatars.githubusercontent.com/u/29853721?v=4" width="100" height="100"></td>
+    <td><img src="https://avatars.githubusercontent.com/u/202387121?v=4" width="100" height="100"></td>
+    <td><img src="https://avatars.githubusercontent.com/u/44960019?v=4" width="100" height="100"></td>
+  </tr>
+  <tr align="center">
+    <td><strong>팀장</strong></td>
+    <td><strong>팀원</strong></td>
+    <td><strong>팀원</strong></td>
+    <td><strong>팀원</strong></td>
+  </tr>
+  <tr>
+    <td align="left">
+      <ul>
+        <li>인터뷰 및 면접 분석 관련 기능구현</li>
+        <li>client 개발환경 세팅, 프론트 및 서버 배포</li>
+      </ul>
+    </td>
+    <td align="left">
+      <ul>
+        <li>인터뷰 세팅 관련 기능구현</li>
+        <li>DB, Storage 연동 및 server 개발환경 세팅</li>
+      </ul>
+    </td>
+    <td align="left">
+      <ul>
+        <li>회원가입, 로그인, 면접 분석결과 페이지 관련 기능 구현</li>
+      </ul>
+    </td>
+    <td align="left">
+      <ul>
+        <li>마이페이지 관련 기능 구현</li>
+      </ul>
+    </td>
+  </tr>
+  <tr align="center">
+    <td><a href="https://github.com/ko9612">🔗</a></td>
+    <td><a href="https://github.com/ksj686">🔗</a></td>
+    <td><a href="https://github.com/lsohyuniil">🔗</a></td>
+    <td><a href="https://github.com/hanjay3757">🔗</a></td>
+  </tr>
+</table>
 
-### 🐣commit 규칙
 
-```
-git commit -m "feat: commit message #이슈번호"
-// e.g) feat: Auth context 훅 생성(#3)
-```
-```
-// 주요
-feat: 새로운 기능 추가
-fix: 버그 수정
-docs: 문서(주석) 수정
-style: 레이아웃, 코드 스타일 등 수정
-refact: 리팩토링 ex) 변수 이름 변경
-design: 빌드 부분 혹은 패키지 매니저 수정사항
-test : 테스트
-release : 버전 릴리즈
-merge: 병합
+<br></br>
 
-// 그 외
-add: feat 이외의 부수적인 코드, 라이브러리 등을 추가한 경우
-새로운 파일(Component나 Activity 등)을 생성한 경우도 포함
 
-remove: 코드, 파일을 삭제한 경우, 필요 없는 주석 삭제도 포함
+## 기술 스택
+<br></br>
+<img src="https://img.shields.io/badge/Vite-FD9400?style=flat&logo=Vite&logoColor=white" />
+<img src="https://img.shields.io/badge/ReactJS-61DAFB?style=flat&logo=React&logoColor=white" />
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=JavaScript&logoColor=black" />
+<img src="https://img.shields.io/badge/TailwindCSS-38BDF8?style=flat&logo=TailwindCSS&logoColor=white" />
+<img src="https://img.shields.io/badge/OpenAI-412991?style=flat&logo=OpenAI&logoColor=white" />
+<img src="https://img.shields.io/badge/React Speech Recognition-gray?style=flat&logo=none&logoColor=white" />
+<img src="https://img.shields.io/badge/Zustand-755BFF?style=flat&logo=Zustand&logoColor=white" />
+<img src="https://img.shields.io/badge/Axios-5A29E4?style=flat&logo=Axios&logoColor=white" />
+<img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=Vercel&logoColor=white" />
+<br></br>
+<img src="https://img.shields.io/badge/NodeJS-43853D?style=flat&logo=Node.js&logoColor=white" />
+<img src="https://img.shields.io/badge/ExpressJS-333333?style=flat&logo=Express&logoColor=white" />
+<img src="https://img.shields.io/badge/JSON Web Token-FFCC00?style=flat&logo=JSON%20web%20tokens&logoColor=black" />
+<img src="https://img.shields.io/badge/PostgreSQL-336791?style=flat&logo=PostgreSQL&logoColor=white" />
+<img src="https://img.shields.io/badge/Prisma-2D3748?style=flat&logo=Prisma&logoColor=white" />
+<img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=Docker&logoColor=white" />
+<img src="https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=Supabase&logoColor=white" />
+<img src="https://img.shields.io/badge/Render-0466C8?style=flat&logo=Render&logoColor=white" />
 
-move: fix, refactor 등과 관계 없이 코드, 파일 등의 위치를 이동하는 작업만 수행한 경우
+<br></br>
 
-comment: 필요한 주석을 추가, 수정한 경우(❗필요 없는 주석을 삭제한 경우는 remove)
 
-rename: 파일명 수정
-```
-<hr>
 
-### 🐣 approve / merge
+## 주요 기능 시현
 
-- 2명 이상 approve시 merge
-- merge는 당사자가 직접!
-- 디스코드 연결
-- merge 후
-    - PR merge 알림(디스코드 팀 봇)이 오면, 충돌을 방지하기 위해 fetch 또는 pull 해주세요!
-    - 이후 PR을 올리는 팀원은 메인을 pull 했는지 확인 후 컨플릭트 해결하고 PR 요청합니다.
-    - Merge된 브랜치는 삭제합니다.
+<br></br>
+<details>
+<summary>메인 페이지</summary>
+<div markdown="1">
+	<h4>메인 페이지 구성</h4>
+	<img src="" />
+	<br></br>
+	<h4>반응형 웹 구현</h4>
+	<img src="" />
+	<br></br>
+</div>
+</details>
 
-<hr>
+<details>
+<summary>회원가입</summary>
+<div markdown="1">
+	<h4>이메일 인증을 거친 회원가입</h4>
+	<img src="" />
+	<br></br>
+</div>
+</details>
 
-### Create Issue
-![image](https://github.com/user-attachments/assets/f9702a6e-5e91-4f4e-8ff4-3449e7b6bd6c)
+<details>
+<summary>로그인</summary>
+<div markdown="1">
+	<h4>일반 로그인</h4>
+	<img src="" />
+	<br></br>
+	<h4>소셜 로그인</h4>
+	<img src="" />
+	<br></br>
+</div>
+</details>
+
+<details>
+<summary>분실 비밀번호 재설정</summary>
+<div markdown="1">
+	<br></br>
+	<img src="" />
+	<br></br>
+</div>
+</details>
+
+<details>
+<summary>인터뷰</summary>
+<div markdown="1">
+	<h4>인터뷰 세팅</h4>
+	<img src="" />
+	<br></br>
+	<h4>인터뷰</h4>
+	<img src="" />
+	<br></br>
+	<h4>분석 결과 페이지</h4>
+	<img src="" />
+	<img src="" />
+	<br></br>
+</div>
+</details>
+
+<details>
+<summary>마이페이지</summary>
+<div markdown="1">
+	<h4>분석 결과 리스트</h4>
+	<img src="" />
+	<br></br>
+    <h4>질문 북마크 리스트</h4>
+	<img src="" />
+	<br></br>
+    <h4>내 정보 관리</h4>
+	<img src="" />
+	<br></br>
+</div>
+</details>
+
+<details>
+<summary>로그아웃&회원탈퇴</summary>
+<div markdown="1">
+	<h4>로그아웃</h4>
+	<img src="" />
+	<br></br>
+	<h4>회원탈퇴</h4>
+	<img src="" />
+	<br></br>
+</div>
+</details>
+
+<br></br>
+
+## DOCS
+[🔗Notion](https://soapy-krill-b24.notion.site/ZikTalk-1df538d675578034ba5dc360cbb6526f?pvs=74)
+<br></br>
+[🔗Figma](https://www.figma.com/proto/geFFLZ135uEt3JPabxgpRV/ZikTalk?node-id=0-1&t=uD7ttdU3OUqlACn8-1)
+<br></br>
+ </div>
