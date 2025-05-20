@@ -100,7 +100,7 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 	<img src="https://github.com/user-attachments/assets/01ed826f-a7e0-4ca2-8e87-2a92c9ca609b" />
 	<br></br>
 	<h4>반응형 웹 구현</h4>
-	<img src="" />
+	<img src="https://github.com/user-attachments/assets/95762d1b-d124-4da0-b47c-d17885c4942f" />
 	<br></br>
 </div>
 </details>
