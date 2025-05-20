@@ -1,15 +1,16 @@
-# Project
-<div align="center">
-<img src="https://github.com/user-attachments/assets/ff524be1-f864-4273-b5ba-7d5ffeddf5f7" style="width:80px; height:auto;"/> <br/>
-<img src="https://github.com/user-attachments/assets/7fcb892d-e857-4de9-aedd-5e5060e406df" style="width:300px; height:auto;"/>
+<div align="center">	
+	<img src="https://github.com/user-attachments/assets/ff524be1-f864-4273-b5ba-7d5ffeddf5f7" style="width:80px; height:auto;"/> <br/>
+	<img src="https://github.com/user-attachments/assets/7fcb892d-e857-4de9-aedd-5e5060e406df" style="width:300px; height:auto;"/>
+</div>
 
 <br></br>
+## ✨ ZikTalk은?
 ### 직무 맞춤형 면접, Zik Talk에서 완벽 대비!
 Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 환경에서 다양한 직무와 난이도의 질문을 제공합니다. <br/> 사용자는 음성 인식을 통해 실시간 답변을 기록하고, AI 피드백을 통해 자신의 강점과 약점을 파악할 수 있으며, 이를 통해 면접 역량을 체계적으로 향상시킬 수 있습니다.
 <br></br>
 
  
-## 팀원 소개 및 역할분담
+## 😎 개발자 소개
 <table>
   <tr>
     <th width="250">고하나</th>
@@ -65,7 +66,7 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 <br></br>
 
 
-## 기술 스택
+## 🛠 기술 스택
 <br></br>
 <img src="https://img.shields.io/badge/Vite-FD9400?style=flat&logo=Vite&logoColor=white" />
 <img src="https://img.shields.io/badge/ReactJS-61DAFB?style=flat&logo=React&logoColor=white" />
@@ -90,9 +91,8 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 
 
 
-## 주요 기능 시현
+## 🙋‍♂️ 무엇을 이용할 수 있나요?
 
-<br></br>
 <details>
 <summary>메인 페이지</summary>
 <div markdown="1">
@@ -180,9 +180,8 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 
 <br></br>
 
-## DOCS
+## 📜 DOCS
 [🔗Notion](https://soapy-krill-b24.notion.site/ZikTalk-1df538d675578034ba5dc360cbb6526f?pvs=74)
 <br></br>
 [🔗Figma](https://www.figma.com/proto/geFFLZ135uEt3JPabxgpRV/ZikTalk?node-id=0-1&t=uD7ttdU3OUqlACn8-1)
 <br></br>
- </div>
