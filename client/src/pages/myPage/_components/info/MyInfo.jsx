@@ -28,6 +28,7 @@ const MyInfo = () => {
   const setUserCareer = loginInfo((state) => state.setUserCareer);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   // 사용자 정보 초기화
   const [form, setForm] = useState({
@@ -104,11 +105,11 @@ const MyInfo = () => {
         career:
           userData.career === 0
             ? "신입"
-            : userData.career === 2
+            : userData.career === 1
               ? "1 ~ 3년"
-              : userData.career === 5
+              : userData.career === 2
                 ? "4 ~ 7년"
-                : userData.career >= 7
+                : userData.career === 3
                   ? "7년 이상"
                   : "신입",
       }));
@@ -119,11 +120,11 @@ const MyInfo = () => {
         const careerText =
           userData.career === 0
             ? "신입"
-            : userData.career === 2
+            : userData.career === 1
               ? "1 ~ 3년"
-              : userData.career === 5
+              : userData.career === 2
                 ? "4 ~ 7년"
-                : userData.career >= 7
+                : userData.career === 3
                   ? "7년 이상"
                   : "신입";
         setUserCareer(careerText);
@@ -150,11 +151,11 @@ const MyInfo = () => {
             career:
               data.career === 0
                 ? "신입"
-                : data.career === 2
+                : data.career === 1
                   ? "1 ~ 3년"
-                  : data.career === 5
+                  : data.career === 2
                     ? "4 ~ 7년"
-                    : data.career >= 7
+                    : data.career === 3
                       ? "7년 이상"
                       : "신입",
           }));
@@ -169,11 +170,11 @@ const MyInfo = () => {
             const careerText =
               data.career === 0
                 ? "신입"
-                : data.career === 2
+                : data.career === 1
                   ? "1 ~ 3년"
-                  : data.career === 5
+                  : data.career === 2
                     ? "4 ~ 7년"
-                    : data.career >= 7
+                    : data.career === 3
                       ? "7년 이상"
                       : "신입";
             setUserCareer(careerText);
@@ -291,11 +292,11 @@ const MyInfo = () => {
             form.career === "신입"
               ? 0
               : form.career === "1 ~ 3년"
-                ? 2
+                ? 1
                 : form.career === "4 ~ 7년"
-                  ? 5
+                  ? 2
                   : form.career === "7년 이상"
-                    ? 7
+                    ? 3
                     : 0,
           // 사용자 ID
           userId: userId,
@@ -585,13 +586,28 @@ const MyInfo = () => {
           onClose={handleCloseModal}
           title="회원 탈퇴"
           subText={
-            <span>
-              정말로 회원 탈퇴를 진행하시겠습니까? <br />
-              탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
-            </span>
+            <div className="flex flex-col gap-4">
+              <span>
+                정말로 회원 탈퇴를 진행하시겠습니까? <br />
+                탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+              </span>
+              <div>
+                <label htmlFor="deletePassword" className="mb-2 block text-sm font-medium text-gray-700">
+                  비밀번호 확인
+                </label>
+                <Input
+                  type="password"
+                  id="deletePassword"
+                  name="deletePassword"
+                  placeholder="비밀번호를 입력해주세요"
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  inputClassName="h-10 w-full sm:h-12 text-sm"
+                />
+              </div>
+            </div>
           }
           btnText={isLoading ? "처리 중..." : "탈퇴하기"}
-          btnHandler={() => handleDeleteAccount(null)}
+          btnHandler={() => handleDeleteAccount(deletePassword)}
         />
       )}
     </div>

@@ -13,9 +13,11 @@ import { loginInfo } from "@/store/loginStore";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { SCROLL_BATCH_SIZE } from "./settings/constants";
 import { fetchInterviewsWithFirstQuestion } from "@/api/myPageApi";
+import { useToast } from "@/hooks/useToast";
 
 const QuestionList = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { filters, updateFilter } = useFilter({ type: SORT_OPTIONS.LATEST });
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -209,6 +211,57 @@ const QuestionList = () => {
 
   const isEmpty = visibleResults.length === 0 && !loading;
 
+  const handleSelectToggle = useCallback((id) => {
+    setSelected((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const selectedIds = Object.entries(selected)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([id]) => id);
+
+    if (selectedIds.length === 0) {
+      showToast("삭제할 항목을 선택해주세요.", "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // 선택된 항목들의 originalId를 찾아서 삭제
+      const selectedOriginalIds = selectedIds.map(id => {
+        const item = allQuestions.find(q => q.id === id);
+        return item?.originalId;
+      }).filter(Boolean);
+
+      // 여기에 실제 API 호출 코드 추가 필요
+      // await deleteInterviews(selectedOriginalIds);
+
+      // 로컬 상태 업데이트
+      setAllQuestions(prev => prev.filter(q => !selectedIds.includes(q.id)));
+      setSelected({});
+      setIsDeleteMode(false);
+      showToast("선택한 항목이 삭제되었습니다.", "success");
+    } catch (error) {
+      showToast("삭제 중 오류가 발생했습니다.", "error");
+    } finally {
+      setLoading(false);
+      setConfirmModalOpen(false);
+    }
+  }, [selected, allQuestions, showToast]);
+
+  const handleDeleteButtonClick = useCallback(() => {
+    const selectedCount = Object.values(selected).filter(Boolean).length;
+    if (selectedCount === 0) {
+      showToast("삭제할 항목을 선택해주세요.", "error");
+      return;
+    }
+    setConfirmMessage(`선택한 ${selectedCount}개의 항목을 삭제하시겠습니까?`);
+    setConfirmModalOpen(true);
+  }, [selected, showToast]);
+
   return (
     <div className="max-w-9xl mx-auto w-full px-2 pt-6 sm:px-3">
       <Header showDescription={visibleResults.length > 0} />
@@ -219,7 +272,7 @@ const QuestionList = () => {
           onFilterChange={handleFilterChange}
           isDeleteMode={isDeleteMode}
           onDeleteToggle={() => setIsDeleteMode((v) => !v)}
-          onDeleteConfirm={() => {}}
+          onDeleteConfirm={handleDeleteButtonClick}
         />
       )}
 
@@ -245,7 +298,7 @@ const QuestionList = () => {
                 visibleResults={visibleResults}
                 isDeleteMode={isDeleteMode}
                 selected={selected}
-                handleSelectToggle={() => {}}
+                handleSelectToggle={handleSelectToggle}
                 handleBookmarkToggle={handleBookmarkToggle}
                 handleCardClick={handleCardClick}
               />
@@ -282,7 +335,7 @@ const QuestionList = () => {
           title="삭제 확인"
           subText={confirmMessage}
           btnText="삭제하기"
-          btnHandler={() => {}}
+          btnHandler={handleDeleteConfirm}
         />
       )}
     </div>

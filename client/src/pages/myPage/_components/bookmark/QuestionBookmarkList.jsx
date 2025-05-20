@@ -122,16 +122,8 @@ const useBookmarkListState = () => {
     } catch (err) {
       console.error("[ERROR] 북마크 데이터 로딩 오류:", err);
       
-      if (err.isLoggedOut || 
-          (err.response && err.response.status === 401) ||
-          err.message.includes("Network Error")) {
-        setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        
-        const { logout } = loginInfo.getState();
-        if (logout) {
-          logout();
-          delete axiosInstance.defaults.headers.common["Authorization"];
-        }
+      if (err.response && err.response.status === 401) {
+        setError("인증에 실패했습니다. 다시 시도해주세요.");
       } else {
         setError(`질문 데이터 로딩 오류: ${err.message || "알 수 없는 오류"}`);
       }
