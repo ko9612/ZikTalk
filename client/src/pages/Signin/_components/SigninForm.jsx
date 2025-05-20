@@ -11,8 +11,6 @@ import { useCookies } from "react-cookie";
 import { useEffect } from "react";
 import { loginInfo } from "@/store/loginStore";
 
-const EMAIL_COOKIE_EXPIRE_MS = import.meta.env.EMAIL_COOKIE_EXPIRE_MS;
-
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
 const snsButtonStyle = "h-[10vw] w-[10vw] md:h-[68px] md:w-[68px]";
@@ -26,7 +24,7 @@ const SigninForm = () => {
   const [signinFail, setSigninFail] = useState(false); // 로그인 성공/실패
   const [isOpenModal, setIsOpenModal] = useState(false); // 비밀번호 재설정 모달
   const [cookies, setCookie, removeCookie] = useCookies(["rememberEmail"]);
-  const { setLoginState, setUserName } = loginInfo();
+  const { setLoginState, setUserId, setUserName } = loginInfo();
 
   const navigate = useNavigate();
 
@@ -37,7 +35,7 @@ const SigninForm = () => {
     if (rememberEmail) {
       setCookie("rememberEmail", email, {
         path: "/",
-        maxAge: EMAIL_COOKIE_EXPIRE_MS,
+        maxAge: 60 * 60 * 24 * 7,
       });
     } else {
       removeCookie("rememberEmail", { path: "/" });
@@ -49,11 +47,12 @@ const SigninForm = () => {
     };
 
     try {
-      const { userName } = await signin(data);
+      const { user } = await signin(data);
 
       setSigninFail(false);
       setLoginState(true);
-      setUserName(userName);
+      setUserId(user.userId);
+      setUserName(user.userName);
 
       navigate("/");
     } catch (e) {
