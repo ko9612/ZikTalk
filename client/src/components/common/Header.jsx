@@ -5,8 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { loginInfo } from "@/store/loginStore";
 import useLogout from "@/hooks/useAuth";
 import { FaCircleUser, FaRegCircleUser } from "react-icons/fa6";
-import logo from "@/assets/images/logo.svg";
-import Modal from "./Modal/Modal";
+import CommonModal from "./Modal/CommonModal";
 
 const Header = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -24,41 +23,22 @@ const Header = () => {
   return (
     <>
       {isOpenModal && (
-        <Modal
+        <CommonModal
           isOpen={isOpenModal}
           onClose={() => setIsOpenModal(false)}
-          isDelete={false}
-        >
-          <div className="flex flex-col items-center justify-center gap-4 pr-20 pl-20">
-            <img src={logo} alt="직톡 로고" className="w-15" />
-            <div className="text-zik-text p-3 text-lg sm:text-xl">
-              로그아웃 하시겠습니까?
-            </div>
-            <div className="flex w-full gap-2">
-              <Button
-                shape="bar"
-                className={"w-full"}
-                onClick={() => {
-                  setIsOpenModal(false);
-                  logout();
-                }}
-              >
-                예
-              </Button>
-              <Button
-                shape="bar"
-                color="white"
-                className={"w-full"}
-                onClick={() => {
-                  setIsOpenModal(false);
-                  // navigate("/signin");
-                }}
-              >
-                아니요
-              </Button>
-            </div>
-          </div>
-        </Modal>
+          title={"로그아웃"}
+          subText={
+            <span>
+              로그아웃 하시겠습니까? <br />
+              메인 페이지가 아닐경우, 로그인 화면으로 돌아갑니다.
+            </span>
+          }
+          btnText={"로그아웃"}
+          btnHandler={() => {
+            setIsOpenModal(false);
+            logout();
+          }}
+        />
       )}
       <header>
         <div className="mx-auto flex h-[clamp(3.8rem,8vw,5rem)] w-full max-w-[1200px] items-center justify-between px-6 xl:px-0">
@@ -107,14 +87,12 @@ const Header = () => {
                           </Link>
                         </li>
                         <li>
-                          <Link to="/">
-                            <p
-                              onClick={logoutHandler}
-                              className="text-zik-text hover:bg-zik-main/10 py-2 text-center text-sm font-medium"
-                            >
-                              로그아웃
-                            </p>
-                          </Link>
+                          <p
+                            onClick={logoutHandler}
+                            className="text-zik-text hover:bg-zik-main/10 py-2 text-center text-sm font-medium"
+                          >
+                            로그아웃
+                          </p>
                         </li>
                       </ul>
                     )}
@@ -132,16 +110,14 @@ const Header = () => {
                     </Link>
                   </li>
                   <li className="hidden sm:block">
-                    <Link to="/">
-                      <Button
-                        color="violet"
-                        onClick={logoutHandler}
-                        className="!px-3 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
-                        data-skip-block="true"
-                      >
-                        로그아웃
-                      </Button>
-                    </Link>
+                    <Button
+                      color="violet"
+                      onClick={logoutHandler}
+                      className="!px-3 !py-2 text-sm font-medium md:!px-6 md:!py-3 md:text-base lg:text-lg"
+                      data-skip-block="true"
+                    >
+                      로그아웃
+                    </Button>
                   </li>
                 </>
               ) : (
