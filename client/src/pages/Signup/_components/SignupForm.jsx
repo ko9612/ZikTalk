@@ -220,6 +220,10 @@ const SignupForm = () => {
                     value: 2,
                     message: "이름은 최소 2자 이상 작성해 주세요.",
                   },
+                  maxLength: {
+                    value: 6,
+                    message: "이름은 최대 6자 이하로 작성해 주세요.",
+                  },
                 })}
                 placeholder="이름을 입력해 주세요."
                 labelClassName={labelStyle}
