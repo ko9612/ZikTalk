@@ -7,24 +7,28 @@ import FilterDropdown from "@/components/common/FilterDropdown";
 import Button from "@/components/common/Button";
 import { useToast } from "@/hooks/useToast.jsx";
 import { loginInfo } from "@/store/loginStore";
-import { updateUserInfo, deleteUserAccount, fetchUserInfo } from "@/api/myPageApi";
+import {
+  updateUserInfo,
+  deleteUserAccount,
+  fetchUserInfo,
+} from "@/api/myPageApi";
 import axiosInstance from "@/api/axiosInstance";
 
 const MyInfo = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
-  
+
   // Zustand 스토어에서 각 속성을 개별적으로 가져오기 (객체 생성 방지)
-  const userName = loginInfo(state => state.userName);
-  const userId = loginInfo(state => state.userId);
-  const logoutFn = loginInfo(state => state.logout);
+  const userName = loginInfo((state) => state.userName);
+  const userId = loginInfo((state) => state.userId);
+  const logoutFn = loginInfo((state) => state.logout);
   // Zustand 스토어 상태 업데이트 함수 가져오기
-  const updateUserName = loginInfo(state => state.setUserName);
-  const setUserRole = loginInfo(state => state.setUserRole);
-  const setUserCareer = loginInfo(state => state.setUserCareer);
-  
+  const updateUserName = loginInfo((state) => state.setUserName);
+  const setUserRole = loginInfo((state) => state.setUserRole);
+  const setUserCareer = loginInfo((state) => state.setUserCareer);
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  
+
   // 사용자 정보 초기화
   const [form, setForm] = useState({
     name: userName || "사용자",
@@ -38,7 +42,7 @@ const MyInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCareerModalOpen, setCareerModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(form.role);
-  
+
   // 폼 변경 상태 추적
   const [formChanged, setFormChanged] = useState(false);
   // 오류 관리
@@ -51,13 +55,14 @@ const MyInfo = () => {
     { value: "4 ~ 7년", label: "4 ~ 7년" },
     { value: "7년 이상", label: "7년 이상" },
   ];
-  
+
   // 로컬 스토리지에서 토큰 복원 시도
   const restoreTokenFromStorage = useCallback(() => {
     try {
-      const storedToken = localStorage.getItem('accessToken');
+      const storedToken = localStorage.getItem("accessToken");
       if (storedToken) {
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        axiosInstance.defaults.headers.common["Authorization"] =
+          `Bearer ${storedToken}`;
         return true;
       }
       return false;
@@ -65,18 +70,20 @@ const MyInfo = () => {
       return false;
     }
   }, []);
-  
+
   // 사용자 정보 가져오기 함수
   const getUserInfo = useCallback(async () => {
     if (!userId) {
       setError("로그인이 필요한 기능입니다.");
       return;
     }
-    const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
+    const hasAuthHeader =
+      !!axiosInstance.defaults.headers.common["Authorization"];
     if (!hasAuthHeader) {
       const storedToken = localStorage.getItem("accessToken");
       if (storedToken) {
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+        axiosInstance.defaults.headers.common["Authorization"] =
+          `Bearer ${storedToken}`;
       } else {
         setError("인증 정보가 없습니다. 로그인 후 다시 시도해주세요.");
         return;
@@ -89,34 +96,36 @@ const MyInfo = () => {
       if (!userData) {
         throw new Error("사용자 정보를 가져올 수 없습니다.");
       }
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         name: userData.name || userName || "사용자",
         email: userData.email || "",
         role: userData.role || "",
-        career: userData.career === 0 
-          ? "신입"
-          : userData.career === 2
-            ? "1 ~ 3년"
-          : userData.career === 5
-            ? "4 ~ 7년"
-          : userData.career >= 7
-            ? "7년 이상"
-            : "신입"
+        career:
+          userData.career === 0
+            ? "신입"
+            : userData.career === 2
+              ? "1 ~ 3년"
+              : userData.career === 5
+                ? "4 ~ 7년"
+                : userData.career >= 7
+                  ? "7년 이상"
+                  : "신입",
       }));
       setSelectedJob(userData.role || "");
       if (updateUserName && userData.name) updateUserName(userData.name);
       if (setUserRole && userData.role) setUserRole(userData.role);
       if (setUserCareer && userData.career !== undefined) {
-        const careerText = userData.career === 0 
-          ? "신입"
-          : userData.career === 2
-            ? "1 ~ 3년"
-          : userData.career === 5
-            ? "4 ~ 7년"
-          : userData.career >= 7
-            ? "7년 이상"
-            : "신입";
+        const careerText =
+          userData.career === 0
+            ? "신입"
+            : userData.career === 2
+              ? "1 ~ 3년"
+              : userData.career === 5
+                ? "4 ~ 7년"
+                : userData.career >= 7
+                  ? "7년 이상"
+                  : "신입";
         setUserCareer(careerText);
       }
     } catch (err) {
@@ -125,7 +134,7 @@ const MyInfo = () => {
       setIsLoading(false);
     }
   }, [userId, updateUserName, setUserRole, setUserCareer, userName]);
-  
+
   // 컴포넌트 마운트 시 사용자 정보 가져오기
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -133,41 +142,43 @@ const MyInfo = () => {
         setIsLoading(true);
         const data = await fetchUserInfo(userId);
         if (data) {
-          setForm(prev => ({
+          setForm((prev) => ({
             ...prev,
             name: data.name || userName || "사용자",
             email: data.email || "",
             role: data.role || "",
-            career: data.career === 0 
-              ? "신입"
-              : data.career === 2
-                ? "1 ~ 3년"
-              : data.career === 5
-                ? "4 ~ 7년"
-              : data.career >= 7
-                ? "7년 이상"
-              : "신입"
+            career:
+              data.career === 0
+                ? "신입"
+                : data.career === 2
+                  ? "1 ~ 3년"
+                  : data.career === 5
+                    ? "4 ~ 7년"
+                    : data.career >= 7
+                      ? "7년 이상"
+                      : "신입",
           }));
-          
+
           // 선택된 직무 업데이트
           setSelectedJob(data.role || "");
-          
+
           // Zustand 스토어 업데이트
           if (updateUserName && data.name) updateUserName(data.name);
           if (setUserRole && data.role) setUserRole(data.role);
           if (setUserCareer && data.career !== undefined) {
-            const careerText = data.career === 0 
-              ? "신입"
-              : data.career === 2
-                ? "1 ~ 3년"
-              : data.career === 5
-                ? "4 ~ 7년"
-              : data.career >= 7
-                ? "7년 이상"
-                : "신입";
+            const careerText =
+              data.career === 0
+                ? "신입"
+                : data.career === 2
+                  ? "1 ~ 3년"
+                  : data.career === 5
+                    ? "4 ~ 7년"
+                    : data.career >= 7
+                      ? "7년 이상"
+                      : "신입";
             setUserCareer(careerText);
           }
-          
+
           setError(null);
         }
       } catch (err) {
@@ -189,26 +200,29 @@ const MyInfo = () => {
   // 폼 필드 변경 시 호출되는 함수
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
     setFormChanged(true);
   }, []);
 
   // 직무 선택 시 호출되는 함수
   const handleCareerSelect = useCallback((job) => {
     setSelectedJob(job);
-    setForm(prev => ({ ...prev, role: job }));
+    setForm((prev) => ({ ...prev, role: job }));
     setCareerModalOpen(false);
     setFormChanged(true);
   }, []);
 
   // 경력 변경 시 호출되는 함수
-  const handleCareerChange = useCallback((career) => {
-    setForm(prev => ({ ...prev, career }));
-    setFormChanged(true);
-    
-    // 변경 표시 - 토스트는 한 번만 표시
-    showToast("경력이 변경되었습니다: " + career, "success");
-  }, [showToast]);
+  const handleCareerChange = useCallback(
+    (career) => {
+      setForm((prev) => ({ ...prev, career }));
+      setFormChanged(true);
+
+      // 변경 표시 - 토스트는 한 번만 표시
+      showToast("경력이 변경되었습니다: " + career, "success");
+    },
+    [showToast],
+  );
 
   // 폼 유효성 검사
   const validateForm = useCallback(() => {
@@ -219,7 +233,7 @@ const MyInfo = () => {
         showToast("비밀번호가 일치하지 않습니다.", "error");
         return false;
       }
-      
+
       // 비밀번호 길이 확인 (8자 이상)
       if (form.password.length < 8) {
         showToast("비밀번호는 8자 이상이어야 합니다.", "error");
@@ -231,128 +245,157 @@ const MyInfo = () => {
   }, [form.password, form.passwordCheck, showToast]);
 
   // 폼 제출 시 호출되는 함수
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    if (!userId) {
-      showToast("로그인이 필요합니다.", "error");
-      return;
-    }
-
-    // 검증 결과
-    const isValid = validateForm();
-
-    if (!isValid) {
-      return;
-    }
-    
-    // 인증 헤더 확인
-    const hasAuthHeader = !!axiosInstance.defaults.headers.common["Authorization"];
-    if (!hasAuthHeader) {
-      const restored = restoreTokenFromStorage();
-      if (!restored) {
-        showToast("인증 정보가 없습니다. 새로고침 후 다시 시도해주세요.", "error");
+      if (!userId) {
+        showToast("로그인이 필요합니다.", "error");
         return;
       }
-    }
 
-    // 폼 제출 시 간단한 로딩 처리
-    setIsLoading(true);
-    setError(null);
+      // 검증 결과
+      const isValid = validateForm();
 
-    try {
-      // 업데이트할 데이터 준비
-      const updateData = {
-        // 비밀번호가 입력된 경우에만 포함
-        ...(form.password ? { password: form.password } : {}),
-        // 직무 업데이트
-        role: form.role,
-        // 경력 업데이트 - 문자열을 숫자로 변환
-        career: form.career === "신입" ? 0 :
-          form.career === "1 ~ 3년" ? 2 :
-          form.career === "4 ~ 7년" ? 5 :
-          form.career === "7년 이상" ? 7 :
-          0,
-        // 사용자 ID
-        userId: userId
-      };
-      
-      // 실제 API 호출
-      const response = await updateUserInfo(updateData);
-
-      // 입력된 정보로 폼 업데이트
-      setForm(prev => ({
-        ...prev,
-        password: "",
-        passwordCheck: "",
-      }));
-
-      // Zustand 스토어 업데이트: 변경된 사용자 정보를 메모리에 유지
-      if (form.name !== userName && updateUserName) {
-        updateUserName(form.name);
+      if (!isValid) {
+        return;
       }
 
-      if (setUserRole) {
-        setUserRole(form.role);
-      }
-
-      if (setUserCareer) {
-        setUserCareer(form.career);
-      }
-
-      // 성공 메시지 표시
-      showToast(response.message || `정보가 성공적으로 업데이트되었습니다`, "success");
-      setFormChanged(false);
-    } catch (error) {
-      let errorMessage = "정보 업데이트에 실패했습니다.";
-      if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = "인증에 문제가 발생했습니다. 새로고침 후 다시 시도해주세요.";
-        } else if (error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message;
+      // 인증 헤더 확인
+      const hasAuthHeader =
+        !!axiosInstance.defaults.headers.common["Authorization"];
+      if (!hasAuthHeader) {
+        const restored = restoreTokenFromStorage();
+        if (!restored) {
+          showToast(
+            "인증 정보가 없습니다. 새로고침 후 다시 시도해주세요.",
+            "error",
+          );
+          return;
         }
       }
-      setError(errorMessage);
-      showToast(errorMessage, "error");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [form, validateForm, showToast, userName, updateUserName, setUserRole, setUserCareer, userId, restoreTokenFromStorage]);
+
+      // 폼 제출 시 간단한 로딩 처리
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // 업데이트할 데이터 준비
+        const updateData = {
+          // 비밀번호가 입력된 경우에만 포함
+          ...(form.password ? { password: form.password } : {}),
+          // 직무 업데이트
+          role: form.role,
+          // 경력 업데이트 - 문자열을 숫자로 변환
+          career:
+            form.career === "신입"
+              ? 0
+              : form.career === "1 ~ 3년"
+                ? 2
+                : form.career === "4 ~ 7년"
+                  ? 5
+                  : form.career === "7년 이상"
+                    ? 7
+                    : 0,
+          // 사용자 ID
+          userId: userId,
+        };
+
+        // 실제 API 호출
+        const response = await updateUserInfo(updateData);
+
+        // 입력된 정보로 폼 업데이트
+        setForm((prev) => ({
+          ...prev,
+          password: "",
+          passwordCheck: "",
+        }));
+
+        // Zustand 스토어 업데이트: 변경된 사용자 정보를 메모리에 유지
+        if (form.name !== userName && updateUserName) {
+          updateUserName(form.name);
+        }
+
+        if (setUserRole) {
+          setUserRole(form.role);
+        }
+
+        if (setUserCareer) {
+          setUserCareer(form.career);
+        }
+
+        // 성공 메시지 표시
+        showToast(
+          response.message || `정보가 성공적으로 업데이트되었습니다`,
+          "success",
+        );
+        setFormChanged(false);
+      } catch (error) {
+        let errorMessage = "정보 업데이트에 실패했습니다.";
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage =
+              "인증에 문제가 발생했습니다. 새로고침 후 다시 시도해주세요.";
+          } else if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        }
+        setError(errorMessage);
+        showToast(errorMessage, "error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      form,
+      validateForm,
+      showToast,
+      userName,
+      updateUserName,
+      setUserRole,
+      setUserCareer,
+      userId,
+      restoreTokenFromStorage,
+    ],
+  );
 
   // 회원 탈퇴 함수
-  const handleDeleteAccount = useCallback(async (password = null) => {
-    if (!userId) {
-      showToast("로그인이 필요합니다.", "error");
-      return;
-    }
-
-    // 간단한 로딩 처리
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await deleteUserAccount(password, userId);
-      showToast(result.message || "회원 탈퇴가 완료되었습니다.", "success");
-      setDeleteModalOpen(false);
-      if (typeof logoutFn === 'function') {
-        logoutFn();
+  const handleDeleteAccount = useCallback(
+    async (password = null) => {
+      if (!userId) {
+        showToast("로그인이 필요합니다.", "error");
+        return;
       }
-      localStorage.removeItem('accessToken');
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 500);
-    } catch (error) {
-      let errorMessage = "회원 탈퇴 처리 중 오류가 발생했습니다.";
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
+
+      // 간단한 로딩 처리
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await deleteUserAccount(password, userId);
+        showToast(result.message || "회원 탈퇴가 완료되었습니다.", "success");
+        setDeleteModalOpen(false);
+        if (typeof logoutFn === "function") {
+          logoutFn();
+        }
+        localStorage.removeItem("accessToken");
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
+      } catch (error) {
+        let errorMessage = "회원 탈퇴 처리 중 오류가 발생했습니다.";
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+        setError(errorMessage);
+        showToast(errorMessage, "error");
+      } finally {
+        setIsLoading(false);
+        setDeleteModalOpen(false);
       }
-      setError(errorMessage);
-      showToast(errorMessage, "error");
-    } finally {
-      setIsLoading(false);
-      setDeleteModalOpen(false);
-    }
-  }, [showToast, logoutFn, userId]);
+    },
+    [showToast, logoutFn, userId],
+  );
 
   // 버튼 클릭 핸들러
   const handleButtonClick = useCallback((e) => {
@@ -376,7 +419,7 @@ const MyInfo = () => {
         <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
           내 정보 관리
         </h2>
-        
+
         {/* 오류 메시지 표시 */}
         {error && (
           <div className="mb-4 rounded-md bg-red-50 p-4 text-red-500">
@@ -391,7 +434,7 @@ const MyInfo = () => {
             )}
           </div>
         )}
-        
+
         {isLoading ? (
           <div className="flex h-60 items-center justify-center">
             <p className="text-gray-500">로딩 중...</p>
@@ -502,12 +545,12 @@ const MyInfo = () => {
               <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
                 경력
               </div>
-              <div className="relative ">
+              <div className="relative">
                 <FilterDropdown
                   value={form.career}
                   onChange={handleCareerChange}
                   options={careerOptions}
-                  className="rounded-lg  text-gray-500"
+                  className="rounded-lg text-gray-500"
                   buttonWidth="flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
                   dropdownWidth="w-full"
                 />
@@ -541,7 +584,12 @@ const MyInfo = () => {
           isOpen={deleteModalOpen}
           onClose={handleCloseModal}
           title="회원 탈퇴"
-          subText="정말로 회원 탈퇴를 진행하시겠습니까? 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다."
+          subText={
+            <span>
+              정말로 회원 탈퇴를 진행하시겠습니까? <br />
+              탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+            </span>
+          }
           btnText={isLoading ? "처리 중..." : "탈퇴하기"}
           btnHandler={() => handleDeleteAccount(null)}
         />
