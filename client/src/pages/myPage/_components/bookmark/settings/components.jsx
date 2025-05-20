@@ -32,10 +32,10 @@ export const TableHeader = () => (
     className={`mb-3 hidden items-center border-t-2 border-b-2 border-t-gray-500 border-b-gray-200 px-1 py-2 ${TEXT_COLORS.header} tracking-wide sm:grid sm:px-2 sm:text-sm md:px-4 md:text-base`}
     style={{ gridTemplateColumns: GRID_TEMPLATE }}
   >
-    <div className="text-start">No</div>
-    <div className="pl-6 text-start">직무</div>
-    <div className="pl-5 text-center">유형</div>
-    <div className="pl-8 text-left">질문</div>
+    <div className="pl-5 text-start">No</div>
+    <div className="pl-10 text-start">직무</div>
+    <div className="pl-6 text-center">유형</div>
+    <div className="pl-7 text-left">질문</div>
     <div className="flex justify-center">즐겨찾기</div>
   </div>
 );

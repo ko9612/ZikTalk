@@ -11,6 +11,8 @@ import {
   updateUserInfo,
   deleteUserAccount,
   fetchUserInfo,
+  convertCareerNumberToString,
+  convertCareerStringToNumber,
 } from "@/api/myPageApi";
 import axiosInstance from "@/api/axiosInstance";
 
@@ -72,130 +74,107 @@ const MyInfo = () => {
   }, []);
 
   // 사용자 정보 가져오기 함수
-  const getUserInfo = useCallback(async () => {
-    if (!userId) {
-      setError("로그인이 필요한 기능입니다.");
-      return;
-    }
-    const hasAuthHeader =
-      !!axiosInstance.defaults.headers.common["Authorization"];
-    if (!hasAuthHeader) {
-      const storedToken = localStorage.getItem("accessToken");
-      if (storedToken) {
-        axiosInstance.defaults.headers.common["Authorization"] =
-          `Bearer ${storedToken}`;
-      } else {
-        setError("인증 정보가 없습니다. 로그인 후 다시 시도해주세요.");
-        return;
-      }
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const userData = await fetchUserInfo(userId);
-      if (!userData) {
-        throw new Error("사용자 정보를 가져올 수 없습니다.");
-      }
-      setForm((prev) => ({
-        ...prev,
-        name: userData.name || userName || "사용자",
-        email: userData.email || "",
-        role: userData.role || "",
-        career:
-          userData.career === 0
-            ? "신입"
-            : userData.career === 2
-              ? "1 ~ 3년"
-              : userData.career === 5
-                ? "4 ~ 7년"
-                : userData.career >= 7
-                  ? "7년 이상"
-                  : "신입",
-      }));
-      setSelectedJob(userData.role || "");
-      if (updateUserName && userData.name) updateUserName(userData.name);
-      if (setUserRole && userData.role) setUserRole(userData.role);
-      if (setUserCareer && userData.career !== undefined) {
-        const careerText =
-          userData.career === 0
-            ? "신입"
-            : userData.career === 2
-              ? "1 ~ 3년"
-              : userData.career === 5
-                ? "4 ~ 7년"
-                : userData.career >= 7
-                  ? "7년 이상"
-                  : "신입";
-        setUserCareer(careerText);
-      }
-    } catch (err) {
-      setError(`사용자 정보 처리 오류: ${err.message || "알 수 없는 오류"}`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId, updateUserName, setUserRole, setUserCareer, userName]);
+  // const getUserInfo = useCallback(async () => {
+  //   // if (!userId) {
+  //   //   setError("로그인이 필요한 기능입니다.");
+  //   //   return;
+  //   // }
+
+  //   setIsLoading(true);
+  //   setError(null);
+
+  //   try {
+  //     const userData = await fetchUserInfo(userId);
+
+  //     setForm((prev) => ({
+  //       ...prev,
+  //       name: userData.name || userName || "사용자",
+  //       email: userData.email || "",
+  //       role: userData.role || "",
+  //       career: convertCareerNumberToString(userData.career),
+  //     }));
+
+  //     // 선택된 직무 업데이트
+  //     setSelectedJob(userData.role || "");
+
+  //     // Zustand store 업데이트
+  //     if (updateUserName && userData.name) updateUserName(userData.name);
+  //     if (setUserRole && userData.role) setUserRole(userData.role);
+  //     if (setUserCareer && userData.career !== undefined) {
+  //       setUserCareer(convertCareerNumberToString(userData.career));
+  //     }
+  //   } catch (err) {
+  //     const errorMessage =
+  //       err.response?.status === 401
+  //         ? "로그인이 필요합니다."
+  //         : "사용자 정보를 불러오는데 실패했습니다.";
+  //     setError(errorMessage);
+  //     showToast(errorMessage, "error");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, [userId, userName, updateUserName, setUserRole, setUserCareer, showToast]);
 
   // 컴포넌트 마운트 시 사용자 정보 가져오기
   useEffect(() => {
     const loadUserInfo = async () => {
+      if (!userId) return;
+
       try {
         setIsLoading(true);
-        const data = await fetchUserInfo(userId);
-        if (data) {
+        // fetchUserInfo 함수 사용
+        const userData = await fetchUserInfo();
+
+        if (userData) {
           setForm((prev) => ({
             ...prev,
-            name: data.name || userName || "사용자",
-            email: data.email || "",
-            role: data.role || "",
-            career:
-              data.career === 0
-                ? "신입"
-                : data.career === 2
-                  ? "1 ~ 3년"
-                  : data.career === 5
-                    ? "4 ~ 7년"
-                    : data.career >= 7
-                      ? "7년 이상"
-                      : "신입",
+            name: userData.name || userName || "사용자",
+            email: userData.email || "",
+            role: userData.role || "",
+            career: convertCareerNumberToString(userData.career),
           }));
 
           // 선택된 직무 업데이트
-          setSelectedJob(data.role || "");
+          setSelectedJob(userData.role || "");
 
           // Zustand 스토어 업데이트
-          if (updateUserName && data.name) updateUserName(data.name);
-          if (setUserRole && data.role) setUserRole(data.role);
-          if (setUserCareer && data.career !== undefined) {
-            const careerText =
-              data.career === 0
-                ? "신입"
-                : data.career === 2
-                  ? "1 ~ 3년"
-                  : data.career === 5
-                    ? "4 ~ 7년"
-                    : data.career >= 7
-                      ? "7년 이상"
-                      : "신입";
-            setUserCareer(careerText);
+          if (userData.name) updateUserName(userData.name);
+          if (userData.role) setUserRole(userData.role);
+          if (userData.career !== undefined) {
+            setUserCareer(convertCareerNumberToString(userData.career));
           }
-
-          setError(null);
         }
-      } catch (err) {
-        if (err.response?.status === 401) {
-          setError("로그인이 필요합니다.");
-        } else {
-          setError("사용자 정보를 불러오는데 실패했습니다. 다시 시도해주세요.");
-        }
+      } catch (error) {
+        console.error("API 요청 실패:", error);
+        const errorMessage =
+          error.response?.status === 401
+            ? "로그인이 필요합니다."
+            : "사용자 정보를 불러오는데 실패했습니다.";
+        setError(errorMessage);
+        showToast(errorMessage, "error");
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (userId) {
-      loadUserInfo();
+    loadUserInfo();
+  }, [userId, userName, updateUserName, setUserRole, setUserCareer, showToast]);
+
+  // 경력 숫자를 문자열로 변환하는 함수
+  const convertCareerNumberToString = (careerNumber) => {
+    switch (careerNumber) {
+      case 0:
+        return "신입";
+      case 1:
+        return "1 ~ 3년";
+      case 2:
+        return "4 ~ 7년";
+      case 3:
+        return "7년 이상";
+      default:
+        return "신입";
     }
-  }, [userId, userName, updateUserName, setUserRole, setUserCareer]);
+  };
 
   // 폼 필드 변경 시 호출되는 함수
   const handleChange = useCallback((e) => {
@@ -226,120 +205,71 @@ const MyInfo = () => {
 
   // 폼 유효성 검사
   const validateForm = useCallback(() => {
-    // 비밀번호 변경 시 유효성 검사
-    if (form.password) {
-      // 비밀번호 확인
-      if (form.password !== form.passwordCheck) {
-        showToast("비밀번호가 일치하지 않습니다.", "error");
-        return false;
-      }
+    if (!form.name?.trim()) {
+      showToast("이름을 입력해주세요.", "error");
+      return false;
+    }
 
-      // 비밀번호 길이 확인 (8자 이상)
+    if (form.password) {
       if (form.password.length < 8) {
         showToast("비밀번호는 8자 이상이어야 합니다.", "error");
         return false;
       }
+      if (form.password !== form.passwordCheck) {
+        showToast("비밀번호가 일치하지 않습니다.", "error");
+        return false;
+      }
+    }
+
+    if (!form.role) {
+      showToast("직무를 선택해주세요.", "error");
+      return false;
+    }
+
+    if (!form.career) {
+      showToast("경력을 선택해주세요.", "error");
+      return false;
     }
 
     return true;
-  }, [form.password, form.passwordCheck, showToast]);
+  }, [form, showToast]);
 
   // 폼 제출 시 호출되는 함수
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      if (!validateForm()) return;
 
-      if (!userId) {
-        showToast("로그인이 필요합니다.", "error");
-        return;
-      }
-
-      // 검증 결과
-      const isValid = validateForm();
-
-      if (!isValid) {
-        return;
-      }
-
-      // 인증 헤더 확인
-      const hasAuthHeader =
-        !!axiosInstance.defaults.headers.common["Authorization"];
-      if (!hasAuthHeader) {
-        const restored = restoreTokenFromStorage();
-        if (!restored) {
-          showToast(
-            "인증 정보가 없습니다. 새로고침 후 다시 시도해주세요.",
-            "error",
-          );
-          return;
-        }
-      }
-
-      // 폼 제출 시 간단한 로딩 처리
       setIsLoading(true);
       setError(null);
 
       try {
-        // 업데이트할 데이터 준비
         const updateData = {
-          // 비밀번호가 입력된 경우에만 포함
+          name: form.name,
           ...(form.password ? { password: form.password } : {}),
-          // 직무 업데이트
           role: form.role,
-          // 경력 업데이트 - 문자열을 숫자로 변환
-          career:
-            form.career === "신입"
-              ? 0
-              : form.career === "1 ~ 3년"
-                ? 2
-                : form.career === "4 ~ 7년"
-                  ? 5
-                  : form.career === "7년 이상"
-                    ? 7
-                    : 0,
-          // 사용자 ID
-          userId: userId,
+          career: convertCareerStringToNumber(form.career),
+          userId,
         };
 
-        // 실제 API 호출
         const response = await updateUserInfo(updateData);
 
-        // 입력된 정보로 폼 업데이트
+        // 성공적으로 업데이트된 경우
+        updateUserName?.(form.name);
+        setUserRole?.(form.role);
+        setUserCareer?.(form.career);
+
         setForm((prev) => ({
           ...prev,
           password: "",
           passwordCheck: "",
         }));
 
-        // Zustand 스토어 업데이트: 변경된 사용자 정보를 메모리에 유지
-        if (form.name !== userName && updateUserName) {
-          updateUserName(form.name);
-        }
-
-        if (setUserRole) {
-          setUserRole(form.role);
-        }
-
-        if (setUserCareer) {
-          setUserCareer(form.career);
-        }
-
-        // 성공 메시지 표시
-        showToast(
-          response.message || `정보가 성공적으로 업데이트되었습니다`,
-          "success",
-        );
+        showToast("정보가 성공적으로 업데이트되었습니다.", "success");
         setFormChanged(false);
-      } catch (error) {
-        let errorMessage = "정보 업데이트에 실패했습니다.";
-        if (error.response) {
-          if (error.response.status === 401) {
-            errorMessage =
-              "인증에 문제가 발생했습니다. 새로고침 후 다시 시도해주세요.";
-          } else if (error.response.data && error.response.data.message) {
-            errorMessage = error.response.data.message;
-          }
-        }
+      } catch (err) {
+        const errorMessage =
+          err.response?.data?.message || "정보 업데이트에 실패했습니다.";
         setError(errorMessage);
         showToast(errorMessage, "error");
       } finally {
@@ -348,14 +278,12 @@ const MyInfo = () => {
     },
     [
       form,
+      userId,
       validateForm,
       showToast,
-      userName,
       updateUserName,
       setUserRole,
       setUserCareer,
-      userId,
-      restoreTokenFromStorage,
     ],
   );
 
@@ -584,12 +512,7 @@ const MyInfo = () => {
           isOpen={deleteModalOpen}
           onClose={handleCloseModal}
           title="회원 탈퇴"
-          subText={
-            <span>
-              정말로 회원 탈퇴를 진행하시겠습니까? <br />
-              탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
-            </span>
-          }
+          subText="정말로 회원 탈퇴를 진행하시겠습니까? 탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다."
           btnText={isLoading ? "처리 중..." : "탈퇴하기"}
           btnHandler={() => handleDeleteAccount(null)}
         />

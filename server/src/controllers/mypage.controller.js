@@ -103,10 +103,10 @@ export const getUserInfo = async (req, res) => {
     console.log("\n[서버] ==== 사용자 정보 조회 요청 시작 ====");
     console.log("[서버] 요청 헤더:", JSON.stringify(req.headers));
     console.log("[서버] 요청 쿼리:", JSON.stringify(req.query));
-    console.log("[서버] 토큰 userId 확인:", req.user?.id);
+    console.log("[서버] 토큰 userId 확인:", req.user?.userId);
 
     // 쿼리 파라미터에서 userId를 가져오기
-    const clientUserId = req.query.userId;
+    const clientUserId = req.user?.userId;
     console.log("[서버] 클라이언트 userId 확인:", clientUserId);
 
     // userId가 없으면 401 에러 반환
