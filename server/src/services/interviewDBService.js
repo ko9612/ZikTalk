@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 // 인터뷰 페이지 접근 시, 유저 데이터 조회
 export const getInterviewUserInfo = async (userId) => {

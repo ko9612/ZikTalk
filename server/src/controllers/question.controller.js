@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
 import * as questionService from "../services/question.service.js";
-
-const prisma = new PrismaClient();
 
 // 모든 질문 조회
 export const getAllQuestions = async (req, res) => {

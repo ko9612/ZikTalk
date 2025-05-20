@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
+
 import * as interviewDBService from "../services/interviewDBService.js";
 import {
   generateQuestion,
   generateFeedback,
 } from "../services/interviewService.js";
-
-const prisma = new PrismaClient();
 
 // 1. 클라이언트 요청 처리
 // Express 라우터에서 호출되어 클라이언트의 HTTP 요청을 처리

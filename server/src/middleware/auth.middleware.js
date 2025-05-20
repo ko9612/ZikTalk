@@ -3,9 +3,7 @@
 // 토큰 생성 및 검증, 인증 미들웨어 여기서 한 번에 처리 or src/utils/jwt.js 분리해서 토큰 생성,검증은 따로 하던 지 자유롭게 하시면 될 듯!
 
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../utils/prisma.js";
 
 // 인증 미들웨어
 export const authenticate = (req, res, next) => {

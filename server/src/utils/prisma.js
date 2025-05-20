@@ -1,6 +1,18 @@
-// prisma 클라이언트 초기화
-// 데이터베이스와의 연결 유지, 전역에서 클라이언트 재사용하기 위함
-
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+
+let prisma;
+
+if (!globalThis.prisma) {
+  globalThis.prisma = new PrismaClient();
+}
+prisma = globalThis.prisma;
+
 export default prisma;
+
+/*
+// ESM 방식 (예: ESM 지원 프로젝트, "type": "module" 설정된 경우)
+import prisma from "../utils/prisma.js"; // 확장자 .js 명시해야 안전함
+
+// 사용 예시
+const users = await prisma.user.findMany();
+*/

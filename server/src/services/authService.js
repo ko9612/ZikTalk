@@ -1,9 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt, { hash } from "bcrypt";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../utils/prisma.js";
 import { sendEmail } from "./emailService.js";
-
-const prisma = new PrismaClient();
 
 // 로그인
 export const loginUser = async (data) => {
