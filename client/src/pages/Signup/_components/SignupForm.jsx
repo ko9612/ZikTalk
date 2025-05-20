@@ -215,7 +215,7 @@ const SignupForm = () => {
             <div className={inputWrapStyle}>
               <Input
                 {...register("name", {
-                  required: "이름을 입력해 주세요.",
+                  required: "이름을 2~6자 사이로 입력해 주세요.",
                   minLength: {
                     value: 2,
                     message: "이름은 최소 2자 이상 작성해 주세요.",
@@ -225,7 +225,7 @@ const SignupForm = () => {
                     message: "이름은 최대 6자 이하로 작성해 주세요.",
                   },
                 })}
-                placeholder="이름을 입력해 주세요."
+                placeholder="이름을 2~6자 사이로 입력해 주세요."
                 labelClassName={labelStyle}
               >
                 이름
