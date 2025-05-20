@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { loginInfo } from "@/store/loginStore";
 import useLogout from "@/hooks/useAuth";
 import { FaCircleUser, FaRegCircleUser } from "react-icons/fa6";
+import logo from "@/assets/images/logo.svg";
 import Modal from "./Modal/Modal";
 
 const Header = () => {
@@ -16,34 +17,45 @@ const Header = () => {
   const { loginState, userName } = loginInfo();
 
   const logoutHandler = () => {
-    logout();
+    // logout();
     setIsOpenModal(true);
   };
 
   return (
     <>
       {isOpenModal && (
-        <Modal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)}>
+        <Modal
+          isOpen={isOpenModal}
+          onClose={() => setIsOpenModal(false)}
+          isDelete={false}
+        >
           <div className="flex flex-col items-center justify-center gap-4 pr-20 pl-20">
-            <i className="border-zik-main/50 flex h-14 w-14 items-center justify-center rounded-full border-2">
-              <svg
-                width="50"
-                height="50"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 50 50"
-              >
-                <polyline
-                  className="stroke-draw-check"
-                  stroke="oklch(0.63 0.2032 281.04)"
-                  points="14,27 22,34 36,16"
-                  strokeWidth="5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </i>
+            <img src={logo} alt="직톡 로고" className="w-15" />
             <div className="text-zik-text p-3 text-lg sm:text-xl">
-              로그아웃 되었습니다.
+              로그아웃 하시겠습니까?
+            </div>
+            <div className="flex w-full gap-2">
+              <Button
+                shape="bar"
+                className={"w-full"}
+                onClick={() => {
+                  setIsOpenModal(false);
+                  logout();
+                }}
+              >
+                예
+              </Button>
+              <Button
+                shape="bar"
+                color="white"
+                className={"w-full"}
+                onClick={() => {
+                  setIsOpenModal(false);
+                  // navigate("/signin");
+                }}
+              >
+                아니요
+              </Button>
             </div>
           </div>
         </Modal>
