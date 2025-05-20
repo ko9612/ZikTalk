@@ -10,8 +10,8 @@ router.post("/signin", authController.signin);
 // 로그아웃
 router.post("/logout", authController.logout);
 
-// refresh token 재발급
-router.post("/refresh", authController.refreshToken);
+// refresh token
+router.post("/silent-refresh", authController.refreshToken);
 
 // 회원가입
 router.post("/signup", authController.signup);

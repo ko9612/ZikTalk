@@ -5,23 +5,30 @@ import {
   sendVerificationEmail,
   generateTokens,
 } from "../services/authService.js";
+import jwt from "jsonwebtoken";
 
-const isProduction = process.env.NODE_ENV === "production";
+const NODE_ENV = process.env.NODE_ENV === "production";
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
+const JWT_REFRESH_COOKIE_EXPIRE_MS =
+  Number(process.env.JWT_REFRESH_COOKIE_EXPIRE_MS) || 7 * 24 * 60 * 60 * 1000;
 
 export const signin = async (req, res) => {
   try {
     const user = await loginUser(req.body);
 
+    const { userName } = user;
     const { accessToken, refreshToken } = generateTokens(user);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: isProduction,
+      secure: NODE_ENV,
       sameSite: "Lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+      maxAge: JWT_REFRESH_COOKIE_EXPIRE_MS,
     });
 
-    res.status(200).json({ message: "로그인 성공", user, accessToken });
+    res.status(200).json({ message: "로그인 성공", userName, accessToken });
   } catch (error) {
     if (error.status === 401) {
       res.status(401).json({ message: error.message });
@@ -38,13 +45,15 @@ export const refreshToken = (req, res) => {
   if (!token) return res.status(401).json({ message: "토큰 없음" });
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    const newAccessToken = jwt.sign(
-      { id: payload.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
-    res.json({ accessToken: newAccessToken });
+    // refreshToken 검증
+    const payload = jwt.verify(token, JWT_REFRESH_SECRET);
+
+    // accessToken 재발급
+    const accessToken = jwt.sign({ id: payload.id }, JWT_SECRET, {
+      expiresIn: JWT_ACCESS_EXPIRES_IN,
+    });
+
+    res.status(200).json({ message: "accessToken 재발급 성공", accessToken });
   } catch (e) {
     console.error("토큰 오류:", e);
     return res.status(401).json({ message: "토큰 오류" });
@@ -55,7 +64,7 @@ export const logout = (req, res) => {
   try {
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: isProduction,
+      secure: NODE_ENV,
       sameSite: "Lax",
     });
 

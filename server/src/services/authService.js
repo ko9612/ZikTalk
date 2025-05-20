@@ -3,6 +3,9 @@ import bcrypt, { hash } from "bcrypt";
 import prisma from "../utils/prisma.js";
 import { sendEmail } from "./emailService.js";
 
+const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN;
+
 // 로그인
 export const loginUser = async (data) => {
   const { email, password } = data;
@@ -38,14 +41,14 @@ export const generateTokens = (user) => {
     { userId: user.userId, userName: user.userName },
     process.env.JWT_SECRET,
     {
-      expiresIn: "15m",
+      expiresIn: JWT_ACCESS_EXPIRES_IN,
     }
   );
   const refreshToken = jwt.sign(
     { userId: user.userId, userName: user.userName },
     process.env.JWT_REFRESH_SECRET,
     {
-      expiresIn: "7d",
+      expiresIn: JWT_REFRESH_EXPIRES_IN,
     }
   );
 
