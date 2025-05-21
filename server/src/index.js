@@ -26,6 +26,7 @@ const corsOptions = {
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "https://zik-talk-smey.vercel.app",
+    "https://zik-talk-smey-git-feat-sohyun-token-ko9612s-projects.vercel.app",
   ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
