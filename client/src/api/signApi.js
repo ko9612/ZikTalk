@@ -2,8 +2,6 @@
 import { loginInfo } from "@/store/loginStore";
 import axiosInstance from "./axiosInstance";
 
-const VITE_JWT_EXPIRY_TIME = Number(import.meta.env.VITE_JWT_EXPIRY_TIME);
-
 export const signin = async (data) => {
   try {
     const res = await axiosInstance.post("/signin", data);
@@ -18,7 +16,7 @@ export const signin = async (data) => {
   }
 };
 
-const onSilentRefresh = async () => {
+export const onSilentRefresh = async () => {
   try {
     const res = await axiosInstance.post("/silent-refresh");
 
@@ -36,8 +34,6 @@ const onSigninSuccess = (res) => {
   // accessToken을 axios 인스턴스 헤더에 설정
   axiosInstance.defaults.headers.common["Authorization"] =
     `Bearer ${accessToken}`;
-
-  setTimeout(onSilentRefresh, VITE_JWT_EXPIRY_TIME - 60000);
 };
 
 export const signup = async (data) => {
