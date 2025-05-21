@@ -5,6 +5,7 @@ import InterviewList from "@/pages/Interview/_components/interview/InterviewList
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import VideoPlayer1 from "@/pages/Interview/_components/setting/VideoPlayer";
 
 const Test = () => {
   // api test
@@ -44,7 +45,7 @@ const Test = () => {
         controls
       />
       <InterviewList /> */}
-      <p>Microphone: {listening ? "on" : "off"}</p>
+      {/* <p>Microphone: {listening ? "on" : "off"}</p>
       <button
         onClick={() =>
           SpeechRecognition.startListening({
@@ -54,9 +55,10 @@ const Test = () => {
         }
       >
         Start
-      </button>
-      <button onClick={stopButtonHandler}>Stop</button>
-      <p className="bg-amber-300 p-5">{transcript}</p>
+      </button> */}
+      {/* <button onClick={stopButtonHandler}>Stop</button>
+      <p className="bg-amber-300 p-5">{transcript}</p> */}
+      <VideoPlayer1 />
     </div>
   );
 };
