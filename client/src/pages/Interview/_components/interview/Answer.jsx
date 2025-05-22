@@ -9,9 +9,7 @@ import {
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
+import SpeechRecognition from "react-speech-recognition";
 
 const Answer = ({ end, text, reset }) => {
   const setInterviewState = useInterviewStateStore(
