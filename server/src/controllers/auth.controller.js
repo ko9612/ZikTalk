@@ -49,9 +49,13 @@ export const refreshToken = (req, res) => {
     const payload = jwt.verify(token, JWT_REFRESH_SECRET);
 
     // accessToken 재발급
-    const accessToken = jwt.sign({ id: payload.id }, JWT_SECRET, {
-      expiresIn: JWT_ACCESS_EXPIRES_IN,
-    });
+    const accessToken = jwt.sign(
+      { userId: payload.userId, userName: payload.userName },
+      JWT_SECRET,
+      {
+        expiresIn: JWT_ACCESS_EXPIRES_IN,
+      }
+    );
 
     res.status(200).json({ message: "accessToken 재발급 성공", accessToken });
   } catch (e) {
