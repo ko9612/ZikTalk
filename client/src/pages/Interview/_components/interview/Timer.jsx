@@ -43,20 +43,20 @@ const Timer = ({ qes }) => {
       setIsReplying(false);
       setInterviewState("answer");
     } else {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        if (!browserSupportsSpeechRecognition) {
-          alert("Browser doesn't support speech recognition.");
-          navigate("/");
-        } else {
-          SpeechRecognition.startListening({
-            continuous: true,
-            language: "ko",
-          });
-          setIsReplying(true);
-        }
-      }, 500);
+      // setIsLoading(true);
+      // // setTimeout(() => {
+      // setIsLoading(false);
+      if (!browserSupportsSpeechRecognition) {
+        alert("Browser doesn't support speech recognition.");
+        navigate("/");
+      } else {
+        SpeechRecognition.startListening({
+          continuous: true,
+          language: "ko",
+        });
+        setIsReplying(true);
+      }
+      // }, 500);
     }
   };
 

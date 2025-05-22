@@ -43,7 +43,7 @@ const Answer = ({ end, text, reset }) => {
   }, [text, captured]);
 
   const reReply = () => {
-    reset();
+    // reset();
     setIsReplying(true);
     setInterviewState("question");
     setAnswer(null);
