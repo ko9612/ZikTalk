@@ -1,4 +1,4 @@
-/ 로그인, 회원가입 관련 api
+// 로그인, 회원가입 관련 api
 import { loginInfo } from "@/store/loginStore";
 import axiosInstance from "./axiosInstance";
 
