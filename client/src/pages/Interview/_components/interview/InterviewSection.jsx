@@ -54,10 +54,7 @@ const InterviewSection = () => {
       language: "ko",
     });
 
-  const stopVoiceRecording = () => {
-    SpeechRecognition.stopListening();
-    SpeechRecognition.abortListening();
-  };
+  const stopVoiceRecording = () => SpeechRecognition.stopListening();
 
   useEffect(() => {
     setTabSelect("모의 면접");
