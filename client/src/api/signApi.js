@@ -57,3 +57,25 @@ export const verification = async (email) => {
     throw e;
   }
 };
+
+export const sendResetEmail = async (email) => {
+  try {
+    const res = await axiosInstance.post("/reset-password/request", { email });
+
+    return res.data;
+  } catch (e) {
+    console.error("비밀번호 재설정 이메일 발송 실패", e);
+    throw e;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const res = await axiosInstance.post("/reset-password/confirm", data);
+
+    return res.data;
+  } catch (e) {
+    console.error("비밀번호 재설정 실패", e);
+    throw e;
+  }
+};

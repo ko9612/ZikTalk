@@ -114,3 +114,34 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     ],
   });
 };
+
+// 비밀번호 재설정 메일 발송
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+export const sendResetPasswordEmail = async (email, authCode) => {
+  const resetLink = `${FRONTEND_URL}/reset-password/${authCode}`;
+
+  await sendEmail(email, {
+    subject: "[ZikTalk] 직톡 비밀번호 재설정 메일입니다.",
+    html: `
+        <div style="text-align: center; font-family: Arial, sans-serif;">
+        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
+          <h2>ZikTalk 비밀번호 재설정</h2>
+          <p>아래 URL을 클릭하여 <strong>5분 내에</strong> 비밀번호를 재설정해주세요.</p>
+          <div style="color: #1a73e8;"><a href='${resetLink}'>비밀번호 재설정 바로가기</a></div>
+          <br />
+          <div style="text-align: center; font-size: 11px; line-height: 1.4;">
+            <p>만약 비밀번호를 변경하고 싶지 않거나, 본인이 요청한 것이 아닐 경우 본 메일은 무시하셔도 됩니다.</p>
+          </div><br/>
+          <p>감사합니다.<br/>ZikTalk 팀 드림</p>
+        </div>
+      `,
+    attachments: [
+      {
+        filename: "logo.png",
+        path: "./src/assets/images/logo.webp",
+        cid: "logo",
+      },
+    ],
+  });
+};

@@ -1,8 +1,7 @@
-import Modal from "@/components/common/Modal/Modal";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { React, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import Kakao from "@/assets/images/kakao.svg";
 import Google from "@/assets/images/google.svg";
@@ -10,6 +9,7 @@ import { signin } from "@/api/signApi";
 import { useCookies } from "react-cookie";
 import { useEffect } from "react";
 import { loginInfo } from "@/store/loginStore";
+import ResetPassword from "./ResetPassword";
 
 const EMAIL_COOKIE_EXPIRE_MS = import.meta.env.EMAIL_COOKIE_EXPIRE_MS;
 
@@ -149,67 +149,10 @@ const SigninForm = () => {
 
             {/* 비밀번호 재설정 모달 */}
             {isOpenModal && (
-              <Modal isOpen={isOpenModal} onClose={modalHandler}>
-                <div className="flex h-[60vh] items-center">
-                  <div className="mx-auto my-0 w-[80vw] md:w-[445px]">
-                    <div className="mb-7 flex flex-col items-center justify-center">
-                      <img
-                        src={Logo}
-                        alt="zik talk 로고"
-                        className="mb-7 w-[120px] md:w-[150px]"
-                      ></img>
-                      <p className="text-base font-bold sm:text-xl md:text-2xl">
-                        <span className="text-zik-main">직톡</span>에 가입했던
-                        이메일을 입력해 주세요.
-                      </p>
-                      <p className="text-base font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
-                        비밀번호 재설정 메일을 보내드립니다.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <Input
-                        name="emailCheck"
-                        placeholder="이메일을 입력해 주세요."
-                        labelClassName="mb-4 text-sm md:text-base w-[60vw] sm:w-full"
-                        required
-                      ></Input>
-
-                      <Button
-                        shape="bar"
-                        className={"w-[60vw] text-sm sm:w-full md:text-base"}
-                      >
-                        비밀번호 재설정하기
-                      </Button>
-
-                      <div className="mt-7 text-center text-[11px] sm:text-sm">
-                        <p>만약 비밀번호를 변경하고 싶지 않거나,</p>
-                        <p>
-                          본인이 요청한 것이 아닐 경우 본 메일은 무시하셔도
-                          됩니다.
-                        </p>
-                        <div className="mt-7">
-                          <p>
-                            아직 회원이 아니신가요?{" "}
-                            <Link to="/signup" className="text-zik-text">
-                              회원가입
-                            </Link>
-                          </p>
-                          <p>
-                            비밀번호가 생각나셨나요?{" "}
-                            <span
-                              onClick={modalHandler}
-                              className="text-zik-text cursor-pointer"
-                            >
-                              로그인
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Modal>
+              <ResetPassword
+                isOpenModal={isOpenModal}
+                modalHandler={modalHandler}
+              />
             )}
           </div>
           <Button type="submit" shape="bar" className={buttonStyle}>

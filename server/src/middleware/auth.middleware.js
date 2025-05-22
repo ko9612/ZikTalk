@@ -62,3 +62,29 @@ export const checkEmailExists = async (req, res, next) => {
     return res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
+
+export const checkEmailUserId = async (req, res, next) => {
+  const { email } = req.body.email;
+
+  if (!email) {
+    return res.status(400).json({ message: "이메일을 입력해 주세요." });
+  }
+
+  try {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (!existingUser) {
+      return res
+        .status(404)
+        .json({ message: "회원가입하지 않은 이메일입니다." });
+    }
+
+    req.user = req.user || {};
+    req.user.userId = existingUser.id;
+
+    next();
+  } catch (e) {
+    console.error("DB 조회 오류:", e);
+    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
