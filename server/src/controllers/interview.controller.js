@@ -253,7 +253,7 @@ export const toggleBookmark = async (req, res) => {
 // 인터뷰 페이지 유저 정보 조회
 export const fetchUserInfo = async (req, res) => {
   try {
-    const { userId } = req.user;
+    const userId = req.user.userId;
     const user = await interviewDBService.getInterviewUserInfo(userId);
     res.status(200).json({
       userId: user.id,

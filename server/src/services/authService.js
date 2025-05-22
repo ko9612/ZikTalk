@@ -3,6 +3,11 @@ import bcrypt, { hash } from "bcrypt";
 import prisma from "../utils/prisma.js";
 import { sendEmail } from "./emailService.js";
 
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN;
+
 // 로그인
 export const loginUser = async (data) => {
   const { email, password } = data;
@@ -36,16 +41,16 @@ export const loginUser = async (data) => {
 export const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { userId: user.userId, userName: user.userName },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     {
-      expiresIn: "15m",
+      expiresIn: JWT_ACCESS_EXPIRES_IN,
     }
   );
   const refreshToken = jwt.sign(
     { userId: user.userId, userName: user.userName },
-    process.env.JWT_REFRESH_SECRET,
+    JWT_REFRESH_SECRET,
     {
-      expiresIn: "7d",
+      expiresIn: JWT_REFRESH_EXPIRES_IN,
     }
   );
 
@@ -97,6 +102,37 @@ export const sendVerificationEmail = async (email, verificationCode) => {
           <p>아래 인증번호를 <strong>3분 내에</strong> 입력해주세요.</p>
           <div style="color: #1a73e8;">회원가입 인증번호는 <strong style="font-size: 20px; font-weight: bold;">${verificationCode}</strong> 입니다.</div>
           <br />
+          <p>감사합니다.<br/>ZikTalk 팀 드림</p>
+        </div>
+      `,
+    attachments: [
+      {
+        filename: "logo.png",
+        path: "./src/assets/images/logo.webp",
+        cid: "logo",
+      },
+    ],
+  });
+};
+
+// 비밀번호 재설정 메일 발송
+const FRONTEND_URL = process.env.FRONTEND_URL;
+
+export const sendResetPasswordEmail = async (email, authCode) => {
+  const resetLink = `${FRONTEND_URL}/reset-password/${authCode}`;
+
+  await sendEmail(email, {
+    subject: "[ZikTalk] 직톡 비밀번호 재설정 메일입니다.",
+    html: `
+        <div style="text-align: center; font-family: Arial, sans-serif;">
+        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
+          <h2>ZikTalk 비밀번호 재설정</h2>
+          <p>아래 URL을 클릭하여 <strong>5분 내에</strong> 비밀번호를 재설정해주세요.</p>
+          <div style="color: #1a73e8;"><a href='${resetLink}'>비밀번호 재설정 바로가기</a></div>
+          <br />
+          <div style="text-align: center; font-size: 11px; line-height: 1.4;">
+            <p>만약 비밀번호를 변경하고 싶지 않거나, 본인이 요청한 것이 아닐 경우 본 메일은 무시하셔도 됩니다.</p>
+          </div><br/>
           <p>감사합니다.<br/>ZikTalk 팀 드림</p>
         </div>
       `,
