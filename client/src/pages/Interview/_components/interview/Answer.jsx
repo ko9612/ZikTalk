@@ -9,11 +9,8 @@ import {
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 
-const Answer = ({ end, text, reset }) => {
+const Answer = ({ end, text, reset, startVoiceRecording }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
@@ -23,7 +20,6 @@ const Answer = ({ end, text, reset }) => {
   const [answer, setAnswer] = useState(null);
   const [showOpenModal, setShowOpenModal] = useState(false);
   const [captured, setCaptured] = useState(false);
-  useSpeechRecognition();
 
   useEffect(() => {
     if (captured) return;
@@ -33,7 +29,7 @@ const Answer = ({ end, text, reset }) => {
       setCaptured(true);
       return;
     }
-
+    
     const timer = setTimeout(() => {
       if (!captured) {
         setAnswer(
@@ -51,10 +47,7 @@ const Answer = ({ end, text, reset }) => {
     setInterviewState("question");
     setAnswer(null);
     setCaptured(false);
-    SpeechRecognition.startListening({
-      continuous: true,
-      language: "ko",
-    });
+    startVoiceRecording();
   };
 
   const buttonHanlder = () => {

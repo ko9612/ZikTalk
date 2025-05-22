@@ -10,12 +10,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
 import { useNavigate } from "react-router-dom";
 
-const Timer = ({ qes }) => {
+const Timer = ({ qes, browserable, start, stop }) => {
   const navigate = useNavigate();
   const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
@@ -28,8 +25,6 @@ const Timer = ({ qes }) => {
   const [resetKey, setResetKey] = useState(0);
   const smoothValue = useSmoothValue(percentage, 0.02, resetKey);
 
-  const { browserSupportsSpeechRecognition } = useSpeechRecognition();
-
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -38,25 +33,21 @@ const Timer = ({ qes }) => {
 
   const buttonHandler = () => {
     if (isReplying) {
-      SpeechRecognition.stopListening();
-      SpeechRecognition.abortListening();
+      stop();
       setIsReplying(false);
       setInterviewState("answer");
     } else {
-      // setIsLoading(true);
-      // // setTimeout(() => {
-      // setIsLoading(false);
-      if (!browserSupportsSpeechRecognition) {
-        alert("Browser doesn't support speech recognition.");
-        navigate("/");
-      } else {
-        SpeechRecognition.startListening({
-          continuous: true,
-          language: "ko",
-        });
-        setIsReplying(true);
-      }
-      // }, 500);
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        if (!browserable) {
+          alert("Browser doesn't support speech recognition.");
+          navigate("/");
+        } else {
+          start();
+          setIsReplying(true);
+        }
+      }, 500);
     }
   };
 
@@ -71,9 +62,9 @@ const Timer = ({ qes }) => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current);
-            // setTimeout(() => {
-            buttonHandler();
-            // }, 0);
+            setTimeout(() => {
+              buttonHandler();
+            }, 0);
             return 0;
           }
           return prev - 1;

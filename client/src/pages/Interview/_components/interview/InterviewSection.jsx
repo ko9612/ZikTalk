@@ -39,9 +39,26 @@ const InterviewSection = () => {
     totalNum: qCount,
     curNum: curNum,
   });
-  const { transcript, listening, resetTranscript } = useSpeechRecognition();
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const navigate = useNavigate();
+
+  const startVoiceRecording = () => {
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: "ko",
+    });
+  };
+
+  const stopVoiceRecording = () => {
+    SpeechRecognition.stopListening();
+    SpeechRecognition.abortListening();
+  };
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -122,10 +139,16 @@ const InterviewSection = () => {
             end={question.curNum === question.totalNum}
             text={transcript}
             reset={resetTranscript}
+            startVoiceRecording={startVoiceRecording}
           />
         ) : (
           <>
-            <Timer qes={question.qes} />
+            <Timer
+              qes={question.qes}
+              browserable={browserSupportsSpeechRecognition}
+              start={startVoiceRecording}
+              stop={stopVoiceRecording}
+            />
           </>
         )}
         {listening ? "on" : "off"}
