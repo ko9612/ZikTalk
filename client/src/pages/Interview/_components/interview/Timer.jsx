@@ -11,7 +11,7 @@ import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
 
-const Timer = ({ qes, browserAble, startVoiceRecording }) => {
+const Timer = ({ qes, startVoiceRecording }) => {
   const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
@@ -30,8 +30,8 @@ const Timer = ({ qes, browserAble, startVoiceRecording }) => {
   };
 
   const stopRecording = () => {
-    setIsReplying(false);
     setInterviewState("answer");
+    setIsReplying(false);
   };
 
   const buttonHandler = () => {
@@ -42,12 +42,6 @@ const Timer = ({ qes, browserAble, startVoiceRecording }) => {
       setTimeout(() => {
         setIsLoading(false);
         setIsReplying(true);
-        if (isReplying) {
-          if (!browserAble) {
-            alert("Browser doesn't support speech recognition.");
-          }
-          startVoiceRecording();
-        }
       }, 500);
     }
   };
@@ -63,9 +57,9 @@ const Timer = ({ qes, browserAble, startVoiceRecording }) => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timerRef.current);
-            setTimeout(() => {
-              buttonHandler();
-            }, 0);
+            // setTimeout(() => {
+            buttonHandler();
+            // }, 0);
             return 0;
           }
           return prev - 1;

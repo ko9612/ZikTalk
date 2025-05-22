@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import QuestionBox from "./QuestionBox";
 import Timer from "./Timer";
 import Answer from "./Answer";
@@ -37,18 +37,12 @@ const InterviewSection = () => {
     totalNum: qCount,
     curNum: curNum,
   });
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
-
-  const startVoiceRecording = SpeechRecognition.startListening({
-    continuous: true,
-    language: "ko",
-  });
-  const onStopRecording = useCallback(() => {
-    SpeechRecognition.stopListening();
-    SpeechRecognition.abortListening();
-    resetTranscript();
-  }, [resetTranscript]);
+  const {
+    listening,
+    transcript,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -95,12 +89,31 @@ const InterviewSection = () => {
   }, [curNum]);
 
   useEffect(() => {
-    if (isReplying) {
-      startVideoRecording(interviewId, curNum);
+    const start = () => {
+      if (!listening) {
+        SpeechRecognition.startListening({ continuous: true, language: "ko" });
+      }
+    };
+    const stop = () => {
+      if (listening) {
+        SpeechRecognition.stopListening();
+        SpeechRecognition.abortListening();
+      }
+    };
+
+    if (interviewState === "question" && isReplying) {
+      if (!browserSupportsSpeechRecognition) {
+        alert("Browser doesn't support speech recognition.");
+        navigate("/");
+      } else {
+        startVideoRecording(interviewId, curNum);
+        start(); // STT ON
+      }
     } else {
       stopVideoRecording();
+      stop(); // STT OFF
     }
-  }, [isReplying]);
+  }, [interviewState, isReplying]);
 
   return (
     <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
@@ -109,17 +122,14 @@ const InterviewSection = () => {
         <Answer
           end={question.curNum === question.totalNum}
           text={transcript}
-          onStopRecording={onStopRecording}
+          onResetText={resetTranscript}
         />
       ) : (
         <>
-          <Timer
-            qes={question.qes}
-            brouswerAble={browserSupportsSpeechRecognition}
-            startVoiceRecording={startVoiceRecording}
-          />
+          <Timer qes={question.qes} />
         </>
       )}
+      {listening ? "on" : "off"}
     </section>
   );
 };
