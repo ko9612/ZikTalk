@@ -9,8 +9,11 @@ import {
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
-const Answer = ({ end, text, onResetText }) => {
+const Answer = ({ end, text, reset }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
@@ -42,16 +45,20 @@ const Answer = ({ end, text, onResetText }) => {
   }, [text, captured]);
 
   const reReply = () => {
-    onResetText();
+    reset();
+    setIsReplying(true);
+    setInterviewState("question");
     setAnswer(null);
     setCaptured(false);
-    setInterviewState("question");
-    setIsReplying(true);
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: "ko",
+    });
   };
 
   const buttonHanlder = () => {
-    onResetText();
-    setIsReplying(false);
+    reset();
+
     const copyCurNum = curNum;
     addAnswer(answer);
     addVideo(`${interviewId}_${copyCurNum}.webm`);

@@ -10,8 +10,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import { useNavigate } from "react-router-dom";
 
-const Timer = ({ qes, startVoiceRecording }) => {
+const Timer = ({ qes }) => {
+  const navigate = useNavigate();
   const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
@@ -23,25 +28,34 @@ const Timer = ({ qes, startVoiceRecording }) => {
   const [resetKey, setResetKey] = useState(0);
   const smoothValue = useSmoothValue(percentage, 0.02, resetKey);
 
+  const { browserSupportsSpeechRecognition } = useSpeechRecognition();
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const stopRecording = () => {
-    setInterviewState("answer");
-    setIsReplying(false);
-  };
-
   const buttonHandler = () => {
     if (isReplying) {
-      stopRecording();
+      SpeechRecognition.stopListening();
+      SpeechRecognition.abortListening();
+      setIsReplying(false);
+      setInterviewState("answer");
     } else {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
         setIsReplying(true);
+        if (!browserSupportsSpeechRecognition) {
+          alert("Browser doesn't support speech recognition.");
+          navigate("/");
+        } else {
+          SpeechRecognition.startListening({
+            continuous: true,
+            language: "ko",
+          });
+        }
       }, 500);
     }
   };

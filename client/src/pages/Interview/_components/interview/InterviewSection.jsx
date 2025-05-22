@@ -13,9 +13,9 @@ import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
 import cuid from "cuid";
 import { useVideoRecord } from "@/hooks/useRecord";
-import SpeechRecognition, {
-  useSpeechRecognition,
-} from "react-speech-recognition";
+import { useSpeechRecognition } from "react-speech-recognition";
+import CommonModal from "@/components/common/Modal/CommonModal";
+import { useNavigate } from "react-router-dom";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -37,12 +37,9 @@ const InterviewSection = () => {
     totalNum: qCount,
     curNum: curNum,
   });
-  const {
-    listening,
-    transcript,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  const { transcript, listening, resetTranscript } = useSpeechRecognition();
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -62,6 +59,7 @@ const InterviewSection = () => {
           setIsLoading(false);
         }
       } catch (error) {
+        setIsOpenModal(true);
         console.error(error);
       }
     };
@@ -90,38 +88,47 @@ const InterviewSection = () => {
 
   useEffect(() => {
     if (interviewState === "question" && isReplying) {
-      console.log(browserSupportsSpeechRecognition); //test
-      if (!browserSupportsSpeechRecognition) {
-        alert("Browser doesn't support speech recognition.");
-        navigate("/");
-      } else {
-        startVideoRecording(interviewId, curNum);
-        SpeechRecognition.startListening({ continuous: true, language: "ko" });
-      }
+      startVideoRecording(interviewId, curNum);
     } else {
       stopVideoRecording();
-      SpeechRecognition.stopListening();
-      SpeechRecognition.abortListening();
     }
   }, [interviewState, isReplying]);
 
   return (
-    <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
-      <QuestionBox {...question} />
-      {interviewState === "answer" ? (
-        <Answer
-          end={question.curNum === question.totalNum}
-          text={transcript}
-          onResetText={resetTranscript}
+    <>
+      {isOpenModal && (
+        <CommonModal
+          isOpen={isOpenModal}
+          onClose={() => setIsOpenModal(false)}
+          title={"Server Error"}
+          subText={
+            <span className="flex flex-col">
+              <span>서비스가 일시적으로 불안정합니다.</span>
+              <span>잠시 후 다시 시도해 주세요.</span>
+            </span>
+          }
+          btnText={"메인으로"}
+          btnHandler={() => {
+            navigate("/");
+          }}
         />
-      ) : (
-        <>
-          <Timer qes={question.qes} />
-        </>
       )}
-      {/* test */}
-      {listening ? "on" : "off"}
-    </section>
+      <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
+        <QuestionBox {...question} />
+        {interviewState === "answer" ? (
+          <Answer
+            end={question.curNum === question.totalNum}
+            text={transcript}
+            reset={resetTranscript}
+          />
+        ) : (
+          <>
+            <Timer qes={question.qes} />
+          </>
+        )}
+        {listening ? "on" : "off"}
+      </section>
+    </>
   );
 };
 
