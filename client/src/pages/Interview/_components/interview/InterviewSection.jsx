@@ -48,12 +48,11 @@ const InterviewSection = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const navigate = useNavigate();
 
-  const startVoiceRecording = () => {
+  const startVoiceRecording = () =>
     SpeechRecognition.startListening({
       continuous: true,
       language: "ko",
     });
-  };
 
   const stopVoiceRecording = () => {
     SpeechRecognition.stopListening();
@@ -89,6 +88,7 @@ const InterviewSection = () => {
       setIsLoading(true);
       resetInterview();
       stopVideoRecording();
+      stopVoiceRecording();
     };
   }, []);
 
