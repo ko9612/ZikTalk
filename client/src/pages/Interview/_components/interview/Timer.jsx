@@ -47,15 +47,15 @@ const Timer = ({ qes }) => {
       // setTimeout(() => {
       //   setIsLoading(false);
       setIsReplying(true);
-      if (!browserSupportsSpeechRecognition) {
-        alert("Browser doesn't support speech recognition.");
-        navigate("/");
-      } else {
-        SpeechRecognition.startListening({
-          continuous: true,
-          language: "ko",
-        });
-      }
+      // if (!browserSupportsSpeechRecognition) {
+      //   alert("Browser doesn't support speech recognition.");
+      //   navigate("/");
+      // } else {
+      SpeechRecognition.startListening({
+        continuous: true,
+        language: "ko",
+      });
+      // }
       // }, 500);
     }
   };
