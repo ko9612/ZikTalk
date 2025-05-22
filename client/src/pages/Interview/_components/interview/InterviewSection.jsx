@@ -89,29 +89,19 @@ const InterviewSection = () => {
   }, [curNum]);
 
   useEffect(() => {
-    const start = () => {
-      if (!listening) {
-        SpeechRecognition.startListening({ continuous: true, language: "ko" });
-      }
-    };
-    const stop = () => {
-      if (listening) {
-        SpeechRecognition.stopListening();
-        SpeechRecognition.abortListening();
-      }
-    };
-
     if (interviewState === "question" && isReplying) {
+      console.log(browserSupportsSpeechRecognition); //test
       if (!browserSupportsSpeechRecognition) {
         alert("Browser doesn't support speech recognition.");
         navigate("/");
       } else {
         startVideoRecording(interviewId, curNum);
-        start(); // STT ON
+        SpeechRecognition.startListening({ continuous: true, language: "ko" });
       }
     } else {
       stopVideoRecording();
-      stop(); // STT OFF
+      SpeechRecognition.stopListening();
+      SpeechRecognition.abortListening();
     }
   }, [interviewState, isReplying]);
 
@@ -129,6 +119,7 @@ const InterviewSection = () => {
           <Timer qes={question.qes} />
         </>
       )}
+      {/* test */}
       {listening ? "on" : "off"}
     </section>
   );
