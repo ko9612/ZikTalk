@@ -13,7 +13,9 @@ import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
 import cuid from "cuid";
 import { useVideoRecord } from "@/hooks/useRecord";
-import { useSpeechRecognition } from "react-speech-recognition";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { useNavigate } from "react-router-dom";
 

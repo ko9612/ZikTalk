@@ -9,7 +9,9 @@ import {
 } from "@/store/store";
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
-import SpeechRecognition from "react-speech-recognition";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 const Answer = ({ end, text, reset }) => {
   const setInterviewState = useInterviewStateStore(
@@ -21,6 +23,7 @@ const Answer = ({ end, text, reset }) => {
   const [answer, setAnswer] = useState(null);
   const [showOpenModal, setShowOpenModal] = useState(false);
   const [captured, setCaptured] = useState(false);
+  useSpeechRecognition();
 
   useEffect(() => {
     if (captured) return;
@@ -43,7 +46,7 @@ const Answer = ({ end, text, reset }) => {
   }, [text, captured]);
 
   const reReply = () => {
-    // reset();
+    reset();
     setIsReplying(true);
     setInterviewState("question");
     setAnswer(null);
