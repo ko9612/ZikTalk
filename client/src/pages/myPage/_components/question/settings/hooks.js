@@ -72,7 +72,7 @@ function reducer(state, action) {
  */
 export function useQuestionListState() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const userId = loginInfo(state => state.userId);
+  const userId = loginInfo((state) => state.userId);
 
   // 질문 데이터 불러오기
   const fetchQuestionsData = useCallback(
@@ -88,11 +88,9 @@ export function useQuestionListState() {
           sortType === SORT_OPTIONS.LATEST;
 
         if (isFilterChange) {
-          console.log(`[로그] 필터 변경 감지: ${state.currentSortType} → ${sortType}`);
-          
           // 정렬 타입만 변경 (상태를 초기화하지 않음 - 스크롤 위치 유지)
           dispatch({ type: ACTIONS.SET_SORT_TYPE, payload: sortType });
-          
+
           // 첫 페이지부터 다시 시작하지만 기존 결과는 유지
           if (page !== 0) {
             page = 0;
@@ -112,8 +110,6 @@ export function useQuestionListState() {
             ? SCROLL_BATCH_SIZE * 2 // 초기 로드 시 2배만 로드 (진짜 무한 스크롤을 위해 줄임)
             : SCROLL_BATCH_SIZE;
 
-        console.log("[로그] 데이터 로드 - 페이지:", page, "배치 사이즈:", batchSize, "필터:", sortType);
-
         // API 호출 - userId 전달
         // 북마크 필터는 모든 항목을 가져오고 클라이언트에서 정렬합니다
         const data = await fetchInterviewsWithFirstQuestion(
@@ -122,10 +118,8 @@ export function useQuestionListState() {
           sortBy,
           undefined, // 항상 모든 항목을 가져옵니다
           isInitialLoad,
-          userId
+          userId,
         );
-
-        console.log("[로그] API 응답 데이터:", data ? data.length : 0, "개 항목");
 
         if (!data) throw new Error("데이터를 불러올 수 없습니다.");
 
@@ -183,7 +177,7 @@ export function useQuestionListState() {
               (item) => !item.userId || item.userId === userId,
             )
           : formattedData;
-          
+
         // 북마크 필터일 때 북마크된 항목만 필터링
         // 이제 북마크 필터는 필터링이 아닌 정렬 방식만 변경합니다
         const filteredByBookmark = filteredByUser; // 모든 항목을 유지
@@ -192,13 +186,10 @@ export function useQuestionListState() {
         const sortedResults = sortResults(filteredByBookmark, sortType);
         const hasMoreData = data.length >= batchSize;
 
-        console.log("[로그] 정렬 후 아이템 수:", sortedResults.length, "더 불러올 데이터:", hasMoreData);
-
         // hasMoreData가 false여도 필터 변경 후에는 무조건 true로 설정
         // (최소 1회는 스크롤 동작하게 함)
         // 북마크 필터에서도 스크롤이 작동하도록 설정
         const adjustedHasMore = isFilterChange || hasMoreData;
-        console.log("[로그] 스크롤 가능 여부(hasMore):", adjustedHasMore, "필터 타입:", sortType, "필터 변경:", isFilterChange);
 
         if (page === 0) {
           // 첫 페이지 로드 - 결과 대체
@@ -211,17 +202,22 @@ export function useQuestionListState() {
             const reorderedResults = sortResults(state.results, sortType);
 
             // 표시 항목 유지하면서 정렬만 변경 - 항목 수 보존
-            const visibleCount = Math.max(state.visibleResults.length, SCROLL_BATCH_SIZE);
-            
+            const visibleCount = Math.max(
+              state.visibleResults.length,
+              SCROLL_BATCH_SIZE,
+            );
+
             dispatch({
               type: ACTIONS.SET_VISIBLE_RESULTS,
               payload: reorderedResults.slice(0, visibleCount),
             });
           } else {
             // 첫 로드 시 표시할 아이템 수 (진짜 무한 스크롤을 위해 줄임)
-            const initialVisibleCount = Math.min(sortedResults.length, SCROLL_BATCH_SIZE);
-            console.log("[로그] 초기 표시 아이템 수:", initialVisibleCount);
-            
+            const initialVisibleCount = Math.min(
+              sortedResults.length,
+              SCROLL_BATCH_SIZE,
+            );
+
             dispatch({
               type: ACTIONS.SET_VISIBLE_RESULTS,
               payload: sortedResults.slice(0, initialVisibleCount),
@@ -243,8 +239,6 @@ export function useQuestionListState() {
           // 스크롤 시 추가 표시할 항목 수 계산 (누적 페이지 기준으로 자름)
           const visibleCount = (page + 1) * SCROLL_BATCH_SIZE;
 
-          console.log("[로그] 스크롤 후 표시 아이템 수:", visibleCount);
-          
           dispatch({
             type: ACTIONS.SET_VISIBLE_RESULTS,
             payload: sortedMergedResults.slice(0, visibleCount),
