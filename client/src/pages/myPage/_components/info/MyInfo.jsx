@@ -437,8 +437,6 @@ const MyInfo = () => {
           btnText="확인"
           btnHandler={async () => {
             setEditSuccessModalOpen(false);
-            await logout();
-            navigate("/signin");
           }}
         />
       )}
