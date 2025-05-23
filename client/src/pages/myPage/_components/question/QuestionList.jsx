@@ -181,7 +181,7 @@ const QuestionList = () => {
       if (!result) return;
 
       // 1초 인위적 딜레이 추가
-      await new Promise((res) => setTimeout(res, 1000));
+      await new Promise((res) => setTimeout(res, 500));
 
       setAllQuestions((prev) =>
         removeDuplicateById([...prev, ...result.questions]),
