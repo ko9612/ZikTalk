@@ -33,9 +33,9 @@ export const TableHeader = () => (
     style={{ gridTemplateColumns: GRID_TEMPLATE }}
   >
     <div className="text-start">No</div>
-    <div className="pl-6 text-start">직무</div>
+    <div className="pl-10 text-start">직무</div>
     <div className="pl-5 text-center">유형</div>
-    <div className="pl-8 text-left">질문</div>
+    <div className="pr-8 text-left">질문</div>
     <div className="flex justify-center">즐겨찾기</div>
   </div>
 );

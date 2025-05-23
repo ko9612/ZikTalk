@@ -87,7 +87,7 @@ export const FilterBar = React.memo(
     };
 
     return (
-      <div className="mx-auto mb-2 flex w-full max-w-5xl flex-row items-center justify-between gap-0">
+      <div className="mx-auto mb-2 flex w-full  flex-row items-center justify-between gap-0">
         <div className="flex w-auto items-center">
           <FilterDropdown
             value={filterValue}
@@ -156,7 +156,7 @@ export const ResultGrid = React.memo(
     handleBookmarkToggle,
     handleCardClick,
   }) => (
-    <div className="grid min-h-[500px] grid-cols-1 sm:grid-cols-2 sm:gap-6 sm:pt-4.5 lg:grid-cols-3">
+    <div className="grid min-h-[400px] grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 sm:pt-4.5 lg:grid-cols-3">
       {visibleResults.map((item) => (
         <div
           key={item.id}

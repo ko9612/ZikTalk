@@ -33,7 +33,6 @@ export const postVideo = async (blob, filename) => {
   try {
     const formData = new FormData();
     formData.append("file", blob, filename);
-    console.log(serverUrl);
     await axios.post(`${serverUrl}/record/upload`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -76,6 +75,6 @@ export const getInterviewUserInfo = async () => {
     );
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 };
