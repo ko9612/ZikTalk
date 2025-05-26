@@ -326,7 +326,6 @@ const SignupForm = () => {
                 })}
                 placeholder="영문, 숫자, 특수문자를 조합하여 8~12자의 비밀번호를 입력해 주세요."
                 labelClassName={labelStyle}
-                inputClassName="text-xs md:text-sm"
               >
                 비밀번호
               </Input>

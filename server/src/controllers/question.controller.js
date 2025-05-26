@@ -8,9 +8,9 @@ export const getAllQuestions = async (req, res) => {
     const userId = req.query.userId || req.user?.id;
 
     // userId가 없으면 401 에러 반환
-    if (!userId) {
-      return res.status(401).json({ message: "인증이 필요합니다." });
-    }
+    // if (!userId) {
+    //   return res.status(401).json({ message: "인증이 필요합니다." });
+    // }
 
     // 쿼리 파라미터에서 필터와 페이지네이션 정보 추출
     const { page, pageSize, sortBy, bookmarked } = req.query;
@@ -45,7 +45,12 @@ export const getAllQuestions = async (req, res) => {
 // ID로 질문 조회
 export const getQuestionById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const userId = req.user.id;
+
+    // if (!userId) {
+    //   return res.status(401).json({ message: "인증이 필요합니다." });
+    // }
+
     const question = await questionService.getQuestionById(id);
 
     if (!question) {

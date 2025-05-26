@@ -41,7 +41,6 @@ const FaqItem = ({
 
   // displayId가 제공되면 그것을 사용하고, 아니면 원래 id를 사용
   const displayNumber = displayId !== undefined ? displayId : id;
-  console.log("FaqItem props:", { id, displayId, career, type });
   return (
     <div className="mb-4">
       <div

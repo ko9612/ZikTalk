@@ -41,7 +41,7 @@ export const ResultCard = ({
         <div className="bg-zik-main/10 flex h-full flex-col rounded-xl p-4 shadow-lg">
           <div className="mb-2 flex w-full items-start justify-between">
             <h3 className="text-zik-text w-4/5 truncate text-base font-semibold sm:text-lg">
-              {item.title || "제목 없음"}
+              {item.title || item.role}
             </h3>
             <ActionButton
               item={item}
@@ -54,7 +54,7 @@ export const ResultCard = ({
 
           <div className="my-2 flex w-full flex-1 flex-row items-center justify-end pr-4">
             <span className="text-zik-main text-7xl leading-none font-bold sm:text-6xl">
-              {item.score}
+              {item.totalScore}
             </span>
             <span className="text-zik-main ml-2 self-end pb-1 text-sm font-normal sm:text-base">
               score
@@ -86,7 +86,7 @@ export const ResultCard = ({
           <div>
             <div className="mb-2 flex w-full items-start justify-between">
               <h3 className="w-4/5 truncate text-base font-semibold text-white sm:text-lg">
-                {item.title}
+              {item.title || item.role}
               </h3>
               <ActionButton
                 item={item}
@@ -102,6 +102,7 @@ export const ResultCard = ({
             <div className="h-16 pt-3 text-[14px] leading-tight text-white overflow-hidden">
               <div className="line-clamp-3 overflow-ellipsis break-words whitespace-normal">
                 {item.summary || "요약 정보가 없습니다."}
+                
               </div>
             </div>
           </div>
