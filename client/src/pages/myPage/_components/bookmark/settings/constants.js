@@ -1,6 +1,6 @@
 export const PAGE_SIZE = 10; // 페이지네이션에 표시할 항목 수
 
-export const GRID_TEMPLATE = "34px 118px 60px 1fr 80px";
+export const GRID_TEMPLATE = "34px 118px 140px 1fr 80px";
 
 export const TEXT_COLORS = {
   normal: "text-zik-text",
