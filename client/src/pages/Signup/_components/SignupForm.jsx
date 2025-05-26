@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { signup, verification } from "@/api/signApi";
 
+const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
 const inputWrapStyle = "mb-3 md:mb-5";
 const labelStyle = "text-sm md:text-base";
 const errorStyle = "p-2 text-red-400";
@@ -26,7 +27,6 @@ const SignupForm = () => {
   const [verificationCode, setVerificationCode] = useState("");
 
   const navigate = useNavigate();
-  const selectList = ["신입", "1 ~ 3년", "4 ~ 7년", "7년 이상"];
 
   const {
     register, // onChange 등의 이벤트 객체 생성
