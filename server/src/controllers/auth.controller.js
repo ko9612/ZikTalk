@@ -1,11 +1,5 @@
-import {
-  loginUser,
-  registerUser,
-  generateVerificationCode,
-  sendVerificationEmail,
-  generateTokens,
-  sendResetPasswordEmail,
-} from "../services/authService.js";
+import * as authService from "../services/authService.js";
+
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -15,24 +9,28 @@ const NODE_ENV = process.env.NODE_ENV === "production";
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
-const JWT_REFRESH_COOKIE_EXPIRE_MS =
-  Number(process.env.JWT_REFRESH_COOKIE_EXPIRE_MS) || 7 * 24 * 60 * 60 * 1000;
+const JWT_REFRESH_COOKIE_EXPIRE =
+  Number(process.env.JWT_REFRESH_COOKIE_EXPIRE) || 7 * 24 * 60 * 60;
+
+const handleLoginSuccess = (res, user) => {
+  const { userName } = user;
+  const { accessToken, refreshToken } = authService.generateTokens(user);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: NODE_ENV,
+    sameSite: "Lax",
+    maxAge: JWT_REFRESH_COOKIE_EXPIRE,
+  });
+
+  res.status(200).json({ message: "로그인 성공", userName, accessToken });
+};
 
 export const signin = async (req, res) => {
   try {
-    const user = await loginUser(req.body);
+    const user = await authService.loginUser(req.body);
 
-    const { userName } = user;
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: NODE_ENV,
-      sameSite: "Lax",
-      maxAge: JWT_REFRESH_COOKIE_EXPIRE_MS,
-    });
-
-    res.status(200).json({ message: "로그인 성공", userName, accessToken });
+    return handleLoginSuccess(res, user);
   } catch (error) {
     if (error.status === 401) {
       res.status(401).json({ message: error.message });
@@ -68,6 +66,26 @@ export const refreshToken = (req, res) => {
   }
 };
 
+export const kakaoLogin = async (req, res) => {
+  const { code } = req.body;
+
+  try {
+    const result = await authService.handleKakaoLogin(code);
+
+    if (result.status === "signup") {
+      return res.status(200).json({
+        status: "signup",
+        kakaoUser: result.kakaoUser,
+      });
+    }
+
+    // 로그인
+    return handleLoginSuccess(res, result.user);
+  } catch (error) {
+    res.status(500).json({ message: "카카오 로그인 실패", error });
+  }
+};
+
 export const logout = (req, res) => {
   try {
     res.clearCookie("refreshToken", {
@@ -85,7 +103,7 @@ export const logout = (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const user = await registerUser(req.body);
+    const user = await authService.registerUser(req.body);
     res.status(201).json({ message: "회원가입 성공", user });
   } catch (error) {
     if (error.status === 409) {
@@ -98,9 +116,9 @@ export const signup = async (req, res) => {
 
 export const verification = async (req, res) => {
   const { email } = req.body;
-  const verificationCode = generateVerificationCode();
+  const verificationCode = authService.generateVerificationCode();
   try {
-    await sendVerificationEmail(email, verificationCode);
+    await authService.sendVerificationEmail(email, verificationCode);
     return res.status(200).json({
       message: "인증번호가 발송되었습니다.",
       verificationCode,
@@ -138,7 +156,7 @@ export const sendResetEmail = async (req, res) => {
 
   // 메일 보내기
   try {
-    await sendResetPasswordEmail(email, authCode);
+    await authService.sendResetPasswordEmail(email, authCode);
     return res.status(200).json({
       message: "비밀번호 재설정 메일이 발송되었습니다.",
     });

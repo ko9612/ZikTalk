@@ -10,6 +10,9 @@ const router = express.Router();
 // 로그인
 router.post("/signin", authController.signin);
 
+// 카카오 로그인
+router.post("/kakao-login", authController.kakaoLogin);
+
 // 로그아웃
 router.post("/logout", authController.logout);
 
