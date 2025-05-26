@@ -7,6 +7,9 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 const app = express();
 
+app.use(express.json());
+app.use(cookieParser());
+
 // 모든 요청을 로깅하는 미들웨어
 app.use((req, res, next) => {
   console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -16,9 +19,6 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-app.use(express.json());
-app.use(cookieParser());
 
 const corsOptions = {
   origin: [
