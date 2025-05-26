@@ -2,7 +2,7 @@ import router from "@/router/index";
 import LoadingPage from "@/components/common/LoadingPage";
 import { ToastContainer } from "@/hooks/useToast.jsx";
 import { useEffect } from "react";
-import onSilentRefresh from "@/api/signApi";
+import { onSilentRefresh } from "@/api/signApi";
 
 const App = () => {
   useEffect(() => {
