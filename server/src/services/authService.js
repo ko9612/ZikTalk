@@ -1,3 +1,4 @@
+import axios from "axios";
 import jwt from "jsonwebtoken";
 import bcrypt, { hash } from "bcrypt";
 import prisma from "../utils/prisma.js";
@@ -7,6 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN;
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
 
 // 로그인
 export const loginUser = async (data) => {
@@ -55,6 +58,89 @@ export const generateTokens = (user) => {
   );
 
   return { accessToken, refreshToken };
+};
+
+export const handleKakaoLogin = async (code) => {
+  // 인가 코드로 토큰 요청
+  const tokenResponse = await axios.post(
+    "https://kauth.kakao.com/oauth/token",
+    null,
+    {
+      params: {
+        grant_type: "authorization_code",
+        client_id: KAKAO_REST_API_KEY,
+        redirect_uri: KAKAO_REDIRECT_URI,
+        code,
+      },
+      headers: {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+      },
+    }
+  );
+
+  const { access_token } = tokenResponse.data;
+
+  // 사용자 정보 요청
+  const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
+
+  const kakaoAccount = userResponse.data.kakao_account;
+
+  const kakaoUser = {
+    email: kakaoAccount.email,
+    name: kakaoAccount.profile.nickname,
+  };
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: kakaoUser.email },
+  });
+
+  if (!existingUser) {
+    return { status: "signup", kakaoUser };
+  }
+
+  const user = {
+    userId: existingUser.id,
+    userName: existingUser.name,
+  };
+
+  const { accessToken, refreshToken } = generateTokens(user);
+
+  return { status: "login", user, accessToken, refreshToken };
+};
+
+export const getKakaoUser = async (code) => {
+  const params = new URLSearchParams();
+  params.append("grant_type", "authorization_code");
+  params.append("client_id", KAKAO_REST_API_KEY);
+  params.append("redirect_uri", KAKAO_REDIRECT_URI);
+  params.append("code", code);
+
+  const tokenResponse = await axios.post(
+    "https://kauth.kakao.com/oauth/token",
+    params.toString(),
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  const access_token = tokenResponse.data.access_token;
+
+  const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
+    headers: { Authorization: `Bearer ${access_token}` },
+  });
+
+  const kakaoUser = {
+    email: userResponse.data.kakao_account.email,
+    name: userResponse.data.properties.nickname,
+  };
+
+  return { kakaoUser };
 };
 
 // 회원 가입 유저 등록

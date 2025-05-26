@@ -11,7 +11,9 @@ import { useEffect } from "react";
 import { loginInfo } from "@/store/loginStore";
 import ResetPassword from "./ResetPassword";
 
-const EMAIL_COOKIE_EXPIRE_MS = import.meta.env.EMAIL_COOKIE_EXPIRE_MS;
+const EMAIL_COOKIE_EXPIRE = Number(import.meta.env.VITE_EMAIL_COOKIE_EXPIRE);
+const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
+const KAKAO_REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
@@ -37,7 +39,7 @@ const SigninForm = () => {
     if (rememberEmail) {
       setCookie("rememberEmail", email, {
         path: "/",
-        maxAge: EMAIL_COOKIE_EXPIRE_MS,
+        maxAge: EMAIL_COOKIE_EXPIRE,
       });
     } else {
       removeCookie("rememberEmail", { path: "/" });
@@ -67,6 +69,14 @@ const SigninForm = () => {
         console.error("서버 오류:", e.response?.data || e.message);
       }
     }
+  };
+
+  // 카카오 로그인
+  const kakaoLogin = () => {
+    // &prompt=login
+    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
+
+    window.location.href = KAKAO_AUTH_URL;
   };
 
   // 비밀번호 재설정 모달
@@ -180,9 +190,7 @@ const SigninForm = () => {
           </div>
           <div className="flex gap-5">
             <Button
-              onClick={() => {
-                navigate("/"); // @경로 바꾸기
-              }}
+              onClick={kakaoLogin}
               shape="circle"
               color=""
               className={`${snsButtonStyle} bg-[#FFD900] hover:bg-[#ffd000]`}
