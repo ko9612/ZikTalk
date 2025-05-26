@@ -10,7 +10,7 @@ import {
 import LoadingIcon from "@/components/common/LoadingIcon";
 import AnalysisStateModal from "@/pages/Interview/_components/interview/AnalysisStateModal";
 
-const Answer = ({ end, text, onStopRecording }) => {
+const Answer = ({ end, text, reset, startVoiceRecording }) => {
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
   );
@@ -18,46 +18,41 @@ const Answer = ({ end, text, onStopRecording }) => {
   const { curNum, interviewId, setCurNum, addAnswer, addVideo } =
     useQuestionStore();
   const [answer, setAnswer] = useState(null);
-  const [captured, setCaptured] = useState(false);
   const [showOpenModal, setShowOpenModal] = useState(false);
+  const [captured, setCaptured] = useState(false);
 
   useEffect(() => {
     if (captured) return;
 
-    if (text) {
+    if (text && text.trim().length > 0) {
       setAnswer(text);
       setCaptured(true);
       return;
     }
-
+    
     const timer = setTimeout(() => {
       if (!captured) {
         setAnswer(
           "음성인식 실패, 다시 말하기 버튼을 클릭하여 다시 시도해주시거나, 직접 답변을 입력해주세요.",
         );
-        setCaptured(true);
       }
+      setCaptured(true);
     }, 7000);
     return () => clearTimeout(timer);
   }, [text, captured]);
 
-  useEffect(() => {
-    if (captured) {
-      onStopRecording();
-    }
-  }, [captured, onStopRecording]);
-
-  // 임시
   const reReply = () => {
-    onStopRecording();
+    reset();
     setIsReplying(true);
     setInterviewState("question");
     setAnswer(null);
     setCaptured(false);
+    startVoiceRecording();
   };
 
   const buttonHanlder = () => {
-    onStopRecording();
+    reset();
+
     const copyCurNum = curNum;
     addAnswer(answer);
     addVideo(`${interviewId}_${copyCurNum}.webm`);
@@ -65,9 +60,9 @@ const Answer = ({ end, text, onStopRecording }) => {
       setShowOpenModal(true);
     } else {
       setCurNum(curNum + 1);
-      setInterviewState("question");
       setAnswer(null);
       setCaptured(false);
+      setInterviewState("question");
     }
   };
   return (

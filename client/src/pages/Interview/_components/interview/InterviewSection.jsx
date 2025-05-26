@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import QuestionBox from "./QuestionBox";
 import Timer from "./Timer";
 import Answer from "./Answer";
@@ -16,6 +16,8 @@ import { useVideoRecord } from "@/hooks/useRecord";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import CommonModal from "@/components/common/Modal/CommonModal";
+import { useNavigate } from "react-router-dom";
 
 const InterviewSection = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
@@ -37,18 +39,22 @@ const InterviewSection = () => {
     totalNum: qCount,
     curNum: curNum,
   });
-  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const navigate = useNavigate();
 
-  const startVoiceRecording = SpeechRecognition.startListening({
-    continuous: true,
-    language: "ko",
-  });
-  const onStopRecording = useCallback(() => {
-    SpeechRecognition.stopListening();
-    SpeechRecognition.abortListening();
-    resetTranscript();
-  }, [resetTranscript]);
+  const startVoiceRecording = () =>
+    SpeechRecognition.startListening({
+      continuous: true,
+      language: "ko",
+    });
+
+  const stopVoiceRecording = () => SpeechRecognition.stopListening();
 
   useEffect(() => {
     setTabSelect("모의 면접");
@@ -68,6 +74,7 @@ const InterviewSection = () => {
           setIsLoading(false);
         }
       } catch (error) {
+        setIsOpenModal(true);
         console.error(error);
       }
     };
@@ -78,6 +85,7 @@ const InterviewSection = () => {
       setIsLoading(true);
       resetInterview();
       stopVideoRecording();
+      stopVoiceRecording();
     };
   }, []);
 
@@ -95,32 +103,54 @@ const InterviewSection = () => {
   }, [curNum]);
 
   useEffect(() => {
-    if (isReplying) {
+    if (interviewState === "question" && isReplying) {
       startVideoRecording(interviewId, curNum);
     } else {
       stopVideoRecording();
     }
-  }, [isReplying]);
+  }, [interviewState, isReplying]);
 
   return (
-    <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
-      <QuestionBox {...question} />
-      {interviewState === "answer" ? (
-        <Answer
-          end={question.curNum === question.totalNum}
-          text={transcript}
-          onStopRecording={onStopRecording}
+    <>
+      {isOpenModal && (
+        <CommonModal
+          isOpen={isOpenModal}
+          onClose={() => setIsOpenModal(false)}
+          title={"Server Error"}
+          subText={
+            <span className="flex flex-col">
+              <span>서비스가 일시적으로 불안정합니다.</span>
+              <span>잠시 후 다시 시도해 주세요.</span>
+            </span>
+          }
+          btnText={"메인으로"}
+          btnHandler={() => {
+            navigate("/");
+          }}
         />
-      ) : (
-        <>
-          <Timer
-            qes={question.qes}
-            brouswerAble={browserSupportsSpeechRecognition}
+      )}
+      <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">
+        <QuestionBox {...question} />
+        {interviewState === "answer" ? (
+          <Answer
+            end={question.curNum === question.totalNum}
+            text={transcript}
+            reset={resetTranscript}
             startVoiceRecording={startVoiceRecording}
           />
-        </>
-      )}
-    </section>
+        ) : (
+          <>
+            <Timer
+              qes={question.qes}
+              browserable={browserSupportsSpeechRecognition}
+              start={startVoiceRecording}
+              stop={stopVoiceRecording}
+            />
+          </>
+        )}
+        {listening ? "on" : "off"}
+      </section>
+    </>
   );
 };
 

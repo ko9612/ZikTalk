@@ -155,13 +155,13 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 <summary>마이페이지</summary>
 <div markdown="1">
 	<h4>분석 결과 리스트</h4>
-	<img src="" />
+	<img src="https://github.com/user-attachments/assets/935e171a-4419-4ff6-a06f-f344372cee89" />
 	<br></br>
     <h4>질문 북마크 리스트</h4>
 	<img src="https://github.com/user-attachments/assets/39dd75bf-638a-45fd-ae92-88763d92d65b" />
 	<br></br>
     <h4>내 정보 관리</h4>
-	<img src="" />
+	<img src="https://github.com/user-attachments/assets/2804de91-8fa4-4151-be58-4540eceb5339" />
 	<br></br>
 </div>
 </details>
@@ -173,7 +173,7 @@ Zik Talk은 AI 기반 모의 면접 플랫폼으로, 실제 면접과 유사한 
 	<img src="https://github.com/user-attachments/assets/ff9fdee0-f803-4577-9197-b7fe024e1c3e" />
 	<br></br>
 	<h4>회원탈퇴</h4>
-	<img src="" />
+	<img src="https://github.com/user-attachments/assets/cccd10e6-e2cc-4a67-8346-782bb62de121" />
 	<br></br>
 </div>
 </details>
