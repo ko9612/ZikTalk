@@ -7,9 +7,9 @@ const router = express.Router();
 // 모든 mypage API에 인증 미들웨어 적용
 router.use(authenticate);
 
-router.get("/bookmarks", mypageController.getMyBookmarks);
-router.get("/user", mypageController.getUserInfo);
-router.post("/user/update", mypageController.updateUserInfo);
-router.post("/user/delete", mypageController.deleteUserAccount);
+router.get("/bookmarks", authenticate, mypageController.getMyBookmarks);
+router.get("/user", authenticate, mypageController.getUserInfo);
+router.post("/user/update", authenticate, mypageController.updateUserInfo);
+router.post("/user/delete", authenticate, mypageController.deleteUserAccount);
 
 export default router;

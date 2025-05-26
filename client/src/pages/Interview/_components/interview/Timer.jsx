@@ -10,10 +10,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import RecordingAnimation from "./RecordingAnimation";
 import { useSmoothValue } from "@/hooks/useSmoothvalue";
-import { useNavigate } from "react-router-dom";
 
-const Timer = ({ qes, browserable, start, stop }) => {
-  const navigate = useNavigate();
+const Timer = ({ qes, browserAble, startVoiceRecording }) => {
   const { isLoading, setIsLoading } = useLoadingStateStore();
   const setInterviewState = useInterviewStateStore(
     (state) => state.setInterviewState,
@@ -31,21 +29,24 @@ const Timer = ({ qes, browserable, start, stop }) => {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  const stopRecording = () => {
+    setIsReplying(false);
+    setInterviewState("answer");
+  };
+
   const buttonHandler = () => {
     if (isReplying) {
-      stop();
-      setIsReplying(false);
-      setInterviewState("answer");
+      stopRecording();
     } else {
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        if (!browserable) {
-          alert("Browser doesn't support speech recognition.");
-          navigate("/");
-        } else {
-          start();
-          setIsReplying(true);
+        setIsReplying(true);
+        if (isReplying) {
+          if (!browserAble) {
+            alert("Browser doesn't support speech recognition.");
+          }
+          startVoiceRecording();
         }
       }, 500);
     }
