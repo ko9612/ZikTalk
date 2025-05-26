@@ -58,9 +58,9 @@ export const getAllInterviews = async (req, res) => {
     const userId = req.query.userId || req.user?.id;
 
     // userId가 없으면 401 에러 반환
-    // if (!userId) {
-    //   return res.status(401).json({ message: "인증이 필요합니다." });
-    // }
+    if (!userId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
 
     const interviews = await interviewDBService.getAllInterviews(userId);
     res.status(200).json(interviews);
@@ -77,9 +77,9 @@ export const getAllInterviewsWithFirstQuestion = async (req, res) => {
     const userId = req.query.userId || req.user?.id;
 
     // userId가 없으면 401 에러 반환
-    // if (!userId) {
-    //   return res.status(401).json({ message: "인증이 필요합니다." });
-    // }
+    if (!userId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
 
     // 쿼리 파라미터에서 필터와 페이지네이션 정보 추출
     const { page, pageSize, sortBy, bookmarked } = req.query;
@@ -95,6 +95,11 @@ export const getAllInterviewsWithFirstQuestion = async (req, res) => {
       sortBy: sortBy || "date",
       bookmarked: bookmarked === "true",
     };
+
+    console.log(
+      `면접 조회 API 호출됨. 사용자 ID: ${userId}, 페이지: ${pagination.page}, 필터:`,
+      filters
+    );
 
     // 서비스에 사용자 ID, 페이지네이션, 필터 정보 전달
     const result = await interviewDBService.getAllInterviewsWithFirstQuestion(
@@ -131,10 +136,11 @@ export const getInterviewById = async (req, res) => {
 // 사용자 ID로 면접 조회
 export const getInterviewsByUserId = async (req, res) => {
   try {
-    const userId = req.user.userId; // 토큰에서 사용자 ID 추출
+    const { userId } = req.params;
     const interviews = await interviewDBService.getInterviewsByUserId(userId);
     res.status(200).json(interviews);
   } catch (error) {
+    console.error("면접 조회 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
@@ -180,8 +186,8 @@ export const deleteInterview = async (req, res) => {
 // 여러 면접 한 번에 삭제 (배치 삭제)
 export const batchDeleteInterviews = async (req, res) => {
   try {
-    const { ids } = req.body;
-    const authenticatedUserId = req.user?.userId;
+    const { ids, userId } = req.body;
+    const authenticatedUserId = userId || req.user?.id;
 
     // userId가 없으면 401 에러 반환
     if (!authenticatedUserId) {
@@ -193,6 +199,11 @@ export const batchDeleteInterviews = async (req, res) => {
         .status(400)
         .json({ message: "삭제할 면접 ID 목록이 필요합니다." });
     }
+
+    console.log(
+      `배치 삭제 요청: 사용자 ID: ${authenticatedUserId}, ${ids.length}개의 면접`,
+      ids
+    );
 
     const result = await interviewDBService.batchDeleteInterviews(
       ids,
@@ -213,30 +224,28 @@ export const batchDeleteInterviews = async (req, res) => {
 // 북마크 토글
 export const toggleBookmark = async (req, res) => {
   try {
-    console.log("[컨트롤러] req.user:", req.user);
-    console.log("[컨트롤러] req.body:", req.body);
     const { id } = req.params;
     const { bookmarked, userId } = req.body;
-    const authenticatedUserId = userId || req.user?.userId;
-    console.log(
-      "[컨트롤러] id:",
-      id,
-      "bookmarked:",
-      bookmarked,
-      "authenticatedUserId:",
-      authenticatedUserId
-    );
+    const authenticatedUserId = userId || req.user?.id;
+
+    // userId가 없으면 401 에러 반환
+    if (!authenticatedUserId) {
+      return res.status(401).json({ message: "인증이 필요합니다." });
+    }
+
     const updated = await interviewDBService.toggleBookmark(
       id,
       bookmarked,
       authenticatedUserId
     );
+
     if (!updated) {
       return res.status(404).json({ message: "면접을 찾을 수 없습니다." });
     }
+
     res.status(200).json(updated);
   } catch (error) {
-    console.error("[컨트롤러] 북마크 토글 오류:", error);
+    console.error("북마크 토글 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
@@ -244,7 +253,7 @@ export const toggleBookmark = async (req, res) => {
 // 인터뷰 페이지 유저 정보 조회
 export const fetchUserInfo = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const { userId } = req.user;
     const user = await interviewDBService.getInterviewUserInfo(userId);
     res.status(200).json({
       userId: user.id,

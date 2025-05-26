@@ -9,7 +9,6 @@ const Landing = lazy(() => import("../pages/Landing"));
 const Interview = lazy(() => import("../pages/Interview"));
 const Test = lazy(() => import("../pages/Test"));
 const Signin = lazy(() => import("@/pages/Signin"));
-const ResetPassword = lazy(() => import("@/pages/Reset-password"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const InterviewResult = lazy(() => import("@/pages/Interview-result"));
 const MyPage = lazy(() => import("@/pages/myPage/index"));
@@ -39,10 +38,6 @@ const router = createBrowserRouter([
       {
         path: "/signin",
         element: withSuspense(Signin),
-      },
-      {
-        path: "/reset-password/:authCode",
-        element: withSuspense(ResetPassword),
       },
       {
         path: "/mypage/*",

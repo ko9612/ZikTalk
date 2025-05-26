@@ -28,19 +28,11 @@ router.get(
 );
 
 // 여러 면접 한 번에 삭제 (배치 삭제)
-router.post(
-  "/batch-delete",
-  authenticate,
-  interviewController.batchDeleteInterviews
-);
+router.post("/batch-delete", interviewController.batchDeleteInterviews);
 
 // 사용자 ID로 면접 조회
-router.get(
-  "/user/:userId",
-  authenticate,
-  interviewController.getInterviewsByUserId
-);
-router.get("/user", authenticate, interviewController.getInterviewsByUserId);
+router.get("/user/:userId", interviewController.getInterviewsByUserId);
+
 // 질문 생성
 router.post("/gpt-question", createInterviewQuestion);
 
@@ -61,6 +53,6 @@ router.put("/:id", interviewController.updateInterview);
 router.delete("/:id", interviewController.deleteInterview);
 
 // 북마크 토글
-router.patch("/:id/bookmark", authenticate, interviewController.toggleBookmark);
+router.patch("/:id/bookmark", interviewController.toggleBookmark);
 
 export default router;
