@@ -346,21 +346,14 @@ const QuestionList = () => {
   }, [selected]);
 
   const handleDeleteExecute = useCallback(async () => {
+    setDeleteSuccessModalOpen(true);
     try {
       const selectedIds = Object.entries(selected)
         .filter(([_, isSelected]) => isSelected)
         .map(([id]) => id);
 
       await batchDeleteInterviews(selectedIds);
-      
-      // 삭제된 항목들을 상태에서 제거
-      setAllQuestions(prev => prev.filter(item => !selectedIds.includes(item.id)));
-      setVisibleResults(prev => prev.filter(item => !selectedIds.includes(item.id)));
-      setSelected({});
-      setIsDeleteMode(false);
-      setDeleteSuccessModalOpen(true);
     } catch (error) {
-      setError("삭제 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmModalOpen(false);
     }
@@ -442,11 +435,17 @@ const QuestionList = () => {
       {deleteSuccessModalOpen && (
         <CommonModal
           isOpen={deleteSuccessModalOpen}
-          onClose={() => setDeleteSuccessModalOpen(false)}
+          onClose={() => {
+            setDeleteSuccessModalOpen(false);
+            window.location.reload();
+          }}
           title="삭제 완료"
           subText="정상적으로 삭제되었습니다."
           btnText="확인"
-          btnHandler={() => setDeleteSuccessModalOpen(false)}
+          btnHandler={() => {
+            setDeleteSuccessModalOpen(false);
+            window.location.reload();
+          }}
         />
       )}
     </div>
