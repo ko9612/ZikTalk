@@ -13,7 +13,6 @@ import {
 } from "@/api/myPageApi";
 import { LoadingIndicator } from "../question/settings/components";
 import { useDeleteKaKaoUser } from "@/hooks/useAuth";
-import { loginInfo } from "@/store/loginStore"; // 임시
 
 const MyInfo = () => {
   const { showToast } = useToast();
@@ -23,8 +22,7 @@ const MyInfo = () => {
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
-  // 임시
-  const { logout } = loginInfo();
+  const [kakaoToken, setKakaoToken] = useState("");
 
   // 사용자 정보 초기화
   const [form, setForm] = useState({
@@ -54,7 +52,6 @@ const MyInfo = () => {
       try {
         setIsLoading(true);
         const data = await fetchUserInfo();
-
         if (data) {
           setForm((prev) => ({
             ...prev,
@@ -74,6 +71,9 @@ const MyInfo = () => {
           }));
 
           setSelectedJob(data.role || "");
+          if (data.kakaoToken) {
+            setKakaoToken(data.kakaoToken);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -170,12 +170,12 @@ const MyInfo = () => {
     [form, showToast, validateForm],
   );
 
-  // 회원 탈퇴 처리 함수
   const handleDeleteAccount = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await deleteUserAccount();
-      if (response.success) {
+      const response = await unlinkKakao(kakaoToken);
+      if (response) {
+        await deleteUserAccount();
         setDeleteSuccessModalOpen(true);
       }
     } catch (error) {
@@ -188,25 +188,6 @@ const MyInfo = () => {
       handleCloseModal();
     }
   }, []);
-
-  // const handleDeleteAccount = useCallback(async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await unlinkKakao();
-  //     if (response) {
-  //       await deleteUserAccount();
-  //       setDeleteSuccessModalOpen(true);
-  //     }
-  //   } catch (error) {
-  //     showToast(
-  //       error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.",
-  //       "error",
-  //     );
-  //   } finally {
-  //     setIsLoading(false);
-  //     handleCloseModal();
-  //   }
-  // }, []);
 
   // 모달 닫기 핸들러
   const handleCloseModal = useCallback(() => {
@@ -419,8 +400,6 @@ const MyInfo = () => {
           btnText="확인"
           btnHandler={() => {
             setDeleteSuccessModalOpen(false);
-            // 임시
-            logout();
             navigate("/signin");
           }}
           oneBtn={true}
