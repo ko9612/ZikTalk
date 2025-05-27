@@ -129,7 +129,7 @@ export const verification = async (req, res) => {
 };
 
 export const sendResetEmail = async (req, res) => {
-  const { email } = req.body.email;
+  const { email } = req.body;
   const { userId } = req.user;
 
   const authCode = crypto.randomBytes(20).toString("hex");
