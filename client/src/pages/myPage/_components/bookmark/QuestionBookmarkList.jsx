@@ -355,8 +355,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
             onChange={handleJobFilterChange}
             options={dynamicJobOptions}
             className="text-gray-500"
-            buttonWidth="flex mr-14 h-10 w-auto min-w-24 gap-5 items-center justify-between truncate  border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
-            dropdownWidth="w-auto"
+            buttonWidth="flex mr-14 h-10 w-36  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
+            dropdownWidth="w-36"
           />
 
           <FilterDropdown
@@ -364,8 +364,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
             onChange={handleTypeFilterChange}
             options={questionTypeOptions}
             className="text-gray-500"
-            buttonWidth="flex h-10 w-auto min-w-24  gap-7 items-center justify-between truncate border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
-            dropdownWidth="w-auto"
+            buttonWidth="flex h-10 w-36 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
+            dropdownWidth="w-36"
           />
         </div>
       </div>
@@ -389,7 +389,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                 <LoadingIndicator />
               </div>
             ) : (
-              <div className="min-h-[350px] p-2">
+              <div className="h-full p-2">
                 {visibleResults.map((item, index) => (
                   <div key={item.id}>
                     <FaqItem
@@ -413,11 +413,18 @@ const QuestionBookmarkList = ({ testEmpty }) => {
           </div>
           {/* 페이지네이션 컴포넌트는 항상 카드 리스트 하단에 위치 */}
           {!isEmpty && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
+            <>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+              {currentPage < totalPages && (
+                <div className="text-zik-text/60 my-4 flex w-full items-center justify-center text-sm">
+                  스크롤을 내리면 더 많은 북마크를 볼 수 있습니다
+                </div>
+              )}
+            </>
           )}
         </>
       )}

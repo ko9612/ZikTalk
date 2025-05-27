@@ -26,131 +26,6 @@ export const useInfiniteScroll = (
     hasForceScrollCheck: false,
   });
 
-  // 데이터 로드 함수 - 로딩 모션을 보여주고 데이터를 불러옴
-  const loadData = useCallback(
-    async (source = "미확인") => {
-      // 마지막 로드 시간 확인
-      const now = Date.now();
-      const timeSinceLastLoad = now - debugRef.current.lastLoadTime;
-
-      // 너무 빠른 재요청 방지 시간을 1초로 유지
-      if (timeSinceLastLoad < 600) {
-        return;
-      }
-
-      // 로드 락 확인 (맨 아래에 도달한 경우 예외 처리 추가)
-      if (isLoadLocked) {
-        // 현재 스크롤 위치 확인
-        const scrollPosition = window.innerHeight + window.scrollY;
-        const scrollHeight = document.body.scrollHeight;
-        const isAtVeryBottom = scrollHeight - scrollPosition < 50; // 완전 맨 아래 50px 이내
-
-        // 완전 맨 아래라면 락을 무시하고 진행
-        if (!isAtVeryBottom) {
-          return;
-        } else {
-        }
-      }
-
-      // 로딩 중이거나 사용자가 스크롤하지 않았으면 중단
-      if (loading || !userScrolled) {
-        return;
-      }
-
-      // hasMore 확인 - 북마크 필터로 인해 hasMore가 false라도 강제 확인을 위한 조건 추가
-      if (!hasMore && !debugRef.current.hasForceScrollCheck) {
-        // 강제 확인 플래그 활성화
-        debugRef.current.hasForceScrollCheck = true;
-      } else if (!hasMore) {
-        return;
-      }
-
-      try {
-        // 로드 락 설정
-        setIsLoadLocked(true);
-        debugRef.current.lastLoadTime = now;
-
-        // 로딩 상태 먼저 설정 - 애니메이션 보여줌
-        setIsShowingLoadingAnimation(true);
-        if (setLoading) setLoading(true);
-
-        // 약간의 지연 - 로딩 애니메이션이 보이도록
-        await new Promise((resolve) => setTimeout(resolve, delayTime));
-
-        // 실제 데이터 로드 함수 호출
-        await loadMoreResults();
-      } catch (error) {
-      } finally {
-        // 로딩 완료 후 상태 초기화
-
-        if (setLoading) setLoading(false);
-        setIsShowingLoadingAnimation(false);
-
-        // 추가 지연 후 락 해제 (500ms 유지)
-        setTimeout(() => {
-          setIsLoadLocked(false);
-
-          // 락 해제 후 현재 위치 체크하여 추가 로드 필요한지 확인
-          checkScrollPositionForLoad("lockReleased");
-        }, 0);
-      }
-    },
-    [
-      loadMoreResults,
-      hasMore,
-      loading,
-      setLoading,
-      userScrolled,
-      isLoadLocked,
-      delayTime,
-    ],
-  );
-
-  // 스크롤 위치 체크하여 필요시 로드 시작
-  const checkScrollPositionForLoad = useCallback(
-    (source = "위치체크") => {
-      // 기본 조건 확인
-      if (
-        loading ||
-        isActionDebouncing ||
-        !userScrolled ||
-        isShowingLoadingAnimation ||
-        isLoadLocked
-      ) {
-        return false;
-      }
-
-      // hasMore 조건을 처음에 확인하지 않음 (필터 변경 후 즉시 확인을 위해)
-
-      // 스크롤 위치 확인
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const scrollHeight = document.body.scrollHeight;
-      const threshold = scrollHeight - 500; // 임계값 늘림 (200px -> 500px)
-
-      // 맨 아래 근처면 추가 로드
-      if (scrollPosition >= threshold) {
-        // 이제 hasMore 조건 확인
-        if (!hasMore) {
-          return false;
-        }
-
-        loadData(source);
-        return true;
-      }
-
-      return false;
-    },
-    [
-      loading,
-      isActionDebouncing,
-      userScrolled,
-      isShowingLoadingAnimation,
-      isLoadLocked,
-      hasMore,
-      loadData,
-    ],
-  );
-
   // 관찰자 콜백 함수 - 엘리먼트가 화면에 나타날 때 호출
   const observerCallback = useCallback(
     (entries) => {
@@ -261,7 +136,7 @@ export const useInfiniteScroll = (
         } else {
           checkScrollPositionForLoad("scrollEnd");
         }
-      }, 100);
+      });
     };
 
     // 스크롤 이벤트 (하단 감지용)

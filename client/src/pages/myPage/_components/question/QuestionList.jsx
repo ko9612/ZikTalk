@@ -35,6 +35,7 @@ const QuestionList = () => {
   const loadingRef = useRef(null);
   const abortControllerRef = useRef(null);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
+  const scrollEndTimer = useRef(null);
 
   const fetchData = useCallback(async (pageNum, isInitial = false) => {
     if (abortControllerRef.current) {
@@ -166,7 +167,7 @@ const QuestionList = () => {
         setLoading(false);
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 300);
+        }, 450);
       }
     },
     [filters.type, updateFilter, fetchData],
@@ -181,7 +182,7 @@ const QuestionList = () => {
       if (!result) return;
 
       // 1초 인위적 딜레이 추가
-      await new Promise((res) => setTimeout(res, 500));
+      // await new Promise((res) => setTimeout(res, 100));
 
       setAllQuestions((prev) =>
         removeDuplicateById([...prev, ...result.questions]),
@@ -267,22 +268,25 @@ const QuestionList = () => {
     updateVisibleResults();
   }, [allQuestions, filters.type, page, updateVisibleResults]);
 
-  const handleScroll = useCallback(() => {
-    if (loading || loadingMore || !hasMore) return;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const clientHeight = document.documentElement.clientHeight;
-    if (scrollHeight - scrollTop - clientHeight < 5) {
-      loadMoreResults();
-    }
-  }, [loading, loadingMore, hasMore, loadMoreResults]);
-
   useEffect(() => {
+    const handleScroll = () => {
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+      scrollEndTimer.current = setTimeout(() => {
+        if (loading || loadingMore || !hasMore) return;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const clientHeight = document.documentElement.clientHeight;
+        if (scrollHeight - scrollTop - clientHeight <1050) {
+          loadMoreResults();
+        }
+      }, 300);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
     };
-  }, [handleScroll]);
+  }, [loading, loadingMore, hasMore, loadMoreResults]);
 
   // 마우스 휠로 스크롤이 거의 없을 때도 loadMoreResults 호출
   useEffect(() => {
@@ -352,10 +356,14 @@ const QuestionList = () => {
         .map(([id]) => id);
 
       await batchDeleteInterviews(selectedIds);
-      
+
       // 삭제된 항목들을 상태에서 제거
-      setAllQuestions(prev => prev.filter(item => !selectedIds.includes(item.id)));
-      setVisibleResults(prev => prev.filter(item => !selectedIds.includes(item.id)));
+      setAllQuestions((prev) =>
+        prev.filter((item) => !selectedIds.includes(item.id)),
+      );
+      setVisibleResults((prev) =>
+        prev.filter((item) => !selectedIds.includes(item.id)),
+      );
       setSelected({});
       setIsDeleteMode(false);
       setDeleteSuccessModalOpen(true);
@@ -421,6 +429,14 @@ const QuestionList = () => {
         <div className="scroll-spacer my-10 h-2 w-full">
           <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm">
             더 이상 불러올 데이터가 없습니다
+          </div>
+        </div>
+      )}
+
+      {hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
+        <div className="my-10 flex flex-col items-center justify-center w-full">
+          <div className="text-zik-text/60 text-base mb-2">
+            스크롤을 내리면 더 많은 결과를 볼 수 있습니다
           </div>
         </div>
       )}

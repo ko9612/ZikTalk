@@ -107,7 +107,7 @@ export function useQuestionListState() {
         // 초기 로드 시 더 많은 데이터 불러오기
         const batchSize =
           page === 0
-            ? SCROLL_BATCH_SIZE * 2 // 초기 로드 시 2배만 로드 (진짜 무한 스크롤을 위해 줄임)
+            ? SCROLL_BATCH_SIZE * 1 // 초기 로드 시 2배만 로드 (진짜 무한 스크롤을 위해 줄임)
             : SCROLL_BATCH_SIZE;
 
         // API 호출 - userId 전달
