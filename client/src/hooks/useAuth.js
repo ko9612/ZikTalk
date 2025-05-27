@@ -31,7 +31,6 @@ export const useLogout = () => {
 export const useDeleteKaKaoUser = () => {
   const { logout } = loginInfo();
   const deleteUserHandler = async (kakaoToken) => {
-    // console.log(kakaoToken);
     try {
       await axios.post(
         "https://kapi.kakao.com/v1/user/unlink",

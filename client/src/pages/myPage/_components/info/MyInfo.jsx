@@ -177,7 +177,6 @@ const MyInfo = () => {
       if (response) {
         await deleteUserAccount();
         setDeleteSuccessModalOpen(true);
-        console.log("!!");
       }
     } catch (error) {
       showToast(
