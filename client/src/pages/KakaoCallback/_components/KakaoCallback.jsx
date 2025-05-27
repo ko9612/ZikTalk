@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginInfo } from "@/store/loginStore";
 import axiosInstance from "@/api/axiosInstance";
-import LoadingPage from "@/components/common/LoadingPage";
 
 const KakaoCallback = () => {
   const { setLoginState, setUserName } = loginInfo();
@@ -26,7 +25,7 @@ const KakaoCallback = () => {
     });
   }, []);
 
-  return <LoadingPage></LoadingPage>;
+  return;
 };
 
 export default KakaoCallback;
