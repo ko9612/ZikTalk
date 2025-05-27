@@ -11,7 +11,7 @@ import {
   deleteUserAccount,
   fetchUserInfo,
 } from "@/api/myPageApi";
-import axiosInstance from "@/api/axiosInstance";
+// import axiosInstance from "@/api/axiosInstance";
 import useLogout from "@/hooks/useAuth";
 import { LoadingIndicator } from "../question/settings/components";
 

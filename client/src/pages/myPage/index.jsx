@@ -39,7 +39,7 @@ const MyPage = () => {
   };
 
   return (
-    <div className="mx-auto min-h-450 w-full max-w-6xl px-4 py-8">
+    <div className="mx-auto min-h-250 w-full max-w-6xl px-4 py-8">
       <nav className="mb-8 flex flex-wrap justify-center gap-4 sm:justify-start sm:gap-8">
         {tabs.map((tab) => (
           <NavLink
