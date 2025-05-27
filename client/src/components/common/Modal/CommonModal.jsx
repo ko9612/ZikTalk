@@ -9,6 +9,8 @@ const CommonModal = ({
   subText,
   btnText,
   btnHandler,
+  btnDisable = false,
+  oneBtn = false,
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} dimmed={true} className="w-96">
@@ -18,19 +20,22 @@ const CommonModal = ({
           <p className="text-zik-text text-sm text-nowrap">{subText}</p>
         </div>
         <div className="flex gap-4">
-          <Button
-            shape="bar"
-            onClick={onClose}
-            color="white"
-            className="flex-1"
-          >
-            닫기
-          </Button>
+          {!oneBtn && (
+            <Button
+              shape="bar"
+              onClick={onClose}
+              color="white"
+              className="flex-1"
+            >
+              닫기
+            </Button>
+          )}
           <Button
             shape="bar"
             color="violet"
             onClick={btnHandler}
             className="flex-1"
+            disabled={btnDisable}
           >
             {btnText}
           </Button>

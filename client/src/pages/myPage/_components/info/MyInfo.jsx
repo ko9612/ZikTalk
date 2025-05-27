@@ -11,19 +11,20 @@ import {
   deleteUserAccount,
   fetchUserInfo,
 } from "@/api/myPageApi";
-// import axiosInstance from "@/api/axiosInstance";
-import useLogout from "@/hooks/useAuth";
 import { LoadingIndicator } from "../question/settings/components";
+import { useDeleteKaKaoUser } from "@/hooks/useAuth";
+import { loginInfo } from "@/store/loginStore"; // 임시
 
 const MyInfo = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const logout = useLogout();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [editConfirmModalOpen, setEditConfirmModalOpen] = useState(false);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
+  const unlinkKakao = useDeleteKaKaoUser();
+  // 임시
+  const { logout } = loginInfo();
 
   // 사용자 정보 초기화
   const [form, setForm] = useState({
@@ -38,11 +39,6 @@ const MyInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCareerModalOpen, setCareerModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(form.role);
-
-  // 폼 변경 상태 추적
-  const [formChanged, setFormChanged] = useState(false);
-  // 오류 관리
-  const [error, setError] = useState(null);
 
   // 경력 옵션
   const careerOptions = [
@@ -78,14 +74,9 @@ const MyInfo = () => {
           }));
 
           setSelectedJob(data.role || "");
-          setError(null);
         }
       } catch (err) {
-        if (err.response?.status === 401) {
-          setError("로그인이 필요합니다.");
-        } else {
-          setError("사용자 정보를 불러오는데 실패했습니다. 다시 시도해주세요.");
-        }
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -98,7 +89,6 @@ const MyInfo = () => {
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setFormChanged(true);
   }, []);
 
   // 직무 선택 시 호출되는 함수
@@ -106,15 +96,12 @@ const MyInfo = () => {
     setSelectedJob(job);
     setForm((prev) => ({ ...prev, role: job }));
     setCareerModalOpen(false);
-    setFormChanged(true);
   }, []);
 
   // 경력 변경 시 호출되는 함수
   const handleCareerChange = useCallback(
     (career) => {
       setForm((prev) => ({ ...prev, career }));
-      setFormChanged(true);
-
       // 변경 표시 - 토스트는 한 번만 표시
       showToast("경력이 변경되었습니다: " + career, "success");
     },
@@ -169,7 +156,6 @@ const MyInfo = () => {
             password: "",
             passwordCheck: "",
           }));
-          setFormChanged(false);
           setEditSuccessModalOpen(true);
         }
       } catch (error) {
@@ -203,10 +189,23 @@ const MyInfo = () => {
     }
   }, []);
 
-  // 버튼 클릭 핸들러
-  // const handleButtonClick = useCallback((e) => {
-  //   // 이벤트 전파 중지 (이중 처리 방지)
-  //   e.stopPropagation();
+  // const handleDeleteAccount = useCallback(async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const response = await unlinkKakao();
+  //     if (response) {
+  //       await deleteUserAccount();
+  //       setDeleteSuccessModalOpen(true);
+  //     }
+  //   } catch (error) {
+  //     showToast(
+  //       error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.",
+  //       "error",
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //     handleCloseModal();
+  //   }
   // }, []);
 
   // 모달 닫기 핸들러
@@ -386,6 +385,7 @@ const MyInfo = () => {
             </span>
           }
           btnText={isLoading ? "처리 중..." : "탈퇴하기"}
+          btnDisable={isLoading}
           btnHandler={async () => {
             await handleDeleteAccount();
           }}
@@ -419,9 +419,11 @@ const MyInfo = () => {
           btnText="확인"
           btnHandler={() => {
             setDeleteSuccessModalOpen(false);
+            // 임시
             logout();
             navigate("/signin");
           }}
+          oneBtn={true}
         />
       )}
 
@@ -435,9 +437,10 @@ const MyInfo = () => {
           title="수정 완료"
           subText="정보가 성공적으로 수정되었습니다."
           btnText="확인"
-          btnHandler={async () => {
+          btnHandler={() => {
             setEditSuccessModalOpen(false);
           }}
+          oneBtn={true}
         />
       )}
     </div>
