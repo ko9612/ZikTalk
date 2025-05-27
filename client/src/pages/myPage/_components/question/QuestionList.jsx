@@ -167,7 +167,7 @@ const QuestionList = () => {
         setLoading(false);
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 450);
+        },0); //450
       }
     },
     [filters.type, updateFilter, fetchData],
