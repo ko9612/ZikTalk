@@ -186,6 +186,7 @@ const Index = () => {
               <BoxStyle title="" className="max-h-[410px] min-h-[200px]">
                 {selectedQuestion ? (
                   <video
+                    style={{ width: "clamp(300px, 80vw, 600px)" }}
                     className="h-50 max-h-[300px] w-full sm:h-96"
                     controls
                     src={videoUrl}
