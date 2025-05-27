@@ -256,6 +256,10 @@ const QuestionList = () => {
   );
 
   useEffect(() => {
+    if (!isDeleteMode) setSelected({}); // 삭제 모드가 해제될 때 선택 해제
+  }, [isDeleteMode]);
+
+  useEffect(() => {
     if (!isDeleteMode) return;
     const handleKeyDown = (e) => {
       if (e.key === "Escape") setIsDeleteMode(false);
