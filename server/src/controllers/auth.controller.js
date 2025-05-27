@@ -18,8 +18,8 @@ const handleLoginSuccess = (res, user) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: NODE_ENV,
-    sameSite: "Lax",
+    secure: NODE_ENV === "production",
+    sameSite: NODE_ENV === "production" ? "None" : "Lax",
     maxAge: JWT_REFRESH_COOKIE_EXPIRE,
   });
 
@@ -90,8 +90,8 @@ export const logout = (req, res) => {
   try {
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: NODE_ENV,
-      sameSite: "Lax",
+      secure: NODE_ENV === "production",
+      sameSite: NODE_ENV === "production" ? "None" : "Lax",
     });
 
     return res.status(200).json({ message: "로그아웃 완료" });
