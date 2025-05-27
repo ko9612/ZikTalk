@@ -433,6 +433,14 @@ const QuestionList = () => {
         </div>
       )}
 
+      {hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
+        <div className="my-10 flex flex-col items-center justify-center w-full">
+          <div className="text-zik-text/60 text-base mb-2">
+            스크롤을 내리면 더 많은 결과를 볼 수 있습니다
+          </div>
+        </div>
+      )}
+
       {confirmModalOpen && (
         <CommonModal
           isOpen={confirmModalOpen}
