@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { sendResetEmail } from "@/api/signApi";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import Modal from "@/components/common/Modal/Modal";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
-import { Link } from "react-router-dom";
-import { sendResetEmail } from "@/api/signApi";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
+import LoadingIcon from "@/components/common/LoadingIcon";
 
 function ResetPassword({ isOpenModal, modalHandler }) {
   const [isEmailSent, setIsEmailSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 버튼 비활성화
+  const [isDisabled, setIsDisabled] = useState(false); // 버튼 비활성화
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -24,14 +25,16 @@ function ResetPassword({ isOpenModal, modalHandler }) {
     const emailValid = await trigger("email");
     if (!emailValid) return;
 
+    setIsDisabled(true);
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
+      setIsEmailSent(true);
 
       const email = getValues("email");
+      await sendResetEmail(email);
 
-      await sendResetEmail({ email });
-
-      setIsEmailSent(true);
+      setIsLoading(false);
     } catch (e) {
       if (e.response && e.response.status === 404) {
         setError("email", {
@@ -40,8 +43,11 @@ function ResetPassword({ isOpenModal, modalHandler }) {
       } else {
         console.error("서버 오류:", e.response.data);
       }
-    } finally {
+
+      setIsEmailSent(false);
       setIsLoading(false);
+    } finally {
+      setIsDisabled(false);
     }
   };
 
@@ -59,12 +65,29 @@ function ResetPassword({ isOpenModal, modalHandler }) {
             </div>
             {isEmailSent ? (
               <div className="flex flex-col items-center">
-                <p className="text-base font-bold sm:text-xl md:text-2xl">
-                  비밀번호 재설정 이메일이 발송되었습니다.
-                </p>
-                <p className="text-zik-main mb-7 text-base font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
-                  이메일을 확인해 주세요.
-                </p>
+                {isLoading ? (
+                  <>
+                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl">
+                      비밀번호 재설정 링크를 이메일로 전송중입니다.
+                    </p>
+                    <p className="text-zik-main mb-7 text-[15px] font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
+                      잠시만 기다려주세요.
+                    </p>
+                    <LoadingIcon />
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl">
+                      비밀번호 재설정 링크를 이메일로 전송했습니다.
+                    </p>
+                    <p className="text-zik-main mb-7 text-[15px] font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
+                      아래 이메일의 메일함을 확인해 주세요.
+                    </p>
+                    <p className="text-zik-text p-2 text-[15px] font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
+                      {getValues("email")}
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -100,7 +123,7 @@ function ResetPassword({ isOpenModal, modalHandler }) {
                   <Button
                     shape="bar"
                     className={"w-[60vw] text-sm sm:w-full md:text-base"}
-                    disabled={isLoading}
+                    disabled={isDisabled}
                     onClick={handleResetPassword}
                   >
                     비밀번호 재설정하기
