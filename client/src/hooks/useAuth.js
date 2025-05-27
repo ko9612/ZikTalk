@@ -29,10 +29,9 @@ export const useLogout = () => {
 };
 
 export const useDeleteKaKaoUser = () => {
-  const { logout } = loginInfo();
   const deleteUserHandler = async (kakaoToken) => {
     try {
-      await axios.post(
+      const res = await axios.post(
         "https://kapi.kakao.com/v1/user/unlink",
         {},
         {
@@ -41,8 +40,8 @@ export const useDeleteKaKaoUser = () => {
           },
         },
       );
-      logout();
       delete axiosInstance.defaults.headers.common["Authorization"];
+      return res;
     } catch (error) {
       console.error("회원탈퇴 실패:", error);
     }

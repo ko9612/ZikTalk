@@ -13,6 +13,7 @@ import {
 } from "@/api/myPageApi";
 import { LoadingIndicator } from "../question/settings/components";
 import { useDeleteKaKaoUser } from "@/hooks/useAuth";
+import { loginInfo } from "@/store/loginStore";
 
 const MyInfo = () => {
   const { showToast } = useToast();
@@ -22,8 +23,8 @@ const MyInfo = () => {
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
-  const [kakaoToken, setKakaoToken] = useState("");
-
+  const [kakaoToken, setKakaoToken] = useState(null);
+  const { logout } = loginInfo();
   // 사용자 정보 초기화
   const [form, setForm] = useState({
     name: "",
@@ -173,10 +174,13 @@ const MyInfo = () => {
   const handleDeleteAccount = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await unlinkKakao(kakaoToken);
-      if (response) {
+      if (kakaoToken) {
+        const response = await unlinkKakao(kakaoToken);
+        if (response) {
+          await deleteUserAccount();
+        }
+      } else {
         await deleteUserAccount();
-        setDeleteSuccessModalOpen(true);
       }
     } catch (error) {
       showToast(
@@ -185,6 +189,8 @@ const MyInfo = () => {
       );
     } finally {
       setIsLoading(false);
+      setDeleteSuccessModalOpen(true);
+      logout();
       handleCloseModal();
     }
   }, []);
