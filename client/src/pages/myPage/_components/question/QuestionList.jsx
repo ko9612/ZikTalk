@@ -223,28 +223,47 @@ const QuestionList = () => {
         if (!item) {
           return;
         }
-        // PATCH 요청으로 북마크 토글
+
+        // 1. 낙관적 업데이트 - 서버 응답 전에 UI 먼저 업데이트
+        setAllQuestions((prev) => {
+          const next = prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
+          );
+          return next;
+        });
+        setVisibleResults((prev) => {
+          const next = prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
+          );
+          return next;
+        });
+
+        // 2. 서버 요청
         const response = await axiosInstance.patch(
           `/interview/${id}/bookmark`,
           {
             bookmarked: !item.bookmarked,
           },
         );
-        if (response.data) {
-          setAllQuestions((prev) => {
-            const next = prev.map((item) =>
-              item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
-            );
-            return next;
-          });
-          setVisibleResults((prev) => {
-            const next = prev.map((item) =>
-              item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
-            );
-            return next;
-          });
+
+        // 3. 서버 응답 실패 시 상태 롤백
+        if (!response.data) {
+          throw new Error("북마크 상태 변경 실패");
         }
       } catch (err) {
+        // 4. 에러 발생 시 원래 상태로 복구
+        setAllQuestions((prev) => {
+          const next = prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: item.bookmarked } : item,
+          );
+          return next;
+        });
+        setVisibleResults((prev) => {
+          const next = prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: item.bookmarked } : item,
+          );
+          return next;
+        });
         setError("북마크 상태 변경에 실패했습니다.");
       }
     },
