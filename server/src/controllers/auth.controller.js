@@ -19,7 +19,7 @@ const handleLoginSuccess = (res, user) => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: NODE_ENV,
-    sameSite: "Lax",
+    sameSite: "None",
     maxAge: JWT_REFRESH_COOKIE_EXPIRE,
   });
 
@@ -91,7 +91,7 @@ export const logout = (req, res) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: NODE_ENV,
-      sameSite: "Lax",
+      sameSite: "None",
     });
 
     return res.status(200).json({ message: "로그아웃 완료" });
