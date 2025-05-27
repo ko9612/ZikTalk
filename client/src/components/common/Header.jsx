@@ -3,7 +3,7 @@ import Button from "./Button";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import { Link, useLocation } from "react-router-dom";
 import { loginInfo } from "@/store/loginStore";
-import useLogout from "@/hooks/useAuth";
+import { useLogout } from "@/hooks/useAuth";
 import { FaCircleUser, FaRegCircleUser } from "react-icons/fa6";
 import CommonModal from "./Modal/CommonModal";
 

@@ -1,13 +1,13 @@
 import axiosInstance from "@/api/axiosInstance";
 import { loginInfo } from "@/store/loginStore";
+import axios from "axios";
 
 const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
 const KAKAO_LOGOUT_REDIRECT_URI = import.meta.env
   .VITE_KAKAO_LOGOUT_REDIRECT_URI;
 
-const useLogout = () => {
+export const useLogout = () => {
   const { logout } = loginInfo();
-
   const logoutHandler = async () => {
     try {
       await axiosInstance.post("/logout");
@@ -28,4 +28,25 @@ const useLogout = () => {
   return logoutHandler;
 };
 
-export default useLogout;
+export const useDeleteKaKaoUser = () => {
+  const { logout } = loginInfo();
+  const deleteUserHandler = async () => {
+    try {
+      console.log(axiosInstance.defaults.headers.common["Authorization"]);
+      await axios.post(
+        "https://kapi.kakao.com/v1/user/unlink",
+        {},
+        {
+          headers: {
+            Authorization: "",
+          },
+        },
+      );
+      logout();
+      delete axiosInstance.defaults.headers.common["Authorization"];
+    } catch (error) {
+      console.error("회원탈퇴 실패:", error);
+    }
+  };
+  return deleteUserHandler;
+};
