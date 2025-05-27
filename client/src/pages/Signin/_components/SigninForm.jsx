@@ -73,7 +73,6 @@ const SigninForm = () => {
 
   // 카카오 로그인
   const kakaoLogin = () => {
-    // &prompt=login
     const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
 
     window.location.href = KAKAO_AUTH_URL;
