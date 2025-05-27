@@ -35,6 +35,7 @@ const QuestionList = () => {
   const loadingRef = useRef(null);
   const abortControllerRef = useRef(null);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
+  const scrollEndTimer = useRef(null);
 
   const fetchData = useCallback(async (pageNum, isInitial = false) => {
     if (abortControllerRef.current) {
@@ -166,7 +167,7 @@ const QuestionList = () => {
         setLoading(false);
         setTimeout(() => {
           setIsTransitioning(false);
-        }, 300);
+        }, 450);
       }
     },
     [filters.type, updateFilter, fetchData],
@@ -267,22 +268,25 @@ const QuestionList = () => {
     updateVisibleResults();
   }, [allQuestions, filters.type, page, updateVisibleResults]);
 
-  const handleScroll = useCallback(() => {
-    if (loading || loadingMore || !hasMore) return;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const clientHeight = document.documentElement.clientHeight;
-    if (scrollHeight - scrollTop - clientHeight < 5) {
-      loadMoreResults();
-    }
-  }, [loading, loadingMore, hasMore, loadMoreResults]);
-
   useEffect(() => {
+    const handleScroll = () => {
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+      scrollEndTimer.current = setTimeout(() => {
+        if (loading || loadingMore || !hasMore) return;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const clientHeight = document.documentElement.clientHeight;
+        if (scrollHeight - scrollTop - clientHeight <1050) {
+          loadMoreResults();
+        }
+      }, 300);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
     };
-  }, [handleScroll]);
+  }, [loading, loadingMore, hasMore, loadMoreResults]);
 
   // 마우스 휠로 스크롤이 거의 없을 때도 loadMoreResults 호출
   useEffect(() => {
