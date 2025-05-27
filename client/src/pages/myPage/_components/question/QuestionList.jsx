@@ -308,7 +308,7 @@ const QuestionList = () => {
         if (scrollHeight - scrollTop - clientHeight <1050) {
           loadMoreResults();
         }
-      }, 300);
+      }, 0);
     };
     window.addEventListener("scroll", handleScroll);
     return () => {
