@@ -35,13 +35,14 @@ export default function OauthSignup() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { email, name } = location.state;
+  const { email, name, provider } = location.state;
 
   const handleSignup = async (data) => {
     const addData = {
       email,
       name,
-      password: "1ka0ka+o=P0as0sw-o0r2d!@#!@", // 나중에 변경
+      password: "Oauth",
+      provider,
     };
 
     const mergedData = {

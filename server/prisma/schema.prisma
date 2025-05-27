@@ -16,6 +16,7 @@ model User {
   career     Int
   createdAt  DateTime    @default(now()) @db.Timestamptz(6)
   provider   AuthProvider @default(local) // 로그인 방식 구분
+  kakaoToken String?
   interviews Interview[]
   questions  Question[]
 }
