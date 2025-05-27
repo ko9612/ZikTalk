@@ -32,6 +32,7 @@ const QuestionList = () => {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [error, setError] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isBookmarkSorted, setIsBookmarkSorted] = useState(false);
   const loadingRef = useRef(null);
   const abortControllerRef = useRef(null);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
@@ -121,19 +122,22 @@ const QuestionList = () => {
   }, [initialDataLoaded, page, fetchData]);
 
   const sortResults = useCallback((results, type) => {
-    if (type === SORT_OPTIONS.BOOKMARK) {
+    if (type === SORT_OPTIONS.BOOKMARK && !isBookmarkSorted) {
+      setIsBookmarkSorted(true);
       return [...results].sort((a, b) => {
         if (a.bookmarked !== b.bookmarked) {
           return a.bookmarked ? -1 : 1;
         }
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
-    } else {
+    } else if (type !== SORT_OPTIONS.BOOKMARK) {
+      setIsBookmarkSorted(false);
       return [...results].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
     }
-  }, []);
+    return results;
+  }, [isBookmarkSorted]);
 
   const updateVisibleResults = useCallback(
     (resetPage = false) => {
@@ -152,13 +156,15 @@ const QuestionList = () => {
       if (type === filters.type) return;
       setIsTransitioning(true);
       setLoading(true);
+      setIsBookmarkSorted(false);
       try {
         updateFilter("type", type);
         const result = await fetchData(1, true);
         if (!result) return;
 
-        setAllQuestions(result.questions);
-        setVisibleResults(result.questions);
+        const sortedQuestions = sortResults(result.questions, type);
+        setAllQuestions(sortedQuestions);
+        setVisibleResults(sortedQuestions);
         setHasMore(result.hasMore);
         setPage(1);
       } catch (err) {
@@ -167,10 +173,10 @@ const QuestionList = () => {
         setLoading(false);
         setTimeout(() => {
           setIsTransitioning(false);
-        },0); //450
+        }, 0);
       }
     },
-    [filters.type, updateFilter, fetchData],
+    [filters.type, updateFilter, fetchData, sortResults],
   );
 
   const loadMoreResults = useCallback(async () => {

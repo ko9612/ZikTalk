@@ -44,10 +44,12 @@ const FaqItem = ({
   return (
     <div className="mb-4">
       <div
-        className="cursor-pointer rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300"
-        onClick={handleToggle}
+        className="rounded-2xl border border-gray-200 bg-white shadow-md transition-all duration-300"
       >
-        <div className="flex items-baseline justify-between px-4 py-3 max-sm:relative">
+        <div
+          className="cursor-pointer flex items-baseline justify-between px-4 py-3 max-sm:relative"
+          onClick={handleToggle}
+        >
           <div className="flex w-full flex-col items-baseline sm:flex-row sm:items-center sm:px-6 sm:py-4">
             <div className="flex items-center">
               <span

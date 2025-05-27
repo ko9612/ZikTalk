@@ -204,10 +204,10 @@ const MyInfo = () => {
   }, []);
 
   // 버튼 클릭 핸들러
-  const handleButtonClick = useCallback((e) => {
-    // 이벤트 전파 중지 (이중 처리 방지)
-    e.stopPropagation();
-  }, []);
+  // const handleButtonClick = useCallback((e) => {
+  //   // 이벤트 전파 중지 (이중 처리 방지)
+  //   e.stopPropagation();
+  // }, []);
 
   // 모달 닫기 핸들러
   const handleCloseModal = useCallback(() => {
