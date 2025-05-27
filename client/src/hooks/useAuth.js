@@ -30,15 +30,15 @@ export const useLogout = () => {
 
 export const useDeleteKaKaoUser = () => {
   const { logout } = loginInfo();
-  const deleteUserHandler = async () => {
+  const deleteUserHandler = async (kakaoToken) => {
+    // console.log(kakaoToken);
     try {
-      console.log(axiosInstance.defaults.headers.common["Authorization"]);
       await axios.post(
         "https://kapi.kakao.com/v1/user/unlink",
         {},
         {
           headers: {
-            Authorization: "",
+            Authorization: `Bearer ${kakaoToken}`,
           },
         },
       );

@@ -67,7 +67,7 @@ function ResetPassword({ isOpenModal, modalHandler }) {
               <div className="flex flex-col items-center">
                 {isLoading ? (
                   <>
-                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl">
+                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl md:text-nowrap">
                       비밀번호 재설정 링크를 이메일로 전송중입니다.
                     </p>
                     <p className="text-zik-main mb-7 text-[15px] font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
@@ -77,7 +77,7 @@ function ResetPassword({ isOpenModal, modalHandler }) {
                   </>
                 ) : (
                   <>
-                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl">
+                    <p className="text-[15px] font-bold sm:text-xl md:text-2xl md:text-nowrap">
                       비밀번호 재설정 링크를 이메일로 전송했습니다.
                     </p>
                     <p className="text-zik-main mb-7 text-[15px] font-bold sm:mb-5 sm:text-xl md:mb-7 md:text-2xl">
