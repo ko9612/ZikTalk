@@ -181,7 +181,7 @@ const QuestionList = () => {
       if (!result) return;
 
       // 1초 인위적 딜레이 추가
-      await new Promise((res) => setTimeout(res, 500));
+      // await new Promise((res) => setTimeout(res, 100));
 
       setAllQuestions((prev) =>
         removeDuplicateById([...prev, ...result.questions]),
@@ -352,10 +352,14 @@ const QuestionList = () => {
         .map(([id]) => id);
 
       await batchDeleteInterviews(selectedIds);
-      
+
       // 삭제된 항목들을 상태에서 제거
-      setAllQuestions(prev => prev.filter(item => !selectedIds.includes(item.id)));
-      setVisibleResults(prev => prev.filter(item => !selectedIds.includes(item.id)));
+      setAllQuestions((prev) =>
+        prev.filter((item) => !selectedIds.includes(item.id)),
+      );
+      setVisibleResults((prev) =>
+        prev.filter((item) => !selectedIds.includes(item.id)),
+      );
       setSelected({});
       setIsDeleteMode(false);
       setDeleteSuccessModalOpen(true);
