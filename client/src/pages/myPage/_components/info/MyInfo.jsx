@@ -13,6 +13,7 @@ import {
 } from "@/api/myPageApi";
 import { LoadingIndicator } from "../question/settings/components";
 import { useDeleteKaKaoUser } from "@/hooks/useAuth";
+import { loginInfo } from "@/store/loginStore"; // 임시
 
 const MyInfo = () => {
   const { showToast } = useToast();
@@ -22,6 +23,8 @@ const MyInfo = () => {
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
+  // 임시
+  const { logout } = loginInfo();
 
   // 사용자 정보 초기화
   const [form, setForm] = useState({
@@ -86,7 +89,6 @@ const MyInfo = () => {
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setFormChanged(true);
   }, []);
 
   // 직무 선택 시 호출되는 함수
@@ -94,15 +96,12 @@ const MyInfo = () => {
     setSelectedJob(job);
     setForm((prev) => ({ ...prev, role: job }));
     setCareerModalOpen(false);
-    setFormChanged(true);
   }, []);
 
   // 경력 변경 시 호출되는 함수
   const handleCareerChange = useCallback(
     (career) => {
       setForm((prev) => ({ ...prev, career }));
-      setFormChanged(true);
-
       // 변경 표시 - 토스트는 한 번만 표시
       showToast("경력이 변경되었습니다: " + career, "success");
     },
@@ -157,7 +156,6 @@ const MyInfo = () => {
             password: "",
             passwordCheck: "",
           }));
-          setFormChanged(false);
           setEditSuccessModalOpen(true);
         }
       } catch (error) {
@@ -421,6 +419,8 @@ const MyInfo = () => {
           btnText="확인"
           btnHandler={() => {
             setDeleteSuccessModalOpen(false);
+            // 임시
+            logout();
             navigate("/signin");
           }}
           oneBtn={true}
