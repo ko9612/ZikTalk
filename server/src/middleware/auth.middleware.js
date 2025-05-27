@@ -71,7 +71,12 @@ export const checkEmailUserId = async (req, res, next) => {
   }
 
   try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        provider: "local",
+      },
+    });
 
     if (!existingUser) {
       return res

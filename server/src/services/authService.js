@@ -16,8 +16,11 @@ export const loginUser = async (data) => {
   const { email, password } = data;
 
   // 이메일 확인
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+      provider: "local",
+    },
   });
 
   if (!user) {
@@ -94,13 +97,23 @@ export const handleKakaoLogin = async (code) => {
     name: kakaoAccount.profile.nickname,
   };
 
-  const existingUser = await prisma.user.findUnique({
-    where: { email: kakaoUser.email },
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email: kakaoUser.email,
+      provider: "kakao",
+    },
   });
 
   if (!existingUser) {
     return { status: "signup", kakaoUser };
   }
+
+  await prisma.user.update({
+    where: { email: existingUser.email },
+    data: {
+      kakaoToken: access_token,
+    },
+  });
 
   const user = {
     userId: existingUser.id,
@@ -145,7 +158,7 @@ export const getKakaoUser = async (code) => {
 
 // 회원 가입 유저 등록
 export const registerUser = async (data) => {
-  const { name, email, password, role, career } = data;
+  const { name, email, password, role, career, provider } = data;
 
   const user = await prisma.user.findUnique({
     where: { email },
@@ -166,6 +179,7 @@ export const registerUser = async (data) => {
       password: hashedPassword,
       role,
       career: Number(career),
+      provider,
     },
   });
 };

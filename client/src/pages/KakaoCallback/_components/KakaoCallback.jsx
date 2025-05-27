@@ -15,7 +15,9 @@ const KakaoCallback = () => {
       if (res.data.status === "signup") {
         const { email, name } = res.data.kakaoUser;
 
-        navigate("/oauth-signup", { state: { email, name } });
+        navigate("/oauth-signup", {
+          state: { email, name, provider: "kakao" },
+        });
       } else {
         const { userName } = res.data;
         setLoginState(true);
