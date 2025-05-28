@@ -77,6 +77,11 @@ export const kakaoLogin = async (req, res) => {
         status: "signup",
         kakaoUser: result.kakaoUser,
       });
+    } else if (result.status === "localUser") {
+      return res.status(409).json({
+        status: "localUser",
+        kakaoUser: result.kakaoUser,
+      });
     }
 
     // 로그인
@@ -98,6 +103,17 @@ export const logout = (req, res) => {
   } catch (e) {
     console.error("로그아웃 오류:", e);
     res.status(500).json({ message: "서버 오류" });
+  }
+};
+
+export const linkAccount = async (req, res) => {
+  try {
+    await authService.linkAccountEmail(req.body);
+
+    const { email } = req.body;
+    res.status(200).json({ message: "계정 연동 성공", email });
+  } catch (error) {
+    res.status(500).json({ message: "계정 연동 실패", error: error.message });
   }
 };
 

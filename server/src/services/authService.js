@@ -97,6 +97,17 @@ export const handleKakaoLogin = async (code) => {
     name: kakaoAccount.profile.nickname,
   };
 
+  const existingLocalUser = await prisma.user.findFirst({
+    where: {
+      email: kakaoUser.email,
+      provider: "local",
+    },
+  });
+
+  if (existingLocalUser) {
+    return { status: "localUser", kakaoUser };
+  }
+
   const existingUser = await prisma.user.findFirst({
     where: {
       email: kakaoUser.email,
@@ -154,6 +165,18 @@ export const getKakaoUser = async (code) => {
   };
 
   return { kakaoUser };
+};
+
+// 계정 연동
+export const linkAccountEmail = async (data) => {
+  const { email, provider } = data;
+
+  await prisma.user.update({
+    where: { email },
+    data: {
+      provider,
+    },
+  });
 };
 
 // 회원 가입 유저 등록
