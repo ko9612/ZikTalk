@@ -1,13 +1,14 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
+import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
 import EmptyQuestionList from "./EmptyQuestionList";
-import { Header, FilterBar, ResultGrid, LoadingIndicator } from "./settings";
+import { Header, FilterBar, ResultGrid } from "./settings";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { SCROLL_BATCH_SIZE } from "./settings/constants";
 import axiosInstance from "@/api/axiosInstance";
 import { batchDeleteInterviews } from "@/api/myPageApi";
-import ResultCard from "@/components/common/ResultCard";
+import ResultCard from "./ResultCard";
 
 // 중복 제거 유틸 함수
 function removeDuplicateById(arr) {

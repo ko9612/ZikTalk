@@ -1,15 +1,11 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
+import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast";
-import {
-  PAGE_SIZE,
-  TEXT_COLORS,
-  TableHeader,
-  LoadingIndicator,
-} from "./settings";
+import { PAGE_SIZE, TEXT_COLORS, TableHeader } from "./settings";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";
@@ -49,7 +45,7 @@ const useBookmarkListState = () => {
             : undefined;
 
         // 전체 데이터 받아오기 (최대 200개)
-        const response = await fetchBookmarks(1, 200, roleParam, typeParam);
+        const response = await fetchBookmarks(1, 150, roleParam, typeParam);
         if (!response || !response.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }

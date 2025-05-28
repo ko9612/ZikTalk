@@ -1,9 +1,23 @@
-// 북마크 관련 유틸리티 함수
+export const formatBookmarkData = (data) => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    createdAt: data.createdAt,
+    isDeleted: false
+  };
+};
 
-/**
- * 북마크 데이터 변환 함수
- * title, desc → job, type, question 등으로 변환
- */
+export const filterAndSortResults = (results, sortType) => {
+  const filteredResults = results.filter(result => !result.isDeleted);
+  
+  return filteredResults.sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return sortType === 'latest' ? dateB - dateA : dateA - dateB;
+  });
+};
+
 export const convertToBookmarkData = (item) => {
   return {
     ...item,
@@ -15,10 +29,6 @@ export const convertToBookmarkData = (item) => {
   };
 };
 
-/**
- * 북마크 필터링 함수
- * 직무, 질문유형에 따라 필터링
- */
 export const filterBookmarks = (data, jobFilter, typeFilter, starredItems, isEmpty = false) => {
   if (isEmpty) return [];
   
@@ -33,4 +43,4 @@ export const filterBookmarks = (data, jobFilter, typeFilter, starredItems, isEmp
       ...convertToBookmarkData(item),
       isBookmarked: starredItems.includes(String(item.id)),
     }));
-}; 
+};

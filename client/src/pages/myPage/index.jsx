@@ -15,7 +15,6 @@ const tabs = [
 const MyPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const currentPath = location.pathname.split("/").pop() || "result-list";
 
   const renderContent = () => {

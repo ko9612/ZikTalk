@@ -11,7 +11,7 @@ import {
   deleteUserAccount,
   fetchUserInfo,
 } from "@/api/myPageApi";
-import { LoadingIndicator } from "../question/settings/components";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 import { useDeleteKaKaoUser } from "@/hooks/useAuth";
 import { loginInfo } from "@/store/loginStore";
 
@@ -19,14 +19,13 @@ const MyInfo = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [editConfirmModalOpen, setEditConfirmModalOpen] = useState(false);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
+  const [editConfirmModalOpen, setEditConfirmModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
   const [kakaoToken, setKakaoToken] = useState(null);
   const [provider, setProvider] = useState("local");
   const { logout } = loginInfo();
-  // 사용자 정보 초기화
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -35,27 +34,20 @@ const MyInfo = () => {
     role: "",
     career: "",
   });
-
   const [isLoading, setIsLoading] = useState(false);
   const [isCareerModalOpen, setCareerModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(form.role);
-
-  // 경력 옵션
   const careerOptions = [
     { value: "신입", label: "신입" },
     { value: "1 ~ 3년", label: "1 ~ 3년" },
     { value: "4 ~ 7년", label: "4 ~ 7년" },
     { value: "7년 이상", label: "7년 이상" },
   ];
-
-  // 탈퇴 확인 모달 버튼 핸들러
   const deleteConfirmBtnHandler = () => {
     setDeleteSuccessModalOpen(false);
     logout();
     navigate("/signin");
   };
-
-  // 컴포넌트 마운트 시 사용자 정보 가져오기
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -78,7 +70,6 @@ const MyInfo = () => {
                       ? "7년 이상"
                       : "신입",
           }));
-
           setSelectedJob(data.role || "");
           setProvider(data.provider);
           if (data.kakaoToken) {
@@ -86,41 +77,30 @@ const MyInfo = () => {
           }
         }
       } catch (err) {
-        console.error(err);
+        // 로그 제거
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchUserData();
   }, []);
-
-  // 폼 필드 변경 시 호출되는 함수
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }, []);
-
-  // 직무 선택 시 호출되는 함수
   const handleCareerSelect = useCallback((job) => {
     setSelectedJob(job);
     setForm((prev) => ({ ...prev, role: job }));
     setCareerModalOpen(false);
   }, []);
-
-  // 경력 변경 시 호출되는 함수
   const handleCareerChange = useCallback(
     (career) => {
       setForm((prev) => ({ ...prev, career }));
-      // 변경 표시 - 토스트는 한 번만 표시
       showToast("경력이 변경되었습니다: " + career, "success");
     },
     [showToast],
   );
-
-  // 폼 유효성 검사
   const validateForm = useCallback(() => {
-    // 비밀번호를 변경하려는 경우에만 검사
     if (form.password || form.passwordCheck) {
       if (!form.password || !form.passwordCheck) {
         showToast("비밀번호를 모두 입력해주세요.", "error");
@@ -137,27 +117,20 @@ const MyInfo = () => {
     }
     return true;
   }, [form.password, form.passwordCheck, showToast]);
-
-  // handleSubmit 함수 수정 (submit 이벤트를 인자로 받지 않아도 동작하도록)
   const handleSubmit = useCallback(
     async (e) => {
       if (e) e.preventDefault();
-
       if (!validateForm()) {
         return;
       }
-
       setIsLoading(true);
-
       try {
         const updateData = {
           ...(form.password ? { password: form.password } : {}),
           role: form.role,
           career: form.career,
         };
-
         const response = await updateUserInfo(updateData);
-
         if (
           response.message === "사용자 정보가 성공적으로 업데이트되었습니다."
         ) {
@@ -177,10 +150,8 @@ const MyInfo = () => {
         setIsLoading(false);
       }
     },
-
     [form, showToast, validateForm],
   );
-
   const handleDeleteAccount = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -203,17 +174,12 @@ const MyInfo = () => {
       handleCloseModal();
     }
   }, []);
-
-  // 모달 닫기 핸들러
   const handleCloseModal = useCallback(() => {
     setDeleteModalOpen(false);
   }, []);
-
-  // 모달 열기 핸들러
   const handleOpenModal = useCallback(() => {
     setDeleteModalOpen(true);
   }, []);
-
   return (
     <div className="relative flex w-full justify-center px-2 py-6 sm:px-0">
       <div className="w-full max-w-[483px] rounded-xl bg-white p-3 sm:p-0">

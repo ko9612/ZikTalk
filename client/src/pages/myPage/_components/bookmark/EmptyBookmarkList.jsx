@@ -1,11 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRegStar } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
-import FilterDropdown from "@/components/common/FilterDropdown";
 import { TableHeader, TEXT_COLORS } from "./settings";
 
-const EmptyBookmarkList = ({ job, setJob, type, setType }) => {
+const EmptyBookmarkList = () => {
   const navigate = useNavigate();
 
   return (
