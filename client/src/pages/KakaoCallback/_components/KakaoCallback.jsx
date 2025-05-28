@@ -4,7 +4,7 @@ import { loginInfo } from "@/store/loginStore";
 import axiosInstance from "@/api/axiosInstance";
 
 const KakaoCallback = () => {
-  const { setLoginState, setUserName } = loginInfo();
+  const { setLoginState, setUserName, setProvider } = loginInfo();
 
   const navigate = useNavigate();
 
@@ -22,6 +22,7 @@ const KakaoCallback = () => {
         const { userName } = res.data;
         setLoginState(true);
         setUserName(userName);
+        setProvider("kakao");
         navigate("/");
       }
     });

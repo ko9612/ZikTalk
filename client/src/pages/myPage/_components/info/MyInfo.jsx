@@ -24,6 +24,7 @@ const MyInfo = () => {
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
   const [kakaoToken, setKakaoToken] = useState(null);
+  const [provider, setProvider] = useState("local");
   const { logout } = loginInfo();
   // 사용자 정보 초기화
   const [form, setForm] = useState({
@@ -46,6 +47,13 @@ const MyInfo = () => {
     { value: "4 ~ 7년", label: "4 ~ 7년" },
     { value: "7년 이상", label: "7년 이상" },
   ];
+
+  // 탈퇴 확인 모달 버튼 핸들러
+  const deleteConfirmBtnHandler = () => {
+    setDeleteSuccessModalOpen(false);
+    logout();
+    navigate("/signin");
+  };
 
   // 컴포넌트 마운트 시 사용자 정보 가져오기
   useEffect(() => {
@@ -72,6 +80,7 @@ const MyInfo = () => {
           }));
 
           setSelectedJob(data.role || "");
+          setProvider(data.provider);
           if (data.kakaoToken) {
             setKakaoToken(data.kakaoToken);
           }
@@ -168,6 +177,7 @@ const MyInfo = () => {
         setIsLoading(false);
       }
     },
+
     [form, showToast, validateForm],
   );
 
@@ -190,7 +200,6 @@ const MyInfo = () => {
     } finally {
       setIsLoading(false);
       setDeleteSuccessModalOpen(true);
-      logout();
       handleCloseModal();
     }
   }, []);
@@ -274,7 +283,12 @@ const MyInfo = () => {
                   value={form.password}
                   onChange={handleChange}
                   inputClassName="h-10 w-full sm:h-12 text-sm"
-                  placeholder="영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
+                  placeholder={
+                    provider !== "local"
+                      ? "소셜 회원은 비밀번호 재설정이 불가합니다."
+                      : "영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
+                  }
+                  disabled={provider !== "local"}
                 />
               </div>
               <div>
@@ -291,7 +305,12 @@ const MyInfo = () => {
                   value={form.passwordCheck}
                   onChange={handleChange}
                   inputClassName="h-10 w-full sm:h-12 text-sm"
-                  placeholder="비밀번호를 입력해 주세요."
+                  placeholder={
+                    provider !== "local"
+                      ? "소셜 회원은 비밀번호 재설정이 불가합니다."
+                      : "비밀번호를 입력해 주세요."
+                  }
+                  disabled={provider !== "local"}
                 />
                 {form.password !== form.passwordCheck && form.passwordCheck && (
                   <p className="mt-1 text-xs text-red-500 sm:text-sm">
@@ -398,16 +417,11 @@ const MyInfo = () => {
       {deleteSuccessModalOpen && (
         <CommonModal
           isOpen={deleteSuccessModalOpen}
-          onClose={() => {
-            setDeleteSuccessModalOpen(false);
-          }}
+          onClose={deleteConfirmBtnHandler}
           title="탈퇴 완료"
           subText="정상적으로 탈퇴되었습니다."
           btnText="확인"
-          btnHandler={() => {
-            setDeleteSuccessModalOpen(false);
-            navigate("/signin");
-          }}
+          btnHandler={deleteConfirmBtnHandler}
           oneBtn={true}
         />
       )}
