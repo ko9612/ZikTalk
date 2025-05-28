@@ -19,6 +19,9 @@ router.post("/logout", authController.logout);
 // refresh token
 router.post("/silent-refresh", authController.refreshToken);
 
+// 계정 연동
+router.post("/link-account", authController.linkAccount);
+
 // 회원가입
 router.post("/signup", authController.signup);
 

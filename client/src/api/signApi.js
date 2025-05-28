@@ -36,6 +36,15 @@ const onSigninSuccess = (res) => {
     `Bearer ${accessToken}`;
 };
 
+export const linkAccount = async (data) => {
+  try {
+    await axiosInstance.post("/link-account", data);
+  } catch (e) {
+    console.error("계정 연동 중 오류 발생", e);
+    throw e;
+  }
+};
+
 export const signup = async (data) => {
   try {
     await axiosInstance.post("/signup", data);
