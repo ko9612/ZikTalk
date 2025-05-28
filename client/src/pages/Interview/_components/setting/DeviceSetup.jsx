@@ -8,16 +8,10 @@ const smTextWrap = "list-disc space-y-2 pl-5 text-sm";
 
 const DeviceSetup = () => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
-  // const { navigateTo } = useSetupNavigationStore((state) => state);
 
   useEffect(() => {
     setTabSelect("설정");
   }, []);
-
-  // MediaDeviceSelector에서 처리되므로 주석 처리
-  // const handleNext = () => {
-  //   navigateTo("DiffSetup");
-  // };
 
   return (
     <div className="mx-auto flex w-full flex-col items-center justify-center py-6">

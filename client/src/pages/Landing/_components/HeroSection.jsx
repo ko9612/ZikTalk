@@ -1,4 +1,3 @@
-// 김세준
 import React, { useEffect } from "react";
 import hero_section_video from "@/assets/videos/hero_section_video.mp4";
 import hero_section_videoWebm from "@/assets/videos/hero_section_video.webm";

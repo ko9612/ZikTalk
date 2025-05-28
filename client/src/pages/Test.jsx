@@ -1,6 +1,5 @@
 import { testApi } from "@/api/testApi";
 import React, { useEffect, useState } from "react";
-import InterviewList from "@/pages/Interview/_components/interview/InterviewList";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
@@ -35,13 +34,11 @@ const Test = () => {
 
   return (
     <div>
-      {/* <InterviewList /> */}
       {/* <video
         src={`http://localhost:5001/api/uploads/interview.webm`}
         type="video/webm"
         controls
-      />
-      <InterviewList /> */}
+      />*/}
       <p>Microphone: {listening ? "on" : "off"}</p>
       <button
         onClick={() =>
