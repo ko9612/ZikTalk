@@ -9,7 +9,6 @@ const KAKAO_LOGOUT_REDIRECT_URI = import.meta.env
 export const useLogout = () => {
   const { logout, provider } = loginInfo();
   const logoutHandler = async () => {
-    console.log(provider);
     try {
       await axiosInstance.post("/logout");
 

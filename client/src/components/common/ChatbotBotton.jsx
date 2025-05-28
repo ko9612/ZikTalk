@@ -19,7 +19,9 @@ const ChatbotBotton = () => {
     >
       {isChatOpen && <ChatContainer />}
       <button
-        onClick={() => setIsChatOpen((prev) => !prev)}
+        onClick={() => 
+          setIsChatOpen((prev) => !prev)
+        }
         className={twMerge(
           "border-zik-main text-zik-main hover:bg-zik-main fixed right-5 bottom-5 flex h-12 w-12 items-center justify-center rounded-full border-[1.46px] bg-white px-3 shadow-md transition-all duration-200 ease-in-out hover:border-none hover:text-white sm:h-16 sm:w-16 md:right-8 md:bottom-8 md:h-[76px] md:w-[76px] md:px-4",
           topButtonVisible && "right-20 sm:right-24 md:right-32",

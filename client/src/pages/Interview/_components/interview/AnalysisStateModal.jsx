@@ -31,7 +31,6 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
     try {
       const data = await getInterviewFeedback(postData);
       if (data) {
-        console.log(data);
         return data;
       }
     } catch (error) {
@@ -68,11 +67,9 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
         bookmarked: false,
       })),
     };
-    console.log("전송할 인터뷰 데이터:", interviewData);
     try {
       const data = await createInterview(interviewData);
       if (data) {
-        console.log("보낸 인터뷰 데이터:", data);
         setIsLoading(false);
       }
     } catch (error) {
@@ -87,7 +84,6 @@ const AnalysisStateModal = ({ isOpen, onClose, dimmed }) => {
     const runAnalysis = async () => {
       const feedback = await requestFeedback();
       if (feedback) {
-        console.log(userId);
         await postResultData(feedback);
       }
     };

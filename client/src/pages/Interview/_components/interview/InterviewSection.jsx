@@ -39,12 +39,8 @@ const InterviewSection = () => {
     totalNum: qCount,
     curNum: curNum,
   });
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition();
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const navigate = useNavigate();
 
@@ -148,7 +144,6 @@ const InterviewSection = () => {
             />
           </>
         )}
-        {listening ? "on" : "off"}
       </section>
     </>
   );
