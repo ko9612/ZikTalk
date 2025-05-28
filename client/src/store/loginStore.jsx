@@ -6,9 +6,11 @@ export const loginInfo = create(
     (set) => ({
       loginState: false,
       userName: "",
+      provider: "local",
+      setProvider: (string) => set({ provider: string }),
       setLoginState: (bool) => set({ loginState: bool }),
       setUserName: (name) => set({ userName: name }),
-      logout: () => set({ loginState: false, userName: "" }),
+      logout: () => set({ loginState: false, userName: "", provider: "local" }),
     }),
     {
       name: "login-info-storage",
