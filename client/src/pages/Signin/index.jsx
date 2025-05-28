@@ -1,6 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginInfo } from "@/store/loginStore";
 import SigninSection from "./_components/SigninForm";
-const index = () => {
+
+const Index = () => {
+  const { loginState } = loginInfo();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loginState) {
+      navigate("/", { replace: true });
+    }
+  }, [loginState, navigate]);
+
   return (
     <>
       <SigninSection />
@@ -8,4 +20,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Index;
