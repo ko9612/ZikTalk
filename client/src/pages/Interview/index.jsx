@@ -49,7 +49,6 @@ const index = () => {
     const getUserInfo = async () => {
       try {
         const userData = await getInterviewUserInfo();
-        console.log(userData);
         setLevel(userData.career);
         setCareer(userData.role);
         setUserId(userData.userId);

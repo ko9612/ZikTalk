@@ -1,6 +1,5 @@
 import { testApi } from "@/api/testApi";
 import React, { useEffect, useState } from "react";
-import RecordSection from "@/pages/Interview/_components/interview/RecordSection";
 import InterviewList from "@/pages/Interview/_components/interview/InterviewList";
 import SpeechRecognition, {
   useSpeechRecognition,
@@ -36,7 +35,6 @@ const Test = () => {
 
   return (
     <div>
-      {/* <RecordSection /> */}
       {/* <InterviewList /> */}
       {/* <video
         src={`http://localhost:5001/api/uploads/interview.webm`}
