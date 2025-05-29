@@ -2,7 +2,7 @@ import KakaoCallback from "./_components/KakaoCallback";
 
 export const Index = () => {
   return (
-    <div>
+    <div className="h-full">
       <KakaoCallback />
     </div>
   );

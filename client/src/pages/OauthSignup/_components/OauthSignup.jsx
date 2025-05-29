@@ -70,7 +70,7 @@ export default function OauthSignup() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center">
+    <div className="flex h-full w-full flex-col items-center justify-center">
       <div className="mx-auto my-0 w-fit p-4 text-lg font-bold text-wrap break-keep sm:mb-4 sm:text-3xl md:mb-6">
         <p>환영합니다!</p>
         <p>직톡에서 취업 준비의 모든 과정을 경험해보세요.</p>

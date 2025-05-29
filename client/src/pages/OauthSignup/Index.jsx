@@ -2,7 +2,7 @@ import OauthSignup from "./_components/OauthSignup";
 
 export const Index = () => {
   return (
-    <div>
+    <div className="h-full">
       <OauthSignup />
     </div>
   );
