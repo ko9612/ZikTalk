@@ -231,7 +231,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     attachments: [
       {
         filename: "logo.png",
-        path: "./src/assets/images/logo.svg",
+        path: "./src/assets/images/logo.png",
         cid: "logo",
       },
     ],
@@ -262,7 +262,7 @@ export const sendResetPasswordEmail = async (email, authCode) => {
     attachments: [
       {
         filename: "logo.png",
-        path: "./src/assets/images/logo.svg",
+        path: "./src/assets/images/logo.png",
         cid: "logo",
       },
     ],
