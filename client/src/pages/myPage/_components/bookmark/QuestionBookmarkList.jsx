@@ -19,12 +19,7 @@ const useBookmarkListState = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
-<<<<<<< Updated upstream
-=======
-  const [allQuestions, setAllQuestions] = useState([]);
-  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [fetchError, setFetchError] = useState(false);
->>>>>>> Stashed changes
 
   // 전체 북마크 데이터 받아와서 필터링 후 클라이언트에서 페이지네이션
   const fetchBookmarkedQuestions = useCallback(
@@ -42,7 +37,12 @@ const useBookmarkListState = () => {
             : undefined;
 
         // 서버에서 페이지네이션된 데이터 요청
-        const response = await fetchBookmarks(pageNum, PAGE_SIZE, roleParam, typeParam);
+        const response = await fetchBookmarks(
+          pageNum,
+          PAGE_SIZE,
+          roleParam,
+          typeParam,
+        );
         if (!response || !response.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
@@ -184,13 +184,7 @@ const QuestionBookmarkList = () => {
     fetchError,
   } = useBookmarkListState();
 
-  const {
-    currentPage,
-    totalPages,
-    visibleResults,
-    loading,
-    openIds,
-  } = state;
+  const { currentPage, totalPages, visibleResults, loading, openIds } = state;
 
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
     { value: "직군·직무", label: "직군·직무" },
@@ -286,9 +280,12 @@ const QuestionBookmarkList = () => {
   );
 
   // 페이지 변경 핸들러
-  const handlePageChange = useCallback((pageNum) => {
-    fetchBookmarkedQuestions(pageNum, filters);
-  }, [fetchBookmarkedQuestions, filters]);
+  const handlePageChange = useCallback(
+    (pageNum) => {
+      fetchBookmarkedQuestions(pageNum, filters);
+    },
+    [fetchBookmarkedQuestions, filters],
+  );
 
   // 북마크 토글 핸들러
   const handleBookmarkToggle = useCallback(
@@ -333,7 +330,13 @@ const QuestionBookmarkList = () => {
         showToast("북마크 처리 중 오류가 발생했습니다.", "error");
       }
     },
-    [visibleResults, currentPage, filters, fetchBookmarkedQuestions, toggleBookmark],
+    [
+      visibleResults,
+      currentPage,
+      filters,
+      fetchBookmarkedQuestions,
+      toggleBookmark,
+    ],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
