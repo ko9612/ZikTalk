@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import CareerSelectModal from "@/components/common/Modal/CareerSelectModal";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import Input from "@/components/common/Input";
@@ -11,8 +10,7 @@ import {
   fetchUserInfo,
 } from "@/api/myPageApi";
 import { LoadingIndicator } from "../common/LoadingIndicator";
-import { useDeleteKaKaoUser } from "@/hooks/useAuth";
-import { loginInfo } from "@/store/loginStore";
+import { useLogout, useDeleteKaKaoUser } from "@/hooks/useAuth";
 import Error500 from "@/components/common/Error500";
 
 const MyInfo = () => {
@@ -24,7 +22,8 @@ const MyInfo = () => {
   const unlinkKakao = useDeleteKaKaoUser();
   const [kakaoToken, setKakaoToken] = useState(null);
   const [provider, setProvider] = useState("local");
-  const { logout } = loginInfo();
+  const logout = useLogout();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -94,12 +93,9 @@ const MyInfo = () => {
     setForm((prev) => ({ ...prev, role: job }));
     setCareerModalOpen(false);
   }, []);
-  const handleCareerChange = useCallback(
-    (career) => {
-      setForm((prev) => ({ ...prev, career }));
-    },
-    [],
-  );
+  const handleCareerChange = useCallback((career) => {
+    setForm((prev) => ({ ...prev, career }));
+  }, []);
   const validateForm = useCallback(() => {
     if (form.password || form.passwordCheck) {
       if (!form.password || !form.passwordCheck) {
@@ -145,7 +141,9 @@ const MyInfo = () => {
           setEditSuccessModalOpen(true);
         }
       } catch (error) {
-        setErrorMessage(error.response?.data?.message || "업데이트 중 오류가 발생했습니다.");
+        setErrorMessage(
+          error.response?.data?.message || "업데이트 중 오류가 발생했습니다.",
+        );
         setErrorModalOpen(true);
       } finally {
         setIsLoading(false);
@@ -165,7 +163,9 @@ const MyInfo = () => {
         await deleteUserAccount();
       }
     } catch (error) {
-      setErrorMessage(error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.");
+      setErrorMessage(
+        error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.",
+      );
       setErrorModalOpen(true);
     } finally {
       setIsLoading(false);
@@ -184,17 +184,17 @@ const MyInfo = () => {
       {fetchError ? (
         <Error500 />
       ) : (
-        <div className="relative flex w-full justify-center px-2 py-6 sm:px-0">
+        <div className="relative flex justify-center w-full px-2 py-6 sm:px-0">
           <div className="w-full max-w-[483px] rounded-xl bg-white p-3 sm:p-0">
-            <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
+            <h2 className="mb-6 text-2xl font-bold text-center text-zik-text sm:text-3xl">
               내 정보 관리
             </h2>
-            <p className="mb-6 text-center text-sm text-gray-400">
+            <p className="mb-6 text-sm text-center text-gray-400">
               회원님의 정보를 안전하게 관리하세요.
             </p>
             <div style={{ minHeight: "27vh", position: "relative" }}>
               {isLoading ? (
-                <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+                <div className="absolute z-10 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                   <LoadingIndicator />
                 </div>
               ) : (
@@ -294,7 +294,7 @@ const MyInfo = () => {
                     </div>
                     <button
                       type="button"
-                      className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+                      className="relative flex items-center justify-between w-full h-10 px-3 py-2 text-xs font-medium text-gray-500 truncate bg-white border border-gray-300 rounded-lg min-w-24 whitespace-nowrap hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
                       onClick={() => setCareerModalOpen(true)}
                       role="listbox"
                       aria-haspopup="listbox"
@@ -319,13 +319,13 @@ const MyInfo = () => {
                         value={form.career}
                         onChange={handleCareerChange}
                         options={careerOptions}
-                        className="rounded-lg text-gray-500"
+                        className="text-gray-500 rounded-lg"
                         buttonWidth="flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
                         dropdownWidth="w-full"
                       />
                     </div>
                   </div>
-                  <div className="relative mt-4 flex flex-col items-center justify-end gap-2 sm:mt-2 sm:flex-row sm:gap-0">
+                  <div className="relative flex flex-col items-center justify-end gap-2 mt-4 sm:mt-2 sm:flex-row sm:gap-0">
                     <Button
                       type="button"
                       shape="bar"
