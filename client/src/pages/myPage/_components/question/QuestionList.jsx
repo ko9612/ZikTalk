@@ -152,20 +152,10 @@ const QuestionList = () => {
     (resetPage = false) => {
       const sorted = sortResults(allQuestions, filters.type);
       const nextPage = resetPage ? 0 : page;
-      let nextVisible;
-      
-      if (resetPage) {
-        // 필터 변경 시에는 처음부터 다시 표시
-        nextVisible = sorted.slice(0, SCROLL_BATCH_SIZE);
-        setVisibleResults(nextVisible);
-        setPage(0);
-      } else {
-        // 스크롤 시에는 현재까지의 데이터 유지
-        nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
-        setVisibleResults(nextVisible);
-      }
-      
+      const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
+      setVisibleResults(nextVisible);
       setHasMore(nextVisible.length < sorted.length);
+      if (resetPage) setPage(0);
     },
     [allQuestions, filters.type, page, sortResults],
   );
@@ -183,8 +173,9 @@ const QuestionList = () => {
 
         const sortedQuestions = sortResults(result.questions, type);
         setAllQuestions(sortedQuestions);
-        updateVisibleResults(true);  // 필터 변경 시 resetPage를 true로
+        setVisibleResults(sortedQuestions.slice(0, SCROLL_BATCH_SIZE));
         setHasMore(result.hasMore);
+        setPage(0);
       } catch (err) {
         setError("필터링된 데이터를 불러오는데 실패했습니다.");
       } finally {
@@ -194,39 +185,23 @@ const QuestionList = () => {
         }, 0);
       }
     },
-    [filters.type, updateFilter, fetchData, sortResults, updateVisibleResults],
+    [filters.type, updateFilter, fetchData, sortResults],
   );
 
   const loadMoreResults = useCallback(async () => {
     if (loading || loadingMore || !hasMore) return;
-    
-    // 이미 불러온 데이터가 충분한지 확인
-    const nextPage = page + 1;
-    const nextPageStart = nextPage * SCROLL_BATCH_SIZE;
-    const nextPageEnd = (nextPage + 1) * SCROLL_BATCH_SIZE;
-    
-    // 다음 페이지 데이터가 이미 있는 경우
-    if (nextPageEnd <= allQuestions.length) {
-      const sorted = sortResults(allQuestions, filters.type);
-      const nextVisible = sorted.slice(nextPageStart, nextPageEnd);
-      setVisibleResults(prev => [...prev, ...nextVisible]);
-      setPage(nextPage);
-      return;
-    }
-
-    // 다음 페이지 데이터가 없는 경우에만 API 호출
     setLoadingMore(true);
     try {
+      const nextPage = page + 1;
       const result = await fetchData(nextPage, false);
       if (!result) return;
 
-      setAllQuestions((prev) => {
-        const newQuestions = removeDuplicateById([...prev, ...result.questions]);
-        return newQuestions;
-      });
-      
-      const sorted = sortResults(result.questions, filters.type);
-      setVisibleResults(prev => [...prev, ...sorted]);
+      setAllQuestions((prev) =>
+        removeDuplicateById([...prev, ...result.questions]),
+      );
+      setVisibleResults((prev) =>
+        removeDuplicateById([...prev, ...result.questions]),
+      );
       setHasMore(result.hasMore);
       setPage(nextPage);
     } catch (err) {
@@ -234,7 +209,7 @@ const QuestionList = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loading, loadingMore, hasMore, page, fetchData, allQuestions, filters.type, sortResults]);
+  }, [loading, loadingMore, hasMore, page, fetchData]);
 
   const handleSelectToggle = useCallback((id) => {
     setSelected((prev) => ({
@@ -329,25 +304,24 @@ const QuestionList = () => {
   }, [allQuestions, filters.type, page, updateVisibleResults]);
 
   useEffect(() => {
-    let lastScrollTop = 0;
+    let isScrolling = false;
     const handleScroll = () => {
+      if (isScrolling) return;
       if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+
       scrollEndTimer.current = setTimeout(() => {
         if (loading || loadingMore || !hasMore) return;
 
         const scrollHeight = document.documentElement.scrollHeight;
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         const clientHeight = document.documentElement.clientHeight;
-        const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
-        // 스크롤이 아래로 내려갈 때만 처리
-        if (scrollTop > lastScrollTop) {
-          // 스크롤이 하단에 가까워졌을 때만 로드
-          if (distanceToBottom < 200) {
-            loadMoreResults();
-          }
+        if (scrollHeight - scrollTop - clientHeight < 200) {
+          isScrolling = true;
+          loadMoreResults().finally(() => {
+            isScrolling = false;
+          });
         }
-        lastScrollTop = scrollTop;
       }, 200);
     };
 
