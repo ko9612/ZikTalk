@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
+import { useSetupNavigationStore } from "@/store/store";
 
 const useNavigationBlocker = ({ onCleanup = () => {}, enabled = true }) => {
   const isNavigating = useRef(false);
   const hasPushedInitialEntry = useRef(false);
   const skipNextPopState = useRef(false);
+  const { setGoingBack } = useSetupNavigationStore();
 
   const historyEntryCount = useRef(0);
   const SESSION_KEY = "nav_blocker_state";
@@ -73,12 +75,23 @@ const useNavigationBlocker = ({ onCleanup = () => {}, enabled = true }) => {
       onCleanup();
       cleanupEventListeners();
 
-      try {
-        sessionStorage.removeItem(SESSION_KEY);
-      } catch (e) {}
+      // 비동기 함수 정의
+      async function stopMediaAndGoBack() {
+        try {
+          await setGoingBack(true);
+        } catch (err) {
+          console.error("장치 접근 실패:", err);
+        }
 
-      // pushstate 때문에 전전페이지가 실제 이전페이지
-      window.history.go(-1);
+        try {
+          sessionStorage.removeItem(SESSION_KEY);
+        } catch (e) {}
+
+        // 해제 완료 후 뒤로가기 실행
+        window.history.go(-1);
+      }
+
+      stopMediaAndGoBack(); // 함수 실행
     } else {
       // '취소' 클릭 → popstate 때문에 이미 한 칸 뒤로 간 상태 → 다시 앞으로 가야 함
       event.preventDefault();

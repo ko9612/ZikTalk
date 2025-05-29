@@ -14,6 +14,8 @@ export const useSetupNavigationStore = create((set) => ({
   currentComponent: "DeviceSetup",
   navigateTo: (componentName) => set({ currentComponent: componentName }),
   resetNavigation: () => set({ currentComponent: "DeviceSetup" }),
+  isGoingBack: false,
+  setGoingBack: (val) => set({ isGoingBack: val }),
 }));
 
 export const useInterviewStateStore = create((set) => ({

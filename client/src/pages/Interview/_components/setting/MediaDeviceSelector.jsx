@@ -27,6 +27,7 @@ const MediaDeviceSelector = () => {
 
   // ------------ 전역 상태 (Zustand Store) ------------
   const { navigateTo } = useSetupNavigationStore((state) => state);
+  const { isGoingBack, setGoingBack } = useSetupNavigationStore();
   const { selectedMicId, selectedCameraId, setMicId, setCameraId } =
     useMediaDeviceStore();
 
@@ -45,6 +46,9 @@ const MediaDeviceSelector = () => {
    * 3. 디바이스 변경 이벤트 감지 및 처리
    */
   useEffect(() => {
+    if (isGoingBack) {
+      return;
+    }
     // 마이크 초기화 함수
     const initMic = async () => {
       try {
@@ -114,6 +118,9 @@ const MediaDeviceSelector = () => {
    * 3. 카메라 ID 저장 및 selectedCameraId 설정
    */
   useEffect(() => {
+    if (isGoingBack) {
+      return;
+    }
     // 카메라 초기화 함수
     const initCamera = async () => {
       try {
@@ -207,6 +214,10 @@ const MediaDeviceSelector = () => {
    * 3. 실시간 볼륨 수준 측정 및 상태 업데이트
    */
   useEffect(() => {
+    if (isGoingBack) {
+      setGoingBack(false);
+      return;
+    }
     // 마이크 ID나 접근 권한이 없으면 중단
     if (!selectedMicId || !hasMicAccess) return;
     // 마이크 볼륨 모니터링 시작 함수
