@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
+    "prestart": "npx prisma generate",
     "start": "node src/index.js",
     "test:user": "node src/test-user.js",
     "test:interview": "node src/test-interview.js",
