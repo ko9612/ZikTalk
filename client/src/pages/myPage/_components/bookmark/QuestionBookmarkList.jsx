@@ -230,6 +230,19 @@ const useBookmarkListState = (filters) => {
 
           setFilteredResults((prev) => prev.filter((q) => q.id !== id));
           setAllResults((prev) => prev.filter((q) => q.id !== id));
+
+          // 북마크 해제 시 totalPages 업데이트
+          setTotalPages((prev) => {
+            const newTotalItems = filteredResults.length - 1;
+            const newTotalPages = Math.ceil(newTotalItems / PAGE_SIZE);
+            
+            // 현재 페이지가 새로운 총 페이지 수보다 크면 마지막 페이지로 이동
+            if (currentPage > newTotalPages) {
+              setCurrentPage(newTotalPages);
+            }
+            
+            return newTotalPages;
+          });
         }
 
         return true;
