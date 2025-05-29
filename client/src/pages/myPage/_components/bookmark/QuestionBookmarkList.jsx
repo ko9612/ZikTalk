@@ -10,18 +10,18 @@ import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Error500 from "@/components/common/Error500";
-
 // 북마크 질문 목록 상태 관리 훅
 const useBookmarkListState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleResults, setVisibleResults] = useState([]);
+  const [allResults, setAllResults] = useState([]); // 전체 데이터 저장
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
   const [fetchError, setFetchError] = useState(false);
 
-  // 전체 북마크 데이터 받아와서 필터링 후 클라이언트에서 페이지네이션
+  // 전체 북마크 데이터 받아오기
   const fetchBookmarkedQuestions = useCallback(
     async (pageNum, currentFilters) => {
       try {
@@ -36,7 +36,7 @@ const useBookmarkListState = () => {
             ? currentFilters.questionType
             : undefined;
 
-        // 서버에서 페이지네이션된 데이터 요청
+        // 서버에서 데이터 요청
         const response = await fetchBookmarks(
           pageNum,
           PAGE_SIZE,
@@ -58,6 +58,8 @@ const useBookmarkListState = () => {
           interviewId: q.interviewId,
         }));
 
+        // 전체 데이터 저장
+        setAllResults(formattedQuestions);
         setVisibleResults(formattedQuestions);
         setTotalPages(Math.ceil(response.totalCount / PAGE_SIZE));
         setCurrentPage(pageNum);
@@ -72,6 +74,37 @@ const useBookmarkListState = () => {
       }
     },
     [],
+  );
+
+  // 필터 변경 핸들러
+  const handleFilterChange = useCallback(
+    (filters) => {
+      // 클라이언트 사이드 필터링
+      const filteredData = allResults.filter((item) => {
+        const matchesJob =
+          filters.job === "직군·직무" || item.career === filters.job;
+        const matchesType =
+          filters.questionType === "질문유형" ||
+          item.type === filters.questionType;
+        return matchesJob && matchesType;
+      });
+
+      setVisibleResults(filteredData);
+      setTotalPages(Math.ceil(filteredData.length / PAGE_SIZE));
+      setCurrentPage(1);
+    },
+    [allResults],
+  );
+
+  // 페이지 변경 핸들러
+  const handlePageChange = useCallback(
+    (pageNum) => {
+      const startIndex = (pageNum - 1) * PAGE_SIZE;
+      const endIndex = startIndex + PAGE_SIZE;
+      setVisibleResults(allResults.slice(startIndex, endIndex));
+      setCurrentPage(pageNum);
+    },
+    [allResults],
   );
 
   // 초기 데이터 로드
@@ -135,14 +168,6 @@ const useBookmarkListState = () => {
     );
   }, []);
 
-  // 필터 변경 핸들러
-  const handleFilterChange = useCallback(
-    (filters) => {
-      fetchBookmarkedQuestions(1, filters);
-    },
-    [fetchBookmarkedQuestions],
-  );
-
   return {
     state: {
       currentPage,
@@ -155,11 +180,12 @@ const useBookmarkListState = () => {
     fetchBookmarkedQuestions,
     toggleBookmark,
     toggleOpen,
+    handleFilterChange,
+    handlePageChange,
     setLoading,
     setError,
     setVisibleResults,
     setCurrentPage,
-    handleFilterChange,
     fetchError,
   };
 };
@@ -178,81 +204,41 @@ const QuestionBookmarkList = () => {
     fetchBookmarkedQuestions,
     toggleBookmark,
     toggleOpen,
+    handleFilterChange,
+    handlePageChange,
     setVisibleResults,
     setCurrentPage,
-    handleFilterChange,
     fetchError,
   } = useBookmarkListState();
 
   const { currentPage, totalPages, visibleResults, loading, openIds } = state;
 
+  // 직군/직무 옵션을 현재 데이터에서 추출
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
     { value: "직군·직무", label: "직군·직무" },
   ]);
 
-  // 모든 사용 가능한 직군/직무 옵션을 저장
-  const [allAvailableJobOptions, setAllAvailableJobOptions] = useState([]);
-  const [isJobOptionsLoaded, setIsJobOptionsLoaded] = useState(false);
-
-  // 모든 가능한 직군·직무 옵션을 로드하는 함수
-  const loadAllJobOptions = useCallback(async () => {
-    if (isJobOptionsLoaded) return;
-
-    try {
-      // 기본 옵션 항상 포함
-      const defaultOption = { value: "직군·직무", label: "직군·직무" };
-
-      // 이미 로드된 옵션이 있으면 사용
-      if (allAvailableJobOptions.length > 1) {
-        setDynamicJobOptions([defaultOption, ...allAvailableJobOptions]);
-        return;
-      }
-
-      // 필터 없이 북마크 데이터 로드 시도
-      try {
-        const response = await fetchBookmarks(1, 100, undefined, undefined);
-
-        if (response && response.questions && response.questions.length > 0) {
-          // 모든 직군·직무 값 추출 (interview.role만 사용)
-          const allRoles = response.questions
-            .map((q) => q.interview?.role)
-            .filter(Boolean);
-
-          // 중복 제거
-          const uniqueRoles = Array.from(new Set(allRoles));
-
-          // 옵션 변환 및 저장
-          const roleOptions = uniqueRoles.map((role) => ({
-            value: role,
-            label: role,
-          }));
-          setAllAvailableJobOptions(roleOptions);
-          setDynamicJobOptions([defaultOption, ...roleOptions]);
-          setIsJobOptionsLoaded(true);
-        }
-      } catch (err) {
-        // 오류 발생 시 기본 옵션만 유지
-        setDynamicJobOptions([defaultOption]);
-      }
-    } catch (err) {}
-  }, [allAvailableJobOptions, isJobOptionsLoaded]);
-
-  // 컴포넌트 마운트 시 한 번만 직군·직무 옵션 로드
+  // 데이터가 변경될 때마다 직군/직무 옵션 업데이트
   useEffect(() => {
-    if (!isJobOptionsLoaded) {
-      loadAllJobOptions();
-    }
-  }, [isJobOptionsLoaded, loadAllJobOptions]);
+    if (visibleResults.length > 0) {
+      // 현재 데이터에서 고유한 직군/직무 값 추출
+      const uniqueRoles = Array.from(
+        new Set(visibleResults.map((item) => item.career)),
+      ).filter((role) => role !== "미분류");
 
-  // 북마크 데이터가 변경될 때 현재 필터링된 결과에 없는 옵션도 유지
-  useEffect(() => {
-    if (allAvailableJobOptions.length > 0) {
+      // 옵션 변환
+      const roleOptions = uniqueRoles.map((role) => ({
+        value: role,
+        label: role,
+      }));
+
+      // 기본 옵션과 함께 설정
       setDynamicJobOptions([
         { value: "직군·직무", label: "직군·직무" },
-        ...allAvailableJobOptions,
+        ...roleOptions,
       ]);
     }
-  }, [allAvailableJobOptions]);
+  }, [visibleResults]);
 
   // 질문 유형 옵션
   const questionTypeOptions = [
@@ -277,14 +263,6 @@ const QuestionBookmarkList = () => {
       handleFilterChange({ ...filters, questionType: value });
     },
     [updateFilter, filters, handleFilterChange],
-  );
-
-  // 페이지 변경 핸들러
-  const handlePageChange = useCallback(
-    (pageNum) => {
-      fetchBookmarkedQuestions(pageNum, filters);
-    },
-    [fetchBookmarkedQuestions, filters],
   );
 
   // 북마크 토글 핸들러
