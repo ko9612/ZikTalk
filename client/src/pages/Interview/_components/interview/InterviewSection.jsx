@@ -122,6 +122,7 @@ const InterviewSection = ({ videoRecord }) => {
           btnHandler={() => {
             navigate("/");
           }}
+          oneBtn={true}
         />
       )}
       <section className="flex h-full flex-1 flex-col justify-center gap-5 px-24">

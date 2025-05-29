@@ -9,6 +9,7 @@ import { SCROLL_BATCH_SIZE } from "./settings/constants";
 import axiosInstance from "@/api/axiosInstance";
 import { batchDeleteInterviews } from "@/api/myPageApi";
 import ResultCard from "./ResultCard";
+import Error500 from "@/components/common/Error500";
 
 // 중복 제거 유틸 함수
 function removeDuplicateById(arr) {
@@ -34,10 +35,10 @@ const QuestionList = () => {
   const [error, setError] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isBookmarkSorted, setIsBookmarkSorted] = useState(false);
-  const loadingRef = useRef(null);
   const abortControllerRef = useRef(null);
   const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const scrollEndTimer = useRef(null);
+  const [fetchError, setFetchError] = useState(false);
 
   const fetchData = useCallback(async (pageNum, isInitial = false) => {
     if (abortControllerRef.current) {
@@ -104,8 +105,12 @@ const QuestionList = () => {
         setVisibleResults(result.questions);
         setHasMore(result.hasMore);
         setInitialDataLoaded(true);
-      } catch (err) {
-        setError("데이터를 불러오는데 실패했습니다.");
+      } catch (error) {
+        if (error.response?.status === 500) {
+          setFetchError(true);
+        } else {
+          setError("데이터를 불러오는데 실패했습니다.");
+        }
       } finally {
         setLoading(false);
       }
@@ -122,23 +127,26 @@ const QuestionList = () => {
     };
   }, [initialDataLoaded, page, fetchData]);
 
-  const sortResults = useCallback((results, type) => {
-    if (type === SORT_OPTIONS.BOOKMARK && !isBookmarkSorted) {
-      setIsBookmarkSorted(true);
-      return [...results].sort((a, b) => {
-        if (a.bookmarked !== b.bookmarked) {
-          return a.bookmarked ? -1 : 1;
-        }
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-    } else if (type !== SORT_OPTIONS.BOOKMARK) {
-      setIsBookmarkSorted(false);
-      return [...results].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-      );
-    }
-    return results;
-  }, [isBookmarkSorted]);
+  const sortResults = useCallback(
+    (results, type) => {
+      if (type === SORT_OPTIONS.BOOKMARK && !isBookmarkSorted) {
+        setIsBookmarkSorted(true);
+        return [...results].sort((a, b) => {
+          if (a.bookmarked !== b.bookmarked) {
+            return a.bookmarked ? -1 : 1;
+          }
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+      } else if (type !== SORT_OPTIONS.BOOKMARK) {
+        setIsBookmarkSorted(false);
+        return [...results].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        );
+      }
+      return results;
+    },
+    [isBookmarkSorted],
+  );
 
   const updateVisibleResults = useCallback(
     (resetPage = false) => {
@@ -187,9 +195,6 @@ const QuestionList = () => {
       const nextPage = page + 1;
       const result = await fetchData(nextPage, false);
       if (!result) return;
-
-      // 1초 인위적 딜레이 추가
-      // await new Promise((res) => setTimeout(res, 100));
 
       setAllQuestions((prev) =>
         removeDuplicateById([...prev, ...result.questions]),
@@ -306,7 +311,7 @@ const QuestionList = () => {
         const scrollHeight = document.documentElement.scrollHeight;
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         const clientHeight = document.documentElement.clientHeight;
-        if (scrollHeight - scrollTop - clientHeight <1050) {
+        if (scrollHeight - scrollTop - clientHeight < 1050) {
           loadMoreResults();
         }
       }, 0);
@@ -405,97 +410,108 @@ const QuestionList = () => {
   }, [selected]);
 
   return (
-    <div className="max-w-9xl mx-auto w-full px-2 pt-6 sm:px-3">
-      <Header showDescription={true} />
-      <FilterBar
-        filterValue={filters.type}
-        onFilterChange={handleFilterChange}
-        isDeleteMode={isDeleteMode}
-        onDeleteToggle={() => setIsDeleteMode((v) => !v)}
-        onDeleteConfirm={handleDeleteConfirm}
-      />
-
-      {error && (
-        <div className="my-4 rounded-md bg-red-50 p-4 text-red-500">
-          {error}
-        </div>
-      )}
-
-      <div
-        className={`transition-all duration-300 ease-in-out ${
-          isTransitioning ? "scale-[0.98] opacity-50" : "scale-100 opacity-100"
-        }`}
-        style={{ minHeight: "10vh", position: "relative" }}
-      >
-        {loading ? (
-          <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-            <LoadingIndicator />
-          </div>
-        ) : visibleResults.length === 0 ? (
-          <EmptyQuestionList />
-        ) : (
-          <ResultGrid
-            visibleResults={visibleResults}
+    <>
+      {fetchError ? (
+        <Error500 />
+      ) : (
+        <div className="max-w-9xl mx-auto w-full px-2 pt-6 sm:px-3">
+          <Header showDescription={true} />
+          <FilterBar
+            filterValue={filters.type}
+            onFilterChange={handleFilterChange}
             isDeleteMode={isDeleteMode}
-            selected={selected}
-            handleSelectToggle={handleSelectToggle}
-            handleBookmarkToggle={handleBookmarkToggle}
-            handleCardClick={handleCardClick}
-            renderCard={renderCard}
+            onDeleteToggle={() => setIsDeleteMode((v) => !v)}
+            onDeleteConfirm={handleDeleteConfirm}
           />
-        )}
-      </div>
 
-      {loadingMore && (
-        <div
-          className="my-10 flex w-full justify-center"
-          style={{ minHeight: 60 }}
-        >
-          <LoadingIndicator />
-        </div>
-      )}
+          {error && (
+            <div className="my-4 rounded-md bg-red-50 p-4 text-red-500">
+              {error}
+            </div>
+          )}
 
-      {!hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
-        <div className="scroll-spacer my-10 h-2 w-full">
-          <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm">
-            더 이상 불러올 데이터가 없습니다
+          <div
+            className={`transition-all duration-300 ease-in-out ${
+              isTransitioning
+                ? "scale-[0.98] opacity-50"
+                : "scale-100 opacity-100"
+            }`}
+            style={{ minHeight: "10vh", position: "relative" }}
+          >
+            {loading ? (
+              <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+                <LoadingIndicator />
+              </div>
+            ) : visibleResults.length === 0 ? (
+              <EmptyQuestionList />
+            ) : (
+              <ResultGrid
+                visibleResults={visibleResults}
+                isDeleteMode={isDeleteMode}
+                selected={selected}
+                handleSelectToggle={handleSelectToggle}
+                handleBookmarkToggle={handleBookmarkToggle}
+                handleCardClick={handleCardClick}
+                renderCard={renderCard}
+              />
+            )}
           </div>
+
+          {loadingMore && (
+            <div
+              className="my-10 flex w-full justify-center"
+              style={{ minHeight: 60 }}
+            >
+              <LoadingIndicator />
+            </div>
+          )}
+
+          {!hasMore &&
+            !loading &&
+            !loadingMore &&
+            visibleResults.length > 0 && (
+              <div className="scroll-spacer my-10 h-2 w-full">
+                <div className="text-zik-text/60 my-10 flex w-full items-center justify-center text-sm">
+                  더 이상 불러올 데이터가 없습니다
+                </div>
+              </div>
+            )}
+
+          {hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
+            <div className="my-10 flex w-full flex-col items-center justify-center">
+              <div className="text-zik-text/60 mb-2 text-base">
+                스크롤을 내리면 더 많은 결과를 볼 수 있습니다
+              </div>
+            </div>
+          )}
+
+          {confirmModalOpen && (
+            <CommonModal
+              isOpen={confirmModalOpen}
+              onClose={() => setConfirmModalOpen(false)}
+              title="삭제 확인"
+              subText={
+                <span style={{ whiteSpace: "pre-line" }}>{confirmMessage}</span>
+              }
+              btnText="삭제하기"
+              btnHandler={handleDeleteExecute}
+              className="break-keep whitespace-pre-wrap"
+            />
+          )}
+
+          {deleteSuccessModalOpen && (
+            <CommonModal
+              isOpen={deleteSuccessModalOpen}
+              onClose={() => setDeleteSuccessModalOpen(false)}
+              title="삭제 완료"
+              subText="정상적으로 삭제되었습니다."
+              btnText="확인"
+              btnHandler={() => setDeleteSuccessModalOpen(false)}
+            />
+          )}
         </div>
       )}
-
-      {hasMore && !loading && !loadingMore && visibleResults.length > 0 && (
-        <div className="my-10 flex flex-col items-center justify-center w-full">
-          <div className="text-zik-text/60 text-base mb-2">
-            스크롤을 내리면 더 많은 결과를 볼 수 있습니다
-          </div>
-        </div>
-      )}
-
-      {confirmModalOpen && (
-        <CommonModal
-          isOpen={confirmModalOpen}
-          onClose={() => setConfirmModalOpen(false)}
-          title="삭제 확인"
-          subText={
-            <span style={{ whiteSpace: "pre-line" }}>{confirmMessage}</span>
-          }
-          btnText="삭제하기"
-          btnHandler={handleDeleteExecute}
-          className="break-keep whitespace-pre-wrap"
-        />
-      )}
-
-      {deleteSuccessModalOpen && (
-        <CommonModal
-          isOpen={deleteSuccessModalOpen}
-          onClose={() => setDeleteSuccessModalOpen(false)}
-          title="삭제 완료"
-          subText="정상적으로 삭제되었습니다."
-          btnText="확인"
-          btnHandler={() => setDeleteSuccessModalOpen(false)}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

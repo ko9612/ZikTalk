@@ -14,6 +14,7 @@ import {
 import { LoadingIndicator } from "../common/LoadingIndicator";
 import { useDeleteKaKaoUser } from "@/hooks/useAuth";
 import { loginInfo } from "@/store/loginStore";
+import Error500 from "@/components/common/Error500";
 
 const MyInfo = () => {
   const { showToast } = useToast();
@@ -43,11 +44,14 @@ const MyInfo = () => {
     { value: "4 ~ 7년", label: "4 ~ 7년" },
     { value: "7년 이상", label: "7년 이상" },
   ];
+  const [fetchError, setFetchError] = useState(false);
+
   const deleteConfirmBtnHandler = () => {
     setDeleteSuccessModalOpen(false);
     logout();
     navigate("/signin");
   };
+
   useEffect(() => {
     async function fetchUserData() {
       try {
@@ -76,8 +80,12 @@ const MyInfo = () => {
             setKakaoToken(data.kakaoToken);
           }
         }
-      } catch (err) {
-        // 로그 제거
+      } catch (error) {
+        if (error.response?.status === 500) {
+          setFetchError(true);
+        } else {
+          setError("데이터를 불러오는데 실패했습니다.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -181,234 +189,241 @@ const MyInfo = () => {
     setDeleteModalOpen(true);
   }, []);
   return (
-    <div className="relative flex w-full justify-center px-2 py-6 sm:px-0">
-      <div className="w-full max-w-[483px] rounded-xl bg-white p-3 sm:p-0">
-        <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
-          내 정보 관리
-        </h2>
-        <p className="mb-6 text-center text-sm text-gray-400">
-          회원님의 정보를 안전하게 관리하세요.
-        </p>
-        <div style={{ minHeight: "27vh", position: "relative" }}>
-          {isLoading ? (
-            <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-              <LoadingIndicator />
+    <>
+      {fetchError ? (
+        <Error500 />
+      ) : (
+        <div className="relative flex w-full justify-center px-2 py-6 sm:px-0">
+          <div className="w-full max-w-[483px] rounded-xl bg-white p-3 sm:p-0">
+            <h2 className="text-zik-text mb-6 text-center text-2xl font-bold sm:text-3xl">
+              내 정보 관리
+            </h2>
+            <p className="mb-6 text-center text-sm text-gray-400">
+              회원님의 정보를 안전하게 관리하세요.
+            </p>
+            <div style={{ minHeight: "27vh", position: "relative" }}>
+              {isLoading ? (
+                <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+                  <LoadingIndicator />
+                </div>
+              ) : (
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex flex-col gap-2 sm:gap-4"
+                >
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+                    >
+                      이름
+                    </label>
+                    <Input
+                      type="text"
+                      id="name"
+                      name="name"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+                    >
+                      이메일
+                    </label>
+                    <Input
+                      type="email"
+                      id="email"
+                      name="email"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+                    >
+                      비밀번호 재설정
+                    </label>
+                    <Input
+                      type="password"
+                      id="password"
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      inputClassName="h-10 w-full sm:h-12 text-sm"
+                      placeholder={
+                        provider !== "local"
+                          ? "소셜 회원은 비밀번호 재설정이 불가합니다."
+                          : "영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
+                      }
+                      disabled={provider !== "local"}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="passwordCheck"
+                      className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
+                    >
+                      비밀번호 확인
+                    </label>
+                    <Input
+                      type="password"
+                      id="passwordCheck"
+                      name="passwordCheck"
+                      value={form.passwordCheck}
+                      onChange={handleChange}
+                      inputClassName="h-10 w-full sm:h-12 text-sm"
+                      placeholder={
+                        provider !== "local"
+                          ? "소셜 회원은 비밀번호 재설정이 불가합니다."
+                          : "비밀번호를 입력해 주세요."
+                      }
+                      disabled={provider !== "local"}
+                    />
+                    {form.password !== form.passwordCheck &&
+                      form.passwordCheck && (
+                        <p className="mt-1 text-xs text-red-500 sm:text-sm">
+                          비밀번호가 일치하지 않습니다.
+                        </p>
+                      )}
+                  </div>
+                  <div>
+                    <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+                      직무
+                    </div>
+                    <button
+                      type="button"
+                      className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+                      onClick={() => setCareerModalOpen(true)}
+                      role="listbox"
+                      aria-haspopup="listbox"
+                      aria-expanded={isCareerModalOpen}
+                    >
+                      {selectedJob || "직무를 선택하세요"}
+                    </button>
+                    {isCareerModalOpen && (
+                      <CareerSelectModal
+                        isOpen={isCareerModalOpen}
+                        onClose={() => setCareerModalOpen(false)}
+                        onSelect={handleCareerSelect}
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
+                      경력
+                    </div>
+                    <div className="relative">
+                      <FilterDropdown
+                        value={form.career}
+                        onChange={handleCareerChange}
+                        options={careerOptions}
+                        className="rounded-lg text-gray-500"
+                        buttonWidth="flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
+                        dropdownWidth="w-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="relative mt-4 flex flex-col items-center justify-end gap-2 sm:mt-2 sm:flex-row sm:gap-0">
+                    <Button
+                      type="button"
+                      shape="bar"
+                      className="w-full"
+                      disabled={isLoading}
+                      onClick={() => setEditConfirmModalOpen(true)}
+                    >
+                      {isLoading ? "저장 중..." : "수정 완료"}
+                    </Button>
+                    <button
+                      type="button"
+                      className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"
+                      onClick={handleOpenModal}
+                      disabled={isLoading}
+                    >
+                      회원탈퇴
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-2 sm:gap-4"
-            >
-              <div>
-                <label
-                  htmlFor="name"
-                  className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
-                >
-                  이름
-                </label>
-                <Input
-                  type="text"
-                  id="name"
-                  name="name"
-                  autoComplete="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
-                  disabled
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
-                >
-                  이메일
-                </label>
-                <Input
-                  type="email"
-                  id="email"
-                  name="email"
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  inputClassName="h-10 w-full sm:h-12 text-sm sm:text-base bg-[#F6F3FF]"
-                  disabled
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
-                >
-                  비밀번호 재설정
-                </label>
-                <Input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  inputClassName="h-10 w-full sm:h-12 text-sm"
-                  placeholder={
-                    provider !== "local"
-                      ? "소셜 회원은 비밀번호 재설정이 불가합니다."
-                      : "영문, 숫자, 특수문자를 조합하여 8 ~ 12자의 비밀번호를 입력해 주세요."
-                  }
-                  disabled={provider !== "local"}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="passwordCheck"
-                  className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm"
-                >
-                  비밀번호 확인
-                </label>
-                <Input
-                  type="password"
-                  id="passwordCheck"
-                  name="passwordCheck"
-                  value={form.passwordCheck}
-                  onChange={handleChange}
-                  inputClassName="h-10 w-full sm:h-12 text-sm"
-                  placeholder={
-                    provider !== "local"
-                      ? "소셜 회원은 비밀번호 재설정이 불가합니다."
-                      : "비밀번호를 입력해 주세요."
-                  }
-                  disabled={provider !== "local"}
-                />
-                {form.password !== form.passwordCheck && form.passwordCheck && (
-                  <p className="mt-1 text-xs text-red-500 sm:text-sm">
-                    비밀번호가 일치하지 않습니다.
-                  </p>
-                )}
-              </div>
-              <div>
-                <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
-                  직무
-                </div>
-                <button
-                  type="button"
-                  className="relative flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
-                  onClick={() => setCareerModalOpen(true)}
-                  role="listbox"
-                  aria-haspopup="listbox"
-                  aria-expanded={isCareerModalOpen}
-                >
-                  {selectedJob || "직무를 선택하세요"}
-                </button>
-                {isCareerModalOpen && (
-                  <CareerSelectModal
-                    isOpen={isCareerModalOpen}
-                    onClose={() => setCareerModalOpen(false)}
-                    onSelect={handleCareerSelect}
-                  />
-                )}
-              </div>
-              <div>
-                <div className="mb-0.5 block text-xs font-medium text-gray-700 sm:mb-1 sm:text-sm">
-                  경력
-                </div>
-                <div className="relative">
-                  <FilterDropdown
-                    value={form.career}
-                    onChange={handleCareerChange}
-                    options={careerOptions}
-                    className="rounded-lg text-gray-500"
-                    buttonWidth="flex h-10 w-full min-w-24 items-center justify-between truncate rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-12 sm:px-4 sm:text-sm"
-                    dropdownWidth="w-full"
-                  />
-                </div>
-              </div>
-              <div className="relative mt-4 flex flex-col items-center justify-end gap-2 sm:mt-2 sm:flex-row sm:gap-0">
-                <Button
-                  type="button"
-                  shape="bar"
-                  className="w-full"
-                  disabled={isLoading}
-                  onClick={() => setEditConfirmModalOpen(true)}
-                >
-                  {isLoading ? "저장 중..." : "수정 완료"}
-                </Button>
-                <button
-                  type="button"
-                  className="mt-2 cursor-pointer text-[11px] font-light text-[#E0E0E0] underline hover:text-[#E0E0E0] focus:text-[#E0E0E0] sm:absolute sm:right-0 sm:-bottom-7 sm:mt-0"
-                  onClick={handleOpenModal}
-                  disabled={isLoading}
-                >
-                  회원탈퇴
-                </button>
-              </div>
-            </form>
+          </div>
+
+          {deleteModalOpen && (
+            <CommonModal
+              isOpen={deleteModalOpen}
+              onClose={handleCloseModal}
+              title="회원 탈퇴"
+              subText={
+                <span>
+                  정말로 회원 탈퇴를 진행하시겠습니까? <br />
+                  탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+                </span>
+              }
+              btnText={isLoading ? "처리 중..." : "탈퇴하기"}
+              btnDisable={isLoading}
+              btnHandler={async () => {
+                await handleDeleteAccount();
+              }}
+            />
+          )}
+
+          {/* 정보 수정 전 확인 모달 */}
+          {editConfirmModalOpen && (
+            <CommonModal
+              isOpen={editConfirmModalOpen}
+              onClose={() => setEditConfirmModalOpen(false)}
+              title="정보 수정 확인"
+              subText={<span>정말로 정보를 수정하시겠습니까?</span>}
+              btnText="수정하기"
+              btnHandler={async (e) => {
+                setEditConfirmModalOpen(false);
+                await handleSubmit(e);
+              }}
+            />
+          )}
+
+          {/* 탈퇴 성공 시 알림 모달 */}
+          {deleteSuccessModalOpen && (
+            <CommonModal
+              isOpen={deleteSuccessModalOpen}
+              onClose={deleteConfirmBtnHandler}
+              title="탈퇴 완료"
+              subText="정상적으로 탈퇴되었습니다."
+              btnText="확인"
+              btnHandler={deleteConfirmBtnHandler}
+              oneBtn={true}
+            />
+          )}
+
+          {/* 수정 성공 시 알림 모달 */}
+          {editSuccessModalOpen && (
+            <CommonModal
+              isOpen={editSuccessModalOpen}
+              onClose={() => {
+                setEditSuccessModalOpen(false);
+              }}
+              title="수정 완료"
+              subText="정보가 성공적으로 수정되었습니다."
+              btnText="확인"
+              btnHandler={() => {
+                setEditSuccessModalOpen(false);
+              }}
+              oneBtn={true}
+            />
           )}
         </div>
-      </div>
-
-      {deleteModalOpen && (
-        <CommonModal
-          isOpen={deleteModalOpen}
-          onClose={handleCloseModal}
-          title="회원 탈퇴"
-          subText={
-            <span>
-              정말로 회원 탈퇴를 진행하시겠습니까? <br />
-              탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
-            </span>
-          }
-          btnText={isLoading ? "처리 중..." : "탈퇴하기"}
-          btnDisable={isLoading}
-          btnHandler={async () => {
-            await handleDeleteAccount();
-          }}
-        />
       )}
-
-      {/* 정보 수정 전 확인 모달 */}
-      {editConfirmModalOpen && (
-        <CommonModal
-          isOpen={editConfirmModalOpen}
-          onClose={() => setEditConfirmModalOpen(false)}
-          title="정보 수정 확인"
-          subText={<span>정말로 정보를 수정하시겠습니까?</span>}
-          btnText="수정하기"
-          btnHandler={async (e) => {
-            setEditConfirmModalOpen(false);
-            await handleSubmit(e);
-          }}
-        />
-      )}
-
-      {/* 탈퇴 성공 시 알림 모달 */}
-      {deleteSuccessModalOpen && (
-        <CommonModal
-          isOpen={deleteSuccessModalOpen}
-          onClose={deleteConfirmBtnHandler}
-          title="탈퇴 완료"
-          subText="정상적으로 탈퇴되었습니다."
-          btnText="확인"
-          btnHandler={deleteConfirmBtnHandler}
-          oneBtn={true}
-        />
-      )}
-
-      {/* 수정 성공 시 알림 모달 */}
-      {editSuccessModalOpen && (
-        <CommonModal
-          isOpen={editSuccessModalOpen}
-          onClose={() => {
-            setEditSuccessModalOpen(false);
-          }}
-          title="수정 완료"
-          subText="정보가 성공적으로 수정되었습니다."
-          btnText="확인"
-          btnHandler={() => {
-            setEditSuccessModalOpen(false);
-          }}
-          oneBtn={true}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

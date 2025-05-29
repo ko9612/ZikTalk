@@ -9,13 +9,7 @@ import { LoadingIndicator } from "../common/LoadingIndicator";
 import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";
-
-// 로딩 스피너 컴포넌트 추가
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center py-4">
-    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-purple-500"></div>
-  </div>
-);
+import Error500 from "@/components/common/Error500";
 
 // 북마크 질문 목록 상태 관리 훅
 const useBookmarkListState = () => {
@@ -25,8 +19,12 @@ const useBookmarkListState = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
+<<<<<<< Updated upstream
+=======
   const [allQuestions, setAllQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
+  const [fetchError, setFetchError] = useState(false);
+>>>>>>> Stashed changes
 
   // 전체 북마크 데이터 받아와서 필터링 후 클라이언트에서 페이지네이션
   const fetchBookmarkedQuestions = useCallback(
@@ -43,8 +41,8 @@ const useBookmarkListState = () => {
             ? currentFilters.questionType
             : undefined;
 
-        // 전체 데이터 받아오기 (최대 200개)
-        const response = await fetchBookmarks(1, 150, roleParam, typeParam);
+        // 서버에서 페이지네이션된 데이터 요청
+        const response = await fetchBookmarks(pageNum, PAGE_SIZE, roleParam, typeParam);
         if (!response || !response.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
@@ -60,36 +58,21 @@ const useBookmarkListState = () => {
           interviewId: q.interviewId,
         }));
 
-        setAllQuestions(formattedQuestions);
-        setFilteredQuestions(formattedQuestions);
-        // 페이지네이션 적용
-        const paged = formattedQuestions.slice(
-          (pageNum - 1) * PAGE_SIZE,
-          pageNum * PAGE_SIZE,
-        );
-        setVisibleResults(paged);
-        setTotalPages(Math.ceil(formattedQuestions.length / PAGE_SIZE));
+        setVisibleResults(formattedQuestions);
+        setTotalPages(Math.ceil(response.totalCount / PAGE_SIZE));
         setCurrentPage(pageNum);
       } catch (error) {
-        setError("데이터를 불러오는데 실패했습니다.");
+        if (error.response?.status === 500) {
+          setFetchError(true);
+        } else {
+          setError("데이터를 불러오는데 실패했습니다.");
+        }
       } finally {
         setLoading(false);
       }
     },
     [],
   );
-
-  // 필터나 페이지 변경 시 클라이언트에서 페이지네이션 적용
-  useEffect(() => {
-    // 페이지네이션만 적용
-    setVisibleResults(
-      filteredQuestions.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE,
-      ),
-    );
-    setTotalPages(Math.ceil(filteredQuestions.length / PAGE_SIZE));
-  }, [filteredQuestions, currentPage]);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -140,7 +123,7 @@ const useBookmarkListState = () => {
         return false;
       }
     },
-    [visibleResults, toggleQuestionBookmark],
+    [visibleResults],
   );
 
   // 확장 토글
@@ -155,22 +138,9 @@ const useBookmarkListState = () => {
   // 필터 변경 핸들러
   const handleFilterChange = useCallback(
     (filters) => {
-      let filtered = allQuestions;
-      if (filters.job && filters.job !== "직군·직무") {
-        filtered = filtered.filter(
-          (q) =>
-            q.career === filters.job ||
-            q.role === filters.job ||
-            (q.interview && q.interview.role === filters.job),
-        );
-      }
-      if (filters.questionType && filters.questionType !== "질문유형") {
-        filtered = filtered.filter((q) => q.type === filters.questionType);
-      }
-      setFilteredQuestions(filtered);
-      setCurrentPage(1);
+      fetchBookmarkedQuestions(1, filters);
     },
-    [allQuestions],
+    [fetchBookmarkedQuestions],
   );
 
   return {
@@ -181,7 +151,6 @@ const useBookmarkListState = () => {
       loading,
       error,
       openIds,
-      filteredQuestions, // filteredQuestions 추가
     },
     fetchBookmarkedQuestions,
     toggleBookmark,
@@ -191,10 +160,11 @@ const useBookmarkListState = () => {
     setVisibleResults,
     setCurrentPage,
     handleFilterChange,
+    fetchError,
   };
 };
 
-const QuestionBookmarkList = ({ testEmpty }) => {
+const QuestionBookmarkList = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -211,6 +181,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     setVisibleResults,
     setCurrentPage,
     handleFilterChange,
+    fetchError,
   } = useBookmarkListState();
 
   const {
@@ -219,7 +190,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     visibleResults,
     loading,
     openIds,
-    filteredQuestions, // filteredQuestions 추가
   } = state;
 
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
@@ -301,7 +271,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleJobFilterChange = useCallback(
     (value) => {
       updateFilter("job", value);
-      setCurrentPage(1); // 필터 바뀌면 1페이지로 이동
       handleFilterChange({ ...filters, job: value });
     },
     [updateFilter, filters, handleFilterChange],
@@ -311,7 +280,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleTypeFilterChange = useCallback(
     (value) => {
       updateFilter("questionType", value);
-      setCurrentPage(1); // 필터 바뀌면 1페이지로 이동
       handleFilterChange({ ...filters, questionType: value });
     },
     [updateFilter, filters, handleFilterChange],
@@ -319,9 +287,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
   // 페이지 변경 핸들러
   const handlePageChange = useCallback((pageNum) => {
-    setCurrentPage(pageNum);
-    // 페이지 바뀔 때는 filteredQuestions에서 잘라서 보여주기만 하면 됨
-  }, []);
+    fetchBookmarkedQuestions(pageNum, filters);
+  }, [fetchBookmarkedQuestions, filters]);
 
   // 북마크 토글 핸들러
   const handleBookmarkToggle = useCallback(
@@ -344,26 +311,13 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         // 북마크 해제된 경우 목록에서 제거
         if (!newBookmarkState) {
           // 현재 페이지에서 항목을 제거
-          setVisibleResults((prev) => {
-            const filtered = prev.filter((item) => item.id !== id);
-
-            // 다음 페이지의 첫 번째 항목을 가져와 현재 페이지의 마지막에 추가
-            if (filtered.length < PAGE_SIZE && currentPage < totalPages) {
-              // filteredQuestions에서 다음 페이지의 첫 번째 항목을 가져옴
-              const nextPageFirstItem =
-                filteredQuestions[currentPage * PAGE_SIZE];
-              if (nextPageFirstItem) {
-                return [...filtered, nextPageFirstItem];
-              }
-            }
-
-            return filtered;
-          });
+          setVisibleResults((prev) => prev.filter((item) => item.id !== id));
 
           // 현재 페이지의 데이터가 부족하고, 이전 페이지가 있는 경우
           if (visibleResults.length <= 1 && currentPage > 1) {
             // 이전 페이지로 이동
             setCurrentPage(currentPage - 1);
+            fetchBookmarkedQuestions(currentPage - 1, filters);
           } else if (visibleResults.length <= 1) {
             // 첫 페이지이고 데이터가 부족한 경우 현재 페이지 다시 로드
             await fetchBookmarkedQuestions(currentPage, filters);
@@ -379,108 +333,106 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         showToast("북마크 처리 중 오류가 발생했습니다.", "error");
       }
     },
-    [
-      visibleResults,
-      currentPage,
-      totalPages,
-      filteredQuestions,
-      filters,
-      navigate,
-      showToast,
-    ],
+    [visibleResults, currentPage, filters, fetchBookmarkedQuestions, toggleBookmark],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
 
   return (
-    <div className="mx-auto w-full pt-6">
-      <h2
-        className={`mb-6 text-center text-2xl font-bold sm:text-3xl ${TEXT_COLORS.title}`}
-      >
-        질문 북마크
-      </h2>
-
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex space-x-2">
-          <FilterDropdown
-            value={filters.job}
-            onChange={handleJobFilterChange}
-            options={dynamicJobOptions}
-            className="text-gray-500"
-            buttonWidth="flex mr-14 h-10 w-40  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
-            dropdownWidth="w-40"
-          />
-
-          <FilterDropdown
-            value={filters.questionType}
-            onChange={handleTypeFilterChange}
-            options={questionTypeOptions}
-            className="text-gray-500"
-            buttonWidth="flex h-10 w-40 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
-            dropdownWidth="w-40"
-          />
-        </div>
-      </div>
-
-      {isEmpty ? (
-        <EmptyBookmarkList
-          job={filters.job}
-          setJob={handleJobFilterChange}
-          type={filters.questionType}
-          setType={handleTypeFilterChange}
-          isCareerModalOpen={false}
-          setCareerModalOpen={() => {}}
-        />
+    <>
+      {fetchError ? (
+        <Error500 />
       ) : (
-        <>
-          <TableHeader />
+        <div className="mx-auto w-full pt-6">
+          <h2
+            className={`mb-6 text-center text-2xl font-bold sm:text-3xl ${TEXT_COLORS.title}`}
+          >
+            질문 북마크
+          </h2>
 
-          <div className="relative mb-4 h-full min-h-[100px] overflow-y-hidden rounded-lg">
-            {loading && visibleResults.length === 0 ? (
-              <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                <LoadingIndicator />
-              </div>
-            ) : (
-              <div className="h-full p-2">
-                {visibleResults.map((item, index) => (
-                  <div key={item.id}>
-                    <FaqItem
-                      id={item.id}
-                      displayId={(currentPage - 1) * PAGE_SIZE + index + 1}
-                      career={item.career}
-                      type={item.type}
-                      question={item.question}
-                      answer={item.answer}
-                      recommendation={item.recommendation}
-                      isExpanded={openIds.includes(item.id)}
-                      onToggle={() => toggleOpen(item.id)}
-                      isStarred={item.bookmarked}
-                      onStarToggle={() => handleBookmarkToggle(item.id)}
-                      textColors={TEXT_COLORS}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* 페이지네이션 컴포넌트는 항상 카드 리스트 하단에 위치 */}
-          {!isEmpty && (
-            <>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex space-x-2">
+              <FilterDropdown
+                value={filters.job}
+                onChange={handleJobFilterChange}
+                options={dynamicJobOptions}
+                className="text-gray-500"
+                buttonWidth="flex mr-14 h-10 w-40  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
+                dropdownWidth="w-40"
               />
-              {currentPage < totalPages && (
-                <div className="text-zik-text/60 my-4 flex w-full items-center justify-center text-sm">
-                  스크롤을 내리면 더 많은 북마크를 볼 수 있습니다
-                </div>
+
+              <FilterDropdown
+                value={filters.questionType}
+                onChange={handleTypeFilterChange}
+                options={questionTypeOptions}
+                className="text-gray-500"
+                buttonWidth="flex h-10 w-40 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
+                dropdownWidth="w-40"
+              />
+            </div>
+          </div>
+
+          {isEmpty ? (
+            <EmptyBookmarkList
+              job={filters.job}
+              setJob={handleJobFilterChange}
+              type={filters.questionType}
+              setType={handleTypeFilterChange}
+              isCareerModalOpen={false}
+              setCareerModalOpen={() => {}}
+            />
+          ) : (
+            <>
+              <TableHeader />
+
+              <div className="relative mb-4 h-full min-h-[100px] overflow-y-hidden rounded-lg">
+                {loading && visibleResults.length === 0 ? (
+                  <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+                    <LoadingIndicator />
+                  </div>
+                ) : (
+                  <div className="h-full p-2">
+                    {visibleResults.map((item, index) => (
+                      <div key={item.id}>
+                        <FaqItem
+                          id={item.id}
+                          displayId={(currentPage - 1) * PAGE_SIZE + index + 1}
+                          career={item.career}
+                          type={item.type}
+                          question={item.question}
+                          answer={item.answer}
+                          recommendation={item.recommendation}
+                          isExpanded={openIds.includes(item.id)}
+                          onToggle={() => toggleOpen(item.id)}
+                          isStarred={item.bookmarked}
+                          onStarToggle={() => handleBookmarkToggle(item.id)}
+                          textColors={TEXT_COLORS}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 페이지네이션 컴포넌트는 항상 카드 리스트 하단에 위치 */}
+              {!isEmpty && (
+                <>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                  {currentPage < totalPages && (
+                    <div className="text-zik-text/60 my-4 flex w-full items-center justify-center text-sm">
+                      스크롤을 내리면 더 많은 북마크를 볼 수 있습니다
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

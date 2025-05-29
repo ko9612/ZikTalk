@@ -10,8 +10,9 @@ import { useVideoRecord } from "@/hooks/useRecord";
 import useNavigationBlocker from "@/hooks/useNavigationBlocker";
 import ScreenSizeGuide from "@/components/common/ScreenSizeGuide";
 import InterviewTab from "@/components/common/InterviewTab";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getInterviewUserInfo } from "@/api/interviewApi";
+import Error500 from "@/components/common/Error500";
 
 const index = () => {
   const resetAll = useInterviewStore((state) => state.resetAll);
@@ -24,6 +25,7 @@ const index = () => {
   const setCareer = useInterviewStore((state) => state.setCareer);
   const setUserId = useInterviewStore((state) => state.setUserId);
   const videoRecord = useVideoRecord();
+  const [fetchError, setFetchError] = useState(false);
 
   useNavigationBlocker({
     // 컴포넌트 언마운트(페이지 이탈) 시 초기화
@@ -53,7 +55,11 @@ const index = () => {
         setCareer(userData.role);
         setUserId(userData.userId);
       } catch (error) {
-        console.error(error);
+        if (error.response?.status === 500) {
+          setFetchError(true);
+        } else {
+          console.error(error);
+        }
       }
     };
 
@@ -63,15 +69,21 @@ const index = () => {
   // 현재 컴포넌트 반환 (없으면 기본값으로 DeviceSetup)
   return (
     <>
-      <div className="block xl:hidden">
-        <ScreenSizeGuide />
-      </div>
-      <div className="hidden h-full w-full flex-col items-center xl:flex">
-        <InterviewTab />
-        <div className="mx-auto flex h-full w-full max-w-[1200px] px-6 xl:px-0">
-          {COMPONENTS[currentComponent] || <DeviceSetup />}
-        </div>
-      </div>
+      {fetchError ? (
+        <Error500 />
+      ) : (
+        <>
+          <div className="block xl:hidden">
+            <ScreenSizeGuide />
+          </div>
+          <div className="hidden h-full w-full flex-col items-center xl:flex">
+            <InterviewTab />
+            <div className="mx-auto flex h-full w-full max-w-[1200px] px-6 xl:px-0">
+              {COMPONENTS[currentComponent] || <DeviceSetup />}
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

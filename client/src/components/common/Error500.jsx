@@ -2,14 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import errorcat from "@/assets/images/500-error-cat.svg";
 
-const ErrorPage500 = () => {
+const Error500 = () => {
   return (
     <main className="flex h-full w-full flex-col items-center justify-center">
       <section className="flex w-full max-w-2xl flex-col items-center p-0">
-        {/* header는 absolute로 독립적인 레이어 */}
-        {/* <header className="absolute top-30 left-30 z-10"></header> */}
-
-        {/* figure를 전체 높이로 설정하고 마진 제거 */}
         <figure className="relative m-0 flex w-full justify-center">
           <div className="relative">
             <img
@@ -27,7 +23,6 @@ const ErrorPage500 = () => {
             </div>
           </div>
         </figure>
-
         <footer className="w-full text-center">
           <p className="mt-1 text-sm text-black sm:text-base">
             서버에 오류가 발생했습니다
@@ -44,4 +39,4 @@ const ErrorPage500 = () => {
   );
 };
 
-export default ErrorPage500;
+export default Error500;
