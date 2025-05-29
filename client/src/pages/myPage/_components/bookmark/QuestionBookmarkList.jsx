@@ -166,7 +166,32 @@ const useBookmarkListState = (filters) => {
 
         // 북마크가 해제된 경우 목록에서 제거
         if (!newBookmarkState) {
-          setVisibleResults((prev) => prev.filter((q) => q.id !== id));
+          // 현재 페이지의 항목 수가 PAGE_SIZE보다 작아질 경우
+          if (visibleResults.length <= PAGE_SIZE) {
+            // 다음 페이지의 항목을 가져옴
+            const nextPageStartIndex = currentPage * PAGE_SIZE;
+            const nextPageEndIndex = nextPageStartIndex + PAGE_SIZE;
+            const nextPageItems = filteredResults.slice(
+              nextPageStartIndex,
+              nextPageEndIndex,
+            );
+
+            // 현재 페이지에서 북마크 해제된 항목 제거
+            const updatedVisibleResults = visibleResults.filter(
+              (q) => q.id !== id,
+            );
+
+            // 다음 페이지의 항목을 현재 페이지에 추가
+            const newVisibleResults = [
+              ...updatedVisibleResults,
+              ...nextPageItems,
+            ].slice(0, PAGE_SIZE);
+
+            setVisibleResults(newVisibleResults);
+          } else {
+            setVisibleResults((prev) => prev.filter((q) => q.id !== id));
+          }
+
           setFilteredResults((prev) => prev.filter((q) => q.id !== id));
           setAllResults((prev) => prev.filter((q) => q.id !== id));
         }
@@ -177,7 +202,7 @@ const useBookmarkListState = (filters) => {
         return false;
       }
     },
-    [visibleResults],
+    [visibleResults, currentPage, filteredResults],
   );
 
   // 확장 토글
@@ -277,23 +302,19 @@ const QuestionBookmarkList = () => {
   // 필터 변경 핸들러 - job
   const handleJobFilterChange = useCallback(
     (value) => {
-      // 직군/직무 필터 변경 시 질문유형은 초기화
       updateFilter("job", value);
-      updateFilter("questionType", "질문유형");
-      handleFilterChange({ job: value, questionType: "질문유형" });
+      handleFilterChange({ ...filters, job: value });
     },
-    [updateFilter, handleFilterChange],
+    [updateFilter, handleFilterChange, filters],
   );
 
   // 필터 변경 핸들러 - questionType
   const handleTypeFilterChange = useCallback(
     (value) => {
-      // 질문유형 필터 변경 시 직군/직무는 초기화
       updateFilter("questionType", value);
-      updateFilter("job", "직군·직무");
-      handleFilterChange({ job: "직군·직무", questionType: value });
+      handleFilterChange({ ...filters, questionType: value });
     },
-    [updateFilter, handleFilterChange],
+    [updateFilter, handleFilterChange, filters],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
