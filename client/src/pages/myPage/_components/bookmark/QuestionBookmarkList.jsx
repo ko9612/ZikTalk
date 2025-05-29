@@ -29,16 +29,27 @@ const useBookmarkListState = (filters) => {
 
         // 전체 데이터 수 확인
         const response = await fetchBookmarks(1, 1);
+        
+        // 데이터가 없는 경우
+        if (!response || !response.totalCount || response.totalCount === 0) {
+          setAllResults([]);
+          setFilteredResults([]);
+          setVisibleResults([]);
+          setTotalPages(0);
+          setCurrentPage(1);
+          return;
+        }
+
         const totalCount = response.totalCount;
 
-        // 전체 데이터 요청
-        const allDataResponse = await fetchBookmarks(1, totalCount);
-
-        if (!allDataResponse || !allDataResponse.questions) {
+        // 첫 페이지 데이터만 먼저 요청
+        const firstPageResponse = await fetchBookmarks(1, PAGE_SIZE);
+        
+        if (!firstPageResponse || !firstPageResponse.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
 
-        const formattedQuestions = allDataResponse.questions.map((q) => ({
+        const firstPageQuestions = firstPageResponse.questions.map((q) => ({
           id: q.id,
           career: q.role || q.interview?.role || "미분류",
           type: q.type === "JOB" ? "직무" : "인성",
@@ -49,32 +60,54 @@ const useBookmarkListState = (filters) => {
           interviewId: q.interviewId,
         }));
 
-        // 전체 데이터 저장
-        setAllResults(formattedQuestions);
-
-        // 필터링된 결과 설정
-        const filtered = formattedQuestions.filter((item) => {
-          const matchesJob =
-            filters.job === "직군·직무" || item.career === filters.job;
-          const matchesType =
-            filters.questionType === "질문유형" ||
-            item.type === filters.questionType;
-          return matchesJob && matchesType;
-        });
-
-        setFilteredResults(filtered);
-
-        // 첫 페이지 데이터 표시
-        const pageData = filtered.slice(0, PAGE_SIZE);
-        setVisibleResults(pageData);
-        setTotalPages(Math.ceil(filtered.length / PAGE_SIZE));
+        // 첫 페이지 데이터로 초기 상태 설정
+        setAllResults(firstPageQuestions);
+        setFilteredResults(firstPageQuestions);
+        setVisibleResults(firstPageQuestions);
+        setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
         setCurrentPage(1);
-      } catch (error) {
-        if (error.response?.status === 500) {
-          setFetchError(true);
-        } else {
-          setError("데이터를 불러오는데 실패했습니다.");
+
+        // 나머지 데이터는 백그라운드에서 로드
+        if (totalCount > PAGE_SIZE) {
+          const remainingPages = Math.ceil((totalCount - PAGE_SIZE) / PAGE_SIZE);
+          const remainingPromises = [];
+
+          for (let i = 2; i <= remainingPages + 1; i++) {
+            remainingPromises.push(fetchBookmarks(i, PAGE_SIZE));
+          }
+
+          const remainingResponses = await Promise.all(remainingPromises);
+          const remainingQuestions = remainingResponses
+            .flatMap(response => response.questions)
+            .map(q => ({
+              id: q.id,
+              career: q.role || q.interview?.role || "미분류",
+              type: q.type === "JOB" ? "직무" : "인성",
+              question: q.content,
+              answer: q.myAnswer,
+              recommendation: q.recommended,
+              bookmarked: q.bookmarked,
+              interviewId: q.interviewId,
+            }));
+
+          // 전체 데이터 업데이트
+          setAllResults(prev => [...prev, ...remainingQuestions]);
+          
+          // 필터링된 결과 업데이트
+          const allQuestions = [...firstPageQuestions, ...remainingQuestions];
+          const filtered = allQuestions.filter((item) => {
+            const matchesJob =
+              filters.job === "직군·직무" || item.career === filters.job;
+            const matchesType =
+              filters.questionType === "질문유형" ||
+              item.type === filters.questionType;
+            return matchesJob && matchesType;
+          });
+          
+          setFilteredResults(filtered);
         }
+      } catch (error) {
+        setError("데이터를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }

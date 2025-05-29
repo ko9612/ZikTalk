@@ -152,7 +152,7 @@ const QuestionList = () => {
     (resetPage = false) => {
       const sorted = sortResults(allQuestions, filters.type);
       const nextPage = resetPage ? 0 : page;
-      const nextVisible = sorted.slice(0, (nextPage + 1) * SCROLL_BATCH_SIZE);
+      const nextVisible = sorted.slice(nextPage * SCROLL_BATCH_SIZE, (nextPage + 1) * SCROLL_BATCH_SIZE);
       setVisibleResults(nextVisible);
       setHasMore(nextVisible.length < sorted.length);
       if (resetPage) setPage(0);
