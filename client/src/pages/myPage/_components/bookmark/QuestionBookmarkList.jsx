@@ -22,12 +22,9 @@ const useBookmarkListState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleResults, setVisibleResults] = useState([]);
-  const [allFiltered, setAllFiltered] = useState([]); // 전체 필터링된 데이터
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
-  const [allQuestions, setAllQuestions] = useState([]);
-  const [filteredQuestions, setFilteredQuestions] = useState([]);
 
   // 전체 북마크 데이터 받아와서 필터링 후 클라이언트에서 페이지네이션
   const fetchBookmarkedQuestions = useCallback(
@@ -44,8 +41,8 @@ const useBookmarkListState = () => {
             ? currentFilters.questionType
             : undefined;
 
-        // 전체 데이터 받아오기 (최대 200개)
-        const response = await fetchBookmarks(1, 150, roleParam, typeParam);
+        // 서버에서 페이지네이션된 데이터 요청
+        const response = await fetchBookmarks(pageNum, PAGE_SIZE, roleParam, typeParam);
         if (!response || !response.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
@@ -61,15 +58,8 @@ const useBookmarkListState = () => {
           interviewId: q.interviewId,
         }));
 
-        setAllQuestions(formattedQuestions);
-        setFilteredQuestions(formattedQuestions);
-        // 페이지네이션 적용
-        const paged = formattedQuestions.slice(
-          (pageNum - 1) * PAGE_SIZE,
-          pageNum * PAGE_SIZE,
-        );
-        setVisibleResults(paged);
-        setTotalPages(Math.ceil(formattedQuestions.length / PAGE_SIZE));
+        setVisibleResults(formattedQuestions);
+        setTotalPages(Math.ceil(response.totalCount / PAGE_SIZE));
         setCurrentPage(pageNum);
       } catch (error) {
         setError("데이터를 불러오는데 실패했습니다.");
@@ -79,18 +69,6 @@ const useBookmarkListState = () => {
     },
     [],
   );
-
-  // 필터나 페이지 변경 시 클라이언트에서 페이지네이션 적용
-  useEffect(() => {
-    // 페이지네이션만 적용
-    setVisibleResults(
-      filteredQuestions.slice(
-        (currentPage - 1) * PAGE_SIZE,
-        currentPage * PAGE_SIZE,
-      ),
-    );
-    setTotalPages(Math.ceil(filteredQuestions.length / PAGE_SIZE));
-  }, [filteredQuestions, currentPage]);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -141,7 +119,7 @@ const useBookmarkListState = () => {
         return false;
       }
     },
-    [visibleResults, toggleQuestionBookmark],
+    [visibleResults],
   );
 
   // 확장 토글
@@ -156,22 +134,9 @@ const useBookmarkListState = () => {
   // 필터 변경 핸들러
   const handleFilterChange = useCallback(
     (filters) => {
-      let filtered = allQuestions;
-      if (filters.job && filters.job !== "직군·직무") {
-        filtered = filtered.filter(
-          (q) =>
-            q.career === filters.job ||
-            q.role === filters.job ||
-            (q.interview && q.interview.role === filters.job),
-        );
-      }
-      if (filters.questionType && filters.questionType !== "질문유형") {
-        filtered = filtered.filter((q) => q.type === filters.questionType);
-      }
-      setFilteredQuestions(filtered);
-      setCurrentPage(1);
+      fetchBookmarkedQuestions(1, filters);
     },
-    [allQuestions],
+    [fetchBookmarkedQuestions],
   );
 
   return {
@@ -182,7 +147,6 @@ const useBookmarkListState = () => {
       loading,
       error,
       openIds,
-      filteredQuestions, // filteredQuestions 추가
     },
     fetchBookmarkedQuestions,
     toggleBookmark,
@@ -223,7 +187,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     loading,
     error,
     openIds,
-    filteredQuestions, // filteredQuestions 추가
   } = state;
 
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
@@ -305,7 +268,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleJobFilterChange = useCallback(
     (value) => {
       updateFilter("job", value);
-      setCurrentPage(1); // 필터 바뀌면 1페이지로 이동
       handleFilterChange({ ...filters, job: value });
     },
     [updateFilter, filters, handleFilterChange],
@@ -315,7 +277,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
   const handleTypeFilterChange = useCallback(
     (value) => {
       updateFilter("questionType", value);
-      setCurrentPage(1); // 필터 바뀌면 1페이지로 이동
       handleFilterChange({ ...filters, questionType: value });
     },
     [updateFilter, filters, handleFilterChange],
@@ -323,9 +284,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
   // 페이지 변경 핸들러
   const handlePageChange = useCallback((pageNum) => {
-    setCurrentPage(pageNum);
-    // 페이지 바뀔 때는 filteredQuestions에서 잘라서 보여주기만 하면 됨
-  }, []);
+    fetchBookmarkedQuestions(pageNum, filters);
+  }, [fetchBookmarkedQuestions, filters]);
 
   // 북마크 토글 핸들러
   const handleBookmarkToggle = useCallback(
@@ -348,26 +308,13 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         // 북마크 해제된 경우 목록에서 제거
         if (!newBookmarkState) {
           // 현재 페이지에서 항목을 제거
-          setVisibleResults((prev) => {
-            const filtered = prev.filter((item) => item.id !== id);
-
-            // 다음 페이지의 첫 번째 항목을 가져와 현재 페이지의 마지막에 추가
-            if (filtered.length < PAGE_SIZE && currentPage < totalPages) {
-              // filteredQuestions에서 다음 페이지의 첫 번째 항목을 가져옴
-              const nextPageFirstItem =
-                filteredQuestions[currentPage * PAGE_SIZE];
-              if (nextPageFirstItem) {
-                return [...filtered, nextPageFirstItem];
-              }
-            }
-
-            return filtered;
-          });
+          setVisibleResults((prev) => prev.filter((item) => item.id !== id));
 
           // 현재 페이지의 데이터가 부족하고, 이전 페이지가 있는 경우
           if (visibleResults.length <= 1 && currentPage > 1) {
             // 이전 페이지로 이동
             setCurrentPage(currentPage - 1);
+            fetchBookmarkedQuestions(currentPage - 1, filters);
           } else if (visibleResults.length <= 1) {
             // 첫 페이지이고 데이터가 부족한 경우 현재 페이지 다시 로드
             await fetchBookmarkedQuestions(currentPage, filters);
@@ -383,15 +330,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         showToast("북마크 처리 중 오류가 발생했습니다.", "error");
       }
     },
-    [
-      visibleResults,
-      currentPage,
-      totalPages,
-      filteredQuestions,
-      filters,
-      navigate,
-      showToast,
-    ],
+    [visibleResults, currentPage, filters, fetchBookmarkedQuestions, toggleBookmark],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
