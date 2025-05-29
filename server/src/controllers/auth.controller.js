@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN;
 const JWT_REFRESH_COOKIE_EXPIRE =
-  Number(process.env.JWT_REFRESH_COOKIE_EXPIRE) || 7 * 24 * 60 * 60;
+  Number(process.env.JWT_REFRESH_COOKIE_EXPIRE) || 7 * 24 * 60 * 60 * 1000;
 
 const handleLoginSuccess = (res, user) => {
   const { userName } = user;
