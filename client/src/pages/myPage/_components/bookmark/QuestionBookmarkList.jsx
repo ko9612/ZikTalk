@@ -265,11 +265,17 @@ const useBookmarkListState = (filters) => {
             const newTotalItems = filteredResults.length - 1;
             return Math.ceil(newTotalItems / PAGE_SIZE);
           });
+
+          // 데이터가 없어지면 로딩 상태 해제
+          if (filteredResults.length - 1 === 0) {
+            setLoading(false);
+          }
         }
 
         return true;
       } catch (err) {
         setError(`북마크 토글 실패: ${err.message || "네트워크 문제"}`);
+        setLoading(false); // 에러 발생 시에도 로딩 상태 해제
         return false;
       }
     },
