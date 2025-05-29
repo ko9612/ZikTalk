@@ -10,44 +10,37 @@ import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Error500 from "@/components/common/Error500";
+
 // 북마크 질문 목록 상태 관리 훅
-const useBookmarkListState = () => {
+const useBookmarkListState = (filters) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleResults, setVisibleResults] = useState([]);
   const [allResults, setAllResults] = useState([]); // 전체 데이터 저장
+  const [filteredResults, setFilteredResults] = useState([]); // 필터링된 데이터 저장
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
   const [fetchError, setFetchError] = useState(false);
 
-  // 전체 북마크 데이터 받아오기
-  const fetchBookmarkedQuestions = useCallback(
-    async (pageNum, currentFilters) => {
+  // 초기 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
       try {
         setLoading(true);
-        setError(null);
 
-        // 필터 파라미터 구성 - 기본값일 경우 undefined로 설정
-        const roleParam =
-          currentFilters.job !== "직군·직무" ? currentFilters.job : undefined;
-        const typeParam =
-          currentFilters.questionType !== "질문유형"
-            ? currentFilters.questionType
-            : undefined;
+        // 전체 데이터 수 확인
+        const response = await fetchBookmarks(1, 1);
+        const totalCount = response.totalCount;
 
-        // 서버에서 데이터 요청
-        const response = await fetchBookmarks(
-          pageNum,
-          PAGE_SIZE,
-          roleParam,
-          typeParam,
-        );
-        if (!response || !response.questions) {
+        // 전체 데이터 요청
+        const allDataResponse = await fetchBookmarks(1, totalCount);
+
+        if (!allDataResponse || !allDataResponse.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
 
-        const formattedQuestions = response.questions.map((q) => ({
+        const formattedQuestions = allDataResponse.questions.map((q) => ({
           id: q.id,
           career: q.role || q.interview?.role || "미분류",
           type: q.type === "JOB" ? "직무" : "인성",
@@ -60,38 +53,64 @@ const useBookmarkListState = () => {
 
         // 전체 데이터 저장
         setAllResults(formattedQuestions);
-        setVisibleResults(formattedQuestions);
-        setTotalPages(Math.ceil(response.totalCount / PAGE_SIZE));
-        setCurrentPage(pageNum);
+
+        // 필터링된 결과 설정
+        const filtered = formattedQuestions.filter((item) => {
+          const matchesJob =
+            filters.job === "직군·직무" || item.career === filters.job;
+          const matchesType =
+            filters.questionType === "질문유형" ||
+            item.type === filters.questionType;
+          return matchesJob && matchesType;
+        });
+
+        setFilteredResults(filtered);
+
+        // 첫 페이지 데이터 표시
+        const pageData = filtered.slice(0, PAGE_SIZE);
+        setVisibleResults(pageData);
+        setTotalPages(Math.ceil(filtered.length / PAGE_SIZE));
+        setCurrentPage(1);
       } catch (error) {
-        if (error.response?.status === 500) {
-          setFetchError(true);
-        } else {
-          setError("데이터를 불러오는데 실패했습니다.");
-        }
+        console.error("데이터 로딩 에러:", error);
+        setError("데이터를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
-    },
-    [],
-  );
+    };
+
+    loadData();
+  }, []); // 컴포넌트 마운트 시에만 실행
 
   // 필터 변경 핸들러
   const handleFilterChange = useCallback(
-    (filters) => {
-      // 클라이언트 사이드 필터링
-      const filteredData = allResults.filter((item) => {
-        const matchesJob =
-          filters.job === "직군·직무" || item.career === filters.job;
-        const matchesType =
-          filters.questionType === "질문유형" ||
-          item.type === filters.questionType;
-        return matchesJob && matchesType;
-      });
+    (newFilters) => {
+      try {
+        setLoading(true);
 
-      setVisibleResults(filteredData);
-      setTotalPages(Math.ceil(filteredData.length / PAGE_SIZE));
-      setCurrentPage(1);
+        // allResults에서 필터링
+        const filtered = allResults.filter((item) => {
+          const matchesJob =
+            newFilters.job === "직군·직무" || item.career === newFilters.job;
+          const matchesType =
+            newFilters.questionType === "질문유형" ||
+            item.type === newFilters.questionType;
+          return matchesJob && matchesType;
+        });
+
+        setFilteredResults(filtered);
+
+        // 첫 페이지 데이터 표시
+        const pageData = filtered.slice(0, PAGE_SIZE);
+        setVisibleResults(pageData);
+        setTotalPages(Math.ceil(filtered.length / PAGE_SIZE));
+        setCurrentPage(1);
+      } catch (error) {
+        console.error("필터 변경 중 에러:", error);
+        setError("필터 적용 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
     },
     [allResults],
   );
@@ -99,60 +118,62 @@ const useBookmarkListState = () => {
   // 페이지 변경 핸들러
   const handlePageChange = useCallback(
     (pageNum) => {
-      const startIndex = (pageNum - 1) * PAGE_SIZE;
-      const endIndex = startIndex + PAGE_SIZE;
-      setVisibleResults(allResults.slice(startIndex, endIndex));
-      setCurrentPage(pageNum);
-    },
-    [allResults],
-  );
+      try {
+        setLoading(true);
 
-  // 초기 데이터 로드
-  useEffect(() => {
-    fetchBookmarkedQuestions(1, { job: "직군·직무", questionType: "질문유형" });
-  }, [fetchBookmarkedQuestions]);
+        // filteredResults에서 현재 페이지 데이터 추출
+        const startIndex = (pageNum - 1) * PAGE_SIZE;
+        const endIndex = startIndex + PAGE_SIZE;
+        const pageData = filteredResults.slice(startIndex, endIndex);
+
+        setVisibleResults(pageData);
+        setCurrentPage(pageNum);
+      } catch (error) {
+        console.error("페이지 변경 중 에러:", error);
+        setError("페이지 로딩 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filteredResults],
+  );
 
   // 북마크 토글
   const toggleBookmark = useCallback(
     async (id) => {
       try {
-        // 현재 북마크 상태 확인 후 반대 값 계산
         const itemToToggle = visibleResults.find((q) => q.id === id);
         if (!itemToToggle) return false;
 
         const newBookmarkState = !itemToToggle.bookmarked;
 
-        setVisibleResults((prev) => {
-          const index = prev.findIndex((q) => q.id === id);
-          if (index === -1) return prev;
+        // UI 상태 업데이트
+        setVisibleResults((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: newBookmarkState } : item,
+          ),
+        );
 
-          const updated = [...prev];
-          updated[index] = {
-            ...updated[index],
-            bookmarked: newBookmarkState,
-          };
-          return updated;
-        });
+        // 전체 데이터 상태 업데이트
+        setAllResults((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, bookmarked: newBookmarkState } : item,
+          ),
+        );
 
-        // 계산된 새로운 북마크 상태 전달
+        // 서버에 북마크 상태 변경 요청
         await toggleQuestionBookmark(id, newBookmarkState);
 
-        // 북마크가 해제된 경우에만 목록에서 제거
+        // 북마크가 해제된 경우 목록에서 제거
         if (!newBookmarkState) {
           setVisibleResults((prev) => prev.filter((q) => q.id !== id));
+          setFilteredResults((prev) => prev.filter((q) => q.id !== id));
+          setAllResults((prev) => prev.filter((q) => q.id !== id));
         }
 
         return true;
       } catch (err) {
         setError(`북마크 토글 실패: ${err.message || "네트워크 문제"}`);
-
-        // 실패시 상태 원복
-        setVisibleResults((prev) =>
-          prev.map((q) =>
-            q.id === id ? { ...q, bookmarked: !q.bookmarked } : q,
-          ),
-        );
-
         return false;
       }
     },
@@ -176,8 +197,8 @@ const useBookmarkListState = () => {
       loading,
       error,
       openIds,
+      allResults,
     },
-    fetchBookmarkedQuestions,
     toggleBookmark,
     toggleOpen,
     handleFilterChange,
@@ -201,7 +222,6 @@ const QuestionBookmarkList = () => {
 
   const {
     state,
-    fetchBookmarkedQuestions,
     toggleBookmark,
     toggleOpen,
     handleFilterChange,
@@ -209,9 +229,16 @@ const QuestionBookmarkList = () => {
     setVisibleResults,
     setCurrentPage,
     fetchError,
-  } = useBookmarkListState();
+  } = useBookmarkListState(filters);
 
-  const { currentPage, totalPages, visibleResults, loading, openIds } = state;
+  const {
+    currentPage,
+    totalPages,
+    visibleResults,
+    loading,
+    openIds,
+    allResults,
+  } = state;
 
   // 직군/직무 옵션을 현재 데이터에서 추출
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
@@ -220,10 +247,10 @@ const QuestionBookmarkList = () => {
 
   // 데이터가 변경될 때마다 직군/직무 옵션 업데이트
   useEffect(() => {
-    if (visibleResults.length > 0) {
-      // 현재 데이터에서 고유한 직군/직무 값 추출
+    if (allResults.length > 0) {
+      // 전체 데이터에서 고유한 직군/직무 값 추출
       const uniqueRoles = Array.from(
-        new Set(visibleResults.map((item) => item.career)),
+        new Set(allResults.map((item) => item.career)),
       ).filter((role) => role !== "미분류");
 
       // 옵션 변환
@@ -238,7 +265,7 @@ const QuestionBookmarkList = () => {
         ...roleOptions,
       ]);
     }
-  }, [visibleResults]);
+  }, [allResults]);
 
   // 질문 유형 옵션
   const questionTypeOptions = [
@@ -250,71 +277,23 @@ const QuestionBookmarkList = () => {
   // 필터 변경 핸들러 - job
   const handleJobFilterChange = useCallback(
     (value) => {
+      // 직군/직무 필터 변경 시 질문유형은 초기화
       updateFilter("job", value);
-      handleFilterChange({ ...filters, job: value });
+      updateFilter("questionType", "질문유형");
+      handleFilterChange({ job: value, questionType: "질문유형" });
     },
-    [updateFilter, filters, handleFilterChange],
+    [updateFilter, handleFilterChange],
   );
 
   // 필터 변경 핸들러 - questionType
   const handleTypeFilterChange = useCallback(
     (value) => {
+      // 질문유형 필터 변경 시 직군/직무는 초기화
       updateFilter("questionType", value);
-      handleFilterChange({ ...filters, questionType: value });
+      updateFilter("job", "직군·직무");
+      handleFilterChange({ job: "직군·직무", questionType: value });
     },
-    [updateFilter, filters, handleFilterChange],
-  );
-
-  // 북마크 토글 핸들러
-  const handleBookmarkToggle = useCallback(
-    async (id) => {
-      try {
-        const currentItem = visibleResults.find((item) => item.id === id);
-        if (!currentItem) return;
-
-        const newBookmarkState = !currentItem.bookmarked;
-
-        // 낙관적 업데이트
-        setVisibleResults((prev) =>
-          prev.map((item) =>
-            item.id === id ? { ...item, bookmarked: newBookmarkState } : item,
-          ),
-        );
-
-        await toggleBookmark(id);
-
-        // 북마크 해제된 경우 목록에서 제거
-        if (!newBookmarkState) {
-          // 현재 페이지에서 항목을 제거
-          setVisibleResults((prev) => prev.filter((item) => item.id !== id));
-
-          // 현재 페이지의 데이터가 부족하고, 이전 페이지가 있는 경우
-          if (visibleResults.length <= 1 && currentPage > 1) {
-            // 이전 페이지로 이동
-            setCurrentPage(currentPage - 1);
-            fetchBookmarkedQuestions(currentPage - 1, filters);
-          } else if (visibleResults.length <= 1) {
-            // 첫 페이지이고 데이터가 부족한 경우 현재 페이지 다시 로드
-            await fetchBookmarkedQuestions(currentPage, filters);
-          }
-        }
-      } catch (error) {
-        // 실패 시 상태 복원
-        setVisibleResults((prev) =>
-          prev.map((item) =>
-            item.id === id ? { ...item, bookmarked: !item.bookmarked } : item,
-          ),
-        );
-        showToast("북마크 처리 중 오류가 발생했습니다.", "error");
-      }
-    },
-    [
-      visibleResults,
-      currentPage,
-      filters,
-      fetchBookmarkedQuestions,
-      toggleBookmark,
-    ],
+    [updateFilter, handleFilterChange],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
@@ -338,17 +317,29 @@ const QuestionBookmarkList = () => {
                 onChange={handleJobFilterChange}
                 options={dynamicJobOptions}
                 className="text-gray-500"
-                buttonWidth="flex mr-14 h-10 w-40  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
+                buttonWidth="flex h-10 w-40 items-center justify-between border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
                 dropdownWidth="w-40"
+                buttonContent={
+                  <div className="flex w-full items-center justify-between">
+                    <span className="truncate">{filters.job}</span>
+                    <span className="ml-2 flex-shrink-0">▼</span>
+                  </div>
+                }
               />
 
               <FilterDropdown
                 value={filters.questionType}
                 onChange={handleTypeFilterChange}
                 options={questionTypeOptions}
-                className="text-gray-500"
-                buttonWidth="flex h-10 w-40 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
+                className="ml-10 text-gray-500"
+                buttonWidth="flex h-10 w-40 items-center justify-between border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
                 dropdownWidth="w-40"
+                buttonContent={
+                  <div className="flex w-full items-center justify-between">
+                    <span className="truncate">{filters.questionType}</span>
+                    <span className="ml-2 flex-shrink-0">▼</span>
+                  </div>
+                }
               />
             </div>
           </div>
@@ -386,7 +377,7 @@ const QuestionBookmarkList = () => {
                           isExpanded={openIds.includes(item.id)}
                           onToggle={() => toggleOpen(item.id)}
                           isStarred={item.bookmarked}
-                          onStarToggle={() => handleBookmarkToggle(item.id)}
+                          onStarToggle={() => toggleBookmark(item.id)}
                           textColors={TEXT_COLORS}
                         />
                       </div>
