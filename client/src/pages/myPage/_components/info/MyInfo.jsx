@@ -18,9 +18,7 @@ import Error500 from "@/components/common/Error500";
 
 const MyInfo = () => {
   const { showToast } = useToast();
-  const navigate = useNavigate();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteSuccessModalOpen, setDeleteSuccessModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const [editConfirmModalOpen, setEditConfirmModalOpen] = useState(false);
   const unlinkKakao = useDeleteKaKaoUser();
@@ -45,12 +43,6 @@ const MyInfo = () => {
     { value: "7년 이상", label: "7년 이상" },
   ];
   const [fetchError, setFetchError] = useState(false);
-
-  const deleteConfirmBtnHandler = () => {
-    setDeleteSuccessModalOpen(false);
-    logout();
-    navigate("/signin");
-  };
 
   useEffect(() => {
     async function fetchUserData() {
@@ -178,7 +170,7 @@ const MyInfo = () => {
       );
     } finally {
       setIsLoading(false);
-      setDeleteSuccessModalOpen(true);
+      logout();
       handleCloseModal();
     }
   }, []);
@@ -391,20 +383,6 @@ const MyInfo = () => {
               }}
             />
           )}
-
-          {/* 탈퇴 성공 시 알림 모달 */}
-          {deleteSuccessModalOpen && (
-            <CommonModal
-              isOpen={deleteSuccessModalOpen}
-              onClose={deleteConfirmBtnHandler}
-              title="탈퇴 완료"
-              subText="정상적으로 탈퇴되었습니다."
-              btnText="확인"
-              btnHandler={deleteConfirmBtnHandler}
-              oneBtn={true}
-            />
-          )}
-
           {/* 수정 성공 시 알림 모달 */}
           {editSuccessModalOpen && (
             <CommonModal
