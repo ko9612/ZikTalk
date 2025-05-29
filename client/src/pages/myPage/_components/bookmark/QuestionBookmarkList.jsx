@@ -398,11 +398,6 @@ const QuestionBookmarkList = () => {
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
                   />
-                  {currentPage < totalPages && (
-                    <div className="text-zik-text/60 my-4 flex w-full items-center justify-center text-sm">
-                      스크롤을 내리면 더 많은 북마크를 볼 수 있습니다
-                    </div>
-                  )}
                 </>
               )}
             </>
