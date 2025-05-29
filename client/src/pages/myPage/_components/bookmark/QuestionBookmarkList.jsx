@@ -27,8 +27,8 @@ const useBookmarkListState = (filters) => {
       try {
         setLoading(true);
 
-        // 첫 페이지 데이터 요청 (전체 개수도 함께 받음)
-        const response = await fetchBookmarks(1, PAGE_SIZE);
+        // 전체 데이터 수 확인
+        const response = await fetchBookmarks(1, 1);
 
         // 데이터가 없는 경우
         if (!response || !response.totalCount || response.totalCount === 0) {
@@ -40,10 +40,16 @@ const useBookmarkListState = (filters) => {
           return;
         }
 
-        const { questions, totalCount } = response;
+        const totalCount = response.totalCount;
 
-        // 데이터 포맷팅 함수
-        const formatQuestion = (q) => ({
+        // 첫 페이지 데이터만 먼저 요청
+        const firstPageResponse = await fetchBookmarks(1, PAGE_SIZE);
+
+        if (!firstPageResponse || !firstPageResponse.questions) {
+          throw new Error("서버 응답 형식이 올바르지 않습니다.");
+        }
+
+        const firstPageQuestions = firstPageResponse.questions.map((q) => ({
           id: q.id,
           career: q.role || q.interview?.role || "미분류",
           type: q.type === "JOB" ? "직무" : "인성",
@@ -52,10 +58,7 @@ const useBookmarkListState = (filters) => {
           recommendation: q.recommended,
           bookmarked: q.bookmarked,
           interviewId: q.interviewId,
-        });
-
-        // 첫 페이지 데이터 포맷팅
-        const firstPageQuestions = questions.map(formatQuestion);
+        }));
 
         // 첫 페이지 데이터로 초기 상태 설정
         setAllResults(firstPageQuestions);
@@ -63,34 +66,38 @@ const useBookmarkListState = (filters) => {
         setVisibleResults(firstPageQuestions);
         setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
         setCurrentPage(1);
-        setLoading(false); // 첫 페이지 데이터 로드 후 로딩 상태 해제
 
         // 나머지 데이터는 백그라운드에서 로드
         if (totalCount > PAGE_SIZE) {
-          // 다음 2페이지 데이터만 먼저 로드
-          const nextTwoPagesPromises = [];
-          for (
-            let i = 2;
-            i <= Math.min(3, Math.ceil(totalCount / PAGE_SIZE));
-            i++
-          ) {
-            nextTwoPagesPromises.push(fetchBookmarks(i, PAGE_SIZE));
+          const remainingPages = Math.ceil(
+            (totalCount - PAGE_SIZE) / PAGE_SIZE,
+          );
+          const remainingPromises = [];
+
+          for (let i = 2; i <= remainingPages + 1; i++) {
+            remainingPromises.push(fetchBookmarks(i, PAGE_SIZE));
           }
 
-          const nextTwoPagesResponses = await Promise.all(nextTwoPagesPromises);
-          const nextTwoPagesQuestions = nextTwoPagesResponses
+          const remainingResponses = await Promise.all(remainingPromises);
+          const remainingQuestions = remainingResponses
             .flatMap((response) => response.questions)
-            .map(formatQuestion);
+            .map((q) => ({
+              id: q.id,
+              career: q.role || q.interview?.role || "미분류",
+              type: q.type === "JOB" ? "직무" : "인성",
+              question: q.content,
+              answer: q.myAnswer,
+              recommendation: q.recommended,
+              bookmarked: q.bookmarked,
+              interviewId: q.interviewId,
+            }));
 
-          // 다음 2페이지 데이터 업데이트
-          setAllResults((prev) => [...prev, ...nextTwoPagesQuestions]);
+          // 전체 데이터 업데이트
+          setAllResults((prev) => [...prev, ...remainingQuestions]);
 
           // 필터링된 결과 업데이트
-          const currentAllResults = [
-            ...firstPageQuestions,
-            ...nextTwoPagesQuestions,
-          ];
-          const filtered = currentAllResults.filter((item) => {
+          const allQuestions = [...firstPageQuestions, ...remainingQuestions];
+          const filtered = allQuestions.filter((item) => {
             const matchesJob =
               filters.job === "직군·직무" || item.career === filters.job;
             const matchesType =
@@ -100,46 +107,10 @@ const useBookmarkListState = (filters) => {
           });
 
           setFilteredResults(filtered);
-
-          // 나머지 페이지 데이터는 백그라운드에서 로드
-          if (totalCount > PAGE_SIZE * 3) {
-            const remainingPages = Math.ceil(
-              (totalCount - PAGE_SIZE * 3) / PAGE_SIZE,
-            );
-            const remainingPromises = [];
-
-            for (let i = 4; i <= remainingPages + 3; i++) {
-              remainingPromises.push(fetchBookmarks(i, PAGE_SIZE));
-            }
-
-            const remainingResponses = await Promise.all(remainingPromises);
-            const remainingQuestions = remainingResponses
-              .flatMap((response) => response.questions)
-              .map(formatQuestion);
-
-            // 전체 데이터 업데이트
-            setAllResults((prev) => [...prev, ...remainingQuestions]);
-
-            // 필터링된 결과 업데이트
-            const allQuestions = [
-              ...firstPageQuestions,
-              ...nextTwoPagesQuestions,
-              ...remainingQuestions,
-            ];
-            const finalFiltered = allQuestions.filter((item) => {
-              const matchesJob =
-                filters.job === "직군·직무" || item.career === filters.job;
-              const matchesType =
-                filters.questionType === "질문유형" ||
-                item.type === filters.questionType;
-              return matchesJob && matchesType;
-            });
-
-            setFilteredResults(finalFiltered);
-          }
         }
       } catch (error) {
         setError("데이터를 불러오는데 실패했습니다.");
+      } finally {
         setLoading(false);
       }
     };
@@ -259,23 +230,11 @@ const useBookmarkListState = (filters) => {
 
           setFilteredResults((prev) => prev.filter((q) => q.id !== id));
           setAllResults((prev) => prev.filter((q) => q.id !== id));
-
-          // 북마크 해제 시 totalPages 업데이트
-          setTotalPages((prev) => {
-            const newTotalItems = filteredResults.length - 1;
-            return Math.ceil(newTotalItems / PAGE_SIZE);
-          });
-
-          // 데이터가 없어지면 로딩 상태 해제
-          if (filteredResults.length - 1 === 0) {
-            setLoading(false);
-          }
         }
 
         return true;
       } catch (err) {
         setError(`북마크 토글 실패: ${err.message || "네트워크 문제"}`);
-        setLoading(false); // 에러 발생 시에도 로딩 상태 해제
         return false;
       }
     },
