@@ -3,8 +3,7 @@ import Input from "@/components/common/Input";
 import { React, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/assets/images/ziktalk_typo.svg";
-import Kakao from "@/assets/images/kakao.svg";
-import Google from "@/assets/images/google.svg";
+import kakao from "@/assets/images/kakao.svg";
 import { signin } from "@/api/signApi";
 import { useCookies } from "react-cookie";
 import { useEffect } from "react";
@@ -17,7 +16,6 @@ const KAKAO_REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
 
 const buttonStyle =
   "w-full mb-2 h-[48px] text-base md:mb-4 md:h-[60px] md:text-lg";
-const snsButtonStyle = "h-[10vw] w-[10vw] md:h-[68px] md:w-[68px]";
 const lineStyle = "flex-1 bg-zik-border block h-px w-full";
 const errorStyle = "p-2 text-xs/loose sm:text-base text-red-400";
 
@@ -187,34 +185,19 @@ const SigninForm = () => {
             </span>
             <div className={lineStyle}></div>
           </div>
-          <div className="flex gap-5">
-            <Button
-              onClick={kakaoLogin}
-              shape="circle"
-              color=""
-              className={`${snsButtonStyle} bg-[#FFD900] hover:bg-[#ffd000]`}
-            >
-              <img
-                src={Kakao}
-                alt="카카오로 로그인 하기"
-                className={"h-[8vw] max-h-[40px] w-[6vw] max-w-[38px]"}
-              ></img>
-            </Button>
-            <Button
-              onClick={() => {
-                navigate("/"); // @경로 바꾸기
-              }}
-              shape="circle"
-              color=""
-              className={`${snsButtonStyle} border border-gray-200 bg-white hover:bg-[#F5F4FF]`}
-            >
-              <img
-                src={Google}
-                alt="구글로 로그인 하기"
-                className={"h-[8vw] max-h-[40px] w-[6vw] max-w-[38px]"}
-              ></img>
-            </Button>
-          </div>
+          <Button
+            onClick={kakaoLogin}
+            shape="bar"
+            color=""
+            className={`${buttonStyle} relative flex items-center justify-center bg-[#FEE500] text-[#fff] hover:bg-[#ffd600]`}
+          >
+            <img
+              src={kakao}
+              alt="카카오로 로그인 하기"
+              className="absolute left-4 h-[6vw] max-h-[40px] w-[6vw] max-w-[40px] md:left-6"
+            />
+            <span className="text-base md:text-lg">카카오 로그인</span>
+          </Button>
         </div>
       </div>
     </div>
