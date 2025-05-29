@@ -12,7 +12,6 @@ import {
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
 import cuid from "cuid";
-// import { useVideoRecord } from "@/hooks/useRecord";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
