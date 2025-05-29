@@ -5,7 +5,6 @@ import CommonModal from "@/components/common/Modal/CommonModal";
 import Input from "@/components/common/Input";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import Button from "@/components/common/Button";
-import { useToast } from "@/hooks/useToast.jsx";
 import {
   updateUserInfo,
   deleteUserAccount,
@@ -17,10 +16,11 @@ import { loginInfo } from "@/store/loginStore";
 import Error500 from "@/components/common/Error500";
 
 const MyInfo = () => {
-  const { showToast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editSuccessModalOpen, setEditSuccessModalOpen] = useState(false);
   const [editConfirmModalOpen, setEditConfirmModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const unlinkKakao = useDeleteKaKaoUser();
   const [kakaoToken, setKakaoToken] = useState(null);
   const [provider, setProvider] = useState("local");
@@ -76,7 +76,8 @@ const MyInfo = () => {
         if (error.response?.status === 500) {
           setFetchError(true);
         } else {
-          setError("데이터를 불러오는데 실패했습니다.");
+          setErrorMessage("데이터를 불러오는데 실패했습니다.");
+          setErrorModalOpen(true);
         }
       } finally {
         setIsLoading(false);
@@ -96,27 +97,29 @@ const MyInfo = () => {
   const handleCareerChange = useCallback(
     (career) => {
       setForm((prev) => ({ ...prev, career }));
-      showToast("경력이 변경되었습니다: " + career, "success");
     },
-    [showToast],
+    [],
   );
   const validateForm = useCallback(() => {
     if (form.password || form.passwordCheck) {
       if (!form.password || !form.passwordCheck) {
-        showToast("비밀번호를 모두 입력해주세요.", "error");
+        setErrorMessage("비밀번호를 모두 입력해주세요.");
+        setErrorModalOpen(true);
         return false;
       }
       if (form.password !== form.passwordCheck) {
-        showToast("비밀번호가 일치하지 않습니다.", "error");
+        setErrorMessage("비밀번호가 일치하지 않습니다.");
+        setErrorModalOpen(true);
         return false;
       }
       if (form.password.length < 8) {
-        showToast("비밀번호는 8자 이상이어야 합니다.", "error");
+        setErrorMessage("비밀번호는 8자 이상이어야 합니다.");
+        setErrorModalOpen(true);
         return false;
       }
     }
     return true;
-  }, [form.password, form.passwordCheck, showToast]);
+  }, [form.password, form.passwordCheck]);
   const handleSubmit = useCallback(
     async (e) => {
       if (e) e.preventDefault();
@@ -142,15 +145,13 @@ const MyInfo = () => {
           setEditSuccessModalOpen(true);
         }
       } catch (error) {
-        showToast(
-          error.response?.data?.message || "업데이트 중 오류가 발생했습니다.",
-          "error",
-        );
+        setErrorMessage(error.response?.data?.message || "업데이트 중 오류가 발생했습니다.");
+        setErrorModalOpen(true);
       } finally {
         setIsLoading(false);
       }
     },
-    [form, showToast, validateForm],
+    [form, validateForm],
   );
   const handleDeleteAccount = useCallback(async () => {
     try {
@@ -164,10 +165,8 @@ const MyInfo = () => {
         await deleteUserAccount();
       }
     } catch (error) {
-      showToast(
-        error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.",
-        "error",
-      );
+      setErrorMessage(error.message || "회원 탈퇴 처리 중 오류가 발생했습니다.");
+      setErrorModalOpen(true);
     } finally {
       setIsLoading(false);
       logout();
@@ -396,6 +395,19 @@ const MyInfo = () => {
               btnHandler={() => {
                 setEditSuccessModalOpen(false);
               }}
+              oneBtn={true}
+            />
+          )}
+
+          {/* 에러 모달 */}
+          {errorModalOpen && (
+            <CommonModal
+              isOpen={errorModalOpen}
+              onClose={() => setErrorModalOpen(false)}
+              title="오류"
+              subText={errorMessage}
+              btnText="확인"
+              btnHandler={() => setErrorModalOpen(false)}
               oneBtn={true}
             />
           )}

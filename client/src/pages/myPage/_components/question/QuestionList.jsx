@@ -168,14 +168,14 @@ const QuestionList = () => {
       setIsBookmarkSorted(false);
       try {
         updateFilter("type", type);
-        const result = await fetchData(1, true);
+        const result = await fetchData(0, true);
         if (!result) return;
 
         const sortedQuestions = sortResults(result.questions, type);
         setAllQuestions(sortedQuestions);
-        setVisibleResults(sortedQuestions);
+        setVisibleResults(sortedQuestions.slice(0, SCROLL_BATCH_SIZE));
         setHasMore(result.hasMore);
-        setPage(1);
+        setPage(0);
       } catch (err) {
         setError("필터링된 데이터를 불러오는데 실패했습니다.");
       } finally {

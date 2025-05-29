@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useFilter } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
-import { useToast } from "@/hooks/useToast";
 import { PAGE_SIZE, TEXT_COLORS, TableHeader } from "./settings";
 import { LoadingIndicator } from "../common/LoadingIndicator";
 import FaqItem from "@/components/common/FaqItem";
@@ -238,7 +237,6 @@ const useBookmarkListState = (filters) => {
 
 const QuestionBookmarkList = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
 
   const { filters, updateFilter } = useFilter({
     job: "직군·직무",
