@@ -34,7 +34,6 @@ const FilterDropdown = ({
   keepOpenOnSelect = false,
   dropdownWidth = "w-full",
   buttonWidth = "w-36",
-  ...props
 }) => {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
@@ -65,8 +64,6 @@ const FilterDropdown = ({
     }
   };
 
-  const hasStarOption = options.some((opt) => opt.value === "별");
-
   return (
     <div className={`relative ${className}`} ref={ref}>
       <button
@@ -75,7 +72,6 @@ const FilterDropdown = ({
         onClick={() => setOpen(!open)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        {...props}
       >
         {getSelectedLabel()}
         <span

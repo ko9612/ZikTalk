@@ -1,5 +1,4 @@
 import React, { useEffect, useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useFilter } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
@@ -71,8 +70,11 @@ const useBookmarkListState = (filters) => {
         setTotalPages(Math.ceil(filtered.length / PAGE_SIZE));
         setCurrentPage(1);
       } catch (error) {
-        console.error("데이터 로딩 에러:", error);
-        setError("데이터를 불러오는데 실패했습니다.");
+        if (error.response?.status === 500) {
+          setFetchError(true);
+        } else {
+          setError("데이터를 불러오는데 실패했습니다.");
+        }
       } finally {
         setLoading(false);
       }
@@ -236,8 +238,6 @@ const useBookmarkListState = (filters) => {
 };
 
 const QuestionBookmarkList = () => {
-  const navigate = useNavigate();
-
   const { filters, updateFilter } = useFilter({
     job: "직군·직무",
     questionType: "질문유형",
@@ -249,8 +249,6 @@ const QuestionBookmarkList = () => {
     toggleOpen,
     handleFilterChange,
     handlePageChange,
-    setVisibleResults,
-    setCurrentPage,
     fetchError,
   } = useBookmarkListState(filters);
 
@@ -338,12 +336,6 @@ const QuestionBookmarkList = () => {
                 className="text-gray-500"
                 buttonWidth="flex h-10 w-40 items-center justify-between border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
                 dropdownWidth="w-40"
-                buttonContent={
-                  <div className="flex w-full items-center justify-between">
-                    <span className="truncate">{filters.job}</span>
-                    <span className="ml-2 flex-shrink-0">▼</span>
-                  </div>
-                }
               />
 
               <FilterDropdown
@@ -353,12 +345,6 @@ const QuestionBookmarkList = () => {
                 className="ml-10 text-gray-500"
                 buttonWidth="flex h-10 w-40 items-center justify-between border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
                 dropdownWidth="w-40"
-                buttonContent={
-                  <div className="flex w-full items-center justify-between">
-                    <span className="truncate">{filters.questionType}</span>
-                    <span className="ml-2 flex-shrink-0">▼</span>
-                  </div>
-                }
               />
             </div>
           </div>
