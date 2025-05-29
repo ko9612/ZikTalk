@@ -220,7 +220,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
     subject: "[ZikTalk] 직톡 회원가입 이메일 인증 메일입니다.",
     html: `
         <div style="text-align: center; font-family: Arial, sans-serif;">
-        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
+        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px; background-color:transparent" />
           <h2>ZikTalk 회원가입 인증번호</h2>
           <p>아래 인증번호를 <strong>3분 내에</strong> 입력해주세요.</p>
           <div style="color: #1a73e8;">회원가입 인증번호는 <strong style="font-size: 20px; font-weight: bold;">${verificationCode}</strong> 입니다.</div>
@@ -248,7 +248,7 @@ export const sendResetPasswordEmail = async (email, authCode) => {
     subject: "[ZikTalk] 직톡 비밀번호 재설정 메일입니다.",
     html: `
         <div style="text-align: center; font-family: Arial, sans-serif;">
-        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px;" />
+        <img src="cid:logo" alt="ZikTalk 로고" style="width:120px; background-color:transparent"" />
           <h2>ZikTalk 비밀번호 재설정</h2>
           <p>아래 URL을 클릭하여 <strong>5분 내에</strong> 비밀번호를 재설정해주세요.</p>
           <div style="color: #1a73e8;"><a href='${resetLink}'>비밀번호 재설정 바로가기</a></div>
