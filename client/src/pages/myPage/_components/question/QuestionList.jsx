@@ -500,6 +500,7 @@ const QuestionList = () => {
               subText="정상적으로 삭제되었습니다."
               btnText="확인"
               btnHandler={() => setDeleteSuccessModalOpen(false)}
+              oneBtn={true}
             />
           )}
         </div>
