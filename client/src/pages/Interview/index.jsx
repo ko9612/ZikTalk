@@ -23,7 +23,7 @@ const index = () => {
   const setLevel = useInterviewStore((state) => state.setLevel);
   const setCareer = useInterviewStore((state) => state.setCareer);
   const setUserId = useInterviewStore((state) => state.setUserId);
-  const { releaseCamera } = useVideoRecord();
+  const videoRecord = useVideoRecord();
 
   useNavigationBlocker({
     // 컴포넌트 언마운트(페이지 이탈) 시 초기화
@@ -32,7 +32,7 @@ const index = () => {
       resetAll();
       resetDevices();
       resetInterview();
-      releaseCamera();
+      videoRecord.releaseCamera();
     },
   });
 
@@ -42,7 +42,7 @@ const index = () => {
     DiffSetup: <DiffSetup />,
     RoleSetup: <RoleSetup />,
     PreCheckStep: <PreCheckStep />,
-    InterviewSection: <InterviewSection />,
+    InterviewSection: <InterviewSection videoRecord={videoRecord} />,
   };
 
   useEffect(() => {

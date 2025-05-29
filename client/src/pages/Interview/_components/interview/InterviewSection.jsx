@@ -12,14 +12,13 @@ import {
 import { useInterviewStore } from "@/store/interviewSetupStore";
 import { getInterviewQuestion } from "@/api/interviewApi";
 import cuid from "cuid";
-import { useVideoRecord } from "@/hooks/useRecord";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { useNavigate } from "react-router-dom";
 
-const InterviewSection = () => {
+const InterviewSection = ({ videoRecord }) => {
   const setTabSelect = useInterviewTabStore((state) => state.setTabSelect);
   const { setInterviewState, interviewState } = useInterviewStateStore();
   const setIsLoading = useLoadingStateStore((state) => state.setIsLoading);
@@ -33,7 +32,7 @@ const InterviewSection = () => {
     interviewId,
   } = useQuestionStore();
   const { level, qCount, career, ratio } = useInterviewStore();
-  const { startVideoRecording, stopVideoRecording } = useVideoRecord();
+  const { startVideoRecording, stopVideoRecording } = videoRecord;
   const [question, setQuestion] = useState({
     qes: "",
     totalNum: qCount,
