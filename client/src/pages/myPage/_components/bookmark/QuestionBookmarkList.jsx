@@ -411,8 +411,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
             onChange={handleJobFilterChange}
             options={dynamicJobOptions}
             className="text-gray-500"
-            buttonWidth="flex mr-14 h-10 w-36  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
-            dropdownWidth="w-36"
+            buttonWidth="flex mr-14 h-10 w-40  gap-5 items-center justify-between truncate  border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3  sm:py-4 sm:px-3 sm:text-sm"
+            dropdownWidth="w-40"
           />
 
           <FilterDropdown
@@ -420,8 +420,8 @@ const QuestionBookmarkList = ({ testEmpty }) => {
             onChange={handleTypeFilterChange}
             options={questionTypeOptions}
             className="text-gray-500"
-            buttonWidth="flex h-10 w-36 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
-            dropdownWidth="w-36"
+            buttonWidth="flex h-10 w-40 gap-5 items-center justify-between truncate border border-gray-300 bg-white text-xs font-medium whitespace-nowrap text-gray-500 hover:bg-gray-50 focus:outline-none sm:h-3 sm:py-4 sm:px-3 sm:text-sm"
+            dropdownWidth="w-40"
           />
         </div>
       </div>

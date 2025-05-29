@@ -2,29 +2,6 @@ import { ACTIONS } from './constants';
 import { SORT_OPTIONS } from "@/hooks/useFilter";
 
 /**
- * @typedef {Object} QuestionData
- * @property {number} id - 클라이언트 측 ID
- * @property {string} originalId - 서버 측 원본 ID
- * @property {string} interviewId - 인터뷰 ID
- * @property {string} title - 직무
- * @property {string} content - 질문 내용
- * @property {string} answer - 답변
- * @property {string} recommendation - 추천사항
- * @property {number} score - 점수
- * @property {string} desc - 설명
- * @property {string} date - 날짜
- * @property {string} type - 질문 유형
- * @property {boolean} bookmarked - 북마크 여부
- * @property {boolean} isDeleted - 삭제 여부
- * @property {string} career - 직무
- * @property {number} totalScore - 총점
- * @property {number} personalityScore - 인성 점수
- * @property {number} jobScore - 직무 점수
- * @property {string} summary - 요약
- * @property {Object} interviewData - 원본 인터뷰 데이터
- */
-
-/**
  * 서버 API로부터 받은 질문 데이터를 클라이언트에서 사용할 형태로 변환
  */
 export const formatQuestionData = (question, index, offset = 0) => {
