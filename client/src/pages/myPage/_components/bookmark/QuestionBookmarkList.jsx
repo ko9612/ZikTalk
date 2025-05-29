@@ -29,7 +29,7 @@ const useBookmarkListState = (filters) => {
 
         // 첫 페이지 데이터 요청 (전체 개수도 함께 받음)
         const response = await fetchBookmarks(1, PAGE_SIZE);
-        
+
         // 데이터가 없는 경우
         if (!response || !response.totalCount || response.totalCount === 0) {
           setAllResults([]);
@@ -84,7 +84,7 @@ const useBookmarkListState = (filters) => {
 
           // 다음 2페이지 데이터 업데이트
           setAllResults((prev) => [...prev, ...nextTwoPagesQuestions]);
-          
+
           // 필터링된 결과 업데이트
           const currentAllResults = [
             ...firstPageQuestions,
@@ -98,7 +98,7 @@ const useBookmarkListState = (filters) => {
               item.type === filters.questionType;
             return matchesJob && matchesType;
           });
-          
+
           setFilteredResults(filtered);
 
           // 나머지 페이지 데이터는 백그라운드에서 로드
@@ -119,7 +119,7 @@ const useBookmarkListState = (filters) => {
 
             // 전체 데이터 업데이트
             setAllResults((prev) => [...prev, ...remainingQuestions]);
-            
+
             // 필터링된 결과 업데이트
             const allQuestions = [
               ...firstPageQuestions,
@@ -134,7 +134,7 @@ const useBookmarkListState = (filters) => {
                 item.type === filters.questionType;
               return matchesJob && matchesType;
             });
-            
+
             setFilteredResults(finalFiltered);
           }
         }
@@ -259,6 +259,12 @@ const useBookmarkListState = (filters) => {
 
           setFilteredResults((prev) => prev.filter((q) => q.id !== id));
           setAllResults((prev) => prev.filter((q) => q.id !== id));
+
+          // 북마크 해제 시 totalPages 업데이트
+          setTotalPages((prev) => {
+            const newTotalItems = filteredResults.length - 1;
+            return Math.ceil(newTotalItems / PAGE_SIZE);
+          });
         }
 
         return true;
