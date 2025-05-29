@@ -238,7 +238,7 @@ export const sendVerificationEmail = async (email, verificationCode) => {
   });
 };
 
-// 비밀번호 재설정 메일 발송
+// 비밀번호 재설정 메일 발송-
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 export const sendResetPasswordEmail = async (email, authCode) => {
