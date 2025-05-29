@@ -1,11 +1,3 @@
-import prisma from "../utils/prisma.js";
-
-import * as interviewDBService from "../services/interviewDBService.js";
-import {
-  generateQuestion,
-  generateFeedback,
-} from "../services/interviewService.js";
-
 // 1. 클라이언트 요청 처리
 // Express 라우터에서 호출되어 클라이언트의 HTTP 요청을 처리
 // 요청 Body, Query 파라미터, Headers 등을 받아서 서비스 계층으로 전달
@@ -16,6 +8,13 @@ import {
 // 성공/실패에 따라 HTTP 상태 코드를 설정 (예: 200, 201, 404, 500)
 // 4. 에러 처리
 // 서비스 계층에서 발생한 예외를 HTTP 상태 코드와 함께 클라이언트에게 반환
+
+import * as interviewDBService from "../services/interviewDBService.js";
+import {
+  generateQuestion,
+  generateFeedback,
+} from "../services/interviewService.js";
+
 
 export const createInterviewQuestion = async (req, res) => {
   try {
@@ -57,11 +56,6 @@ export const getAllInterviews = async (req, res) => {
     // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
     const userId = req.query.userId || req.user?.id;
 
-    // userId가 없으면 401 에러 반환
-    // if (!userId) {
-    //   return res.status(401).json({ message: "인증이 필요합니다." });
-    // }
-
     const interviews = await interviewDBService.getAllInterviews(userId);
     res.status(200).json(interviews);
   } catch (error) {
@@ -75,11 +69,6 @@ export const getAllInterviewsWithFirstQuestion = async (req, res) => {
   try {
     // 쿼리 파라미터에서 userId를 가져오거나, 로그인된 사용자 ID 사용
     const userId = req.query.userId || req.user?.id;
-
-    // userId가 없으면 401 에러 반환
-    // if (!userId) {
-    //   return res.status(401).json({ message: "인증이 필요합니다." });
-    // }
 
     // 쿼리 파라미터에서 필터와 페이지네이션 정보 추출
     const { page, pageSize, sortBy, bookmarked } = req.query;

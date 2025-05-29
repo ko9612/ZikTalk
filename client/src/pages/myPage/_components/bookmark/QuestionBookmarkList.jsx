@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
+import { useFilter } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast";
@@ -22,7 +22,6 @@ const useBookmarkListState = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleResults, setVisibleResults] = useState([]);
-  const [allFiltered, setAllFiltered] = useState([]); // 전체 필터링된 데이터
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
@@ -209,8 +208,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     fetchBookmarkedQuestions,
     toggleBookmark,
     toggleOpen,
-    setLoading,
-    setError,
     setVisibleResults,
     setCurrentPage,
     handleFilterChange,
@@ -221,7 +218,6 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     totalPages,
     visibleResults,
     loading,
-    error,
     openIds,
     filteredQuestions, // filteredQuestions 추가
   } = state;

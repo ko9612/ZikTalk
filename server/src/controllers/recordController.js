@@ -47,20 +47,4 @@ export const handleUpload = async (req, res) => {
     console.error("❌ 업로드 오류:", err);
     return res.status(500).json({ error: "업로드 처리 중 오류 발생" });
   }
-  // if (!req.file) {
-  //   return res.status(400).send("No file uploaded.");
-  // }
-  // const tempPath = req.file.path;
-  // const targetPath = path.join(
-  //   __dirname,
-  //   "../../uploads",
-  //   req.file.originalname
-  // );
-  // fs.rename(tempPath, targetPath, (err) => {
-  //   if (err) {
-  //     console.error("파일 이동 실패:", err);
-  //     return res.sendStatus(500);
-  //   }
-  //   return res.sendStatus(200);
-  // });
 };

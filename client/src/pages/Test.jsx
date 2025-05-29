@@ -1,21 +1,9 @@
-import { testApi } from "@/api/testApi";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 
 const Test = () => {
-  // api test
-  const [testData, setTestData] = useState("");
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await testApi();
-  //     if (response && response.data) setTestData(response.data.message);
-  //   };
-  //   fetchData();
-  // }, []);
-
   const {
     transcript,
     listening,

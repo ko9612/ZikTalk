@@ -1,5 +1,5 @@
-import { useReducer, useCallback, useEffect } from "react";
-import { ACTIONS, PAGE_SIZE, SCROLL_BATCH_SIZE } from "./constants";
+import { useReducer, useCallback } from "react";
+import { ACTIONS, SCROLL_BATCH_SIZE } from "./constants";
 import { SORT_OPTIONS } from "@/hooks/useFilter";
 import {
   fetchInterviewsWithFirstQuestion,

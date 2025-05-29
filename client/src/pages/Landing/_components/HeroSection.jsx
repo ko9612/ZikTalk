@@ -15,7 +15,6 @@ const HeroSection = () => {
       className="relative overflow-hidden"
       style={{ height: "calc(100vh - 5rem)" }} // 헤더 높이 5rem 차감
     >
-      {/* 🎥 배경 비디오 */}
       <video
         autoPlay
         loop

@@ -1,10 +1,6 @@
 import prisma from "../utils/prisma.js";
 import bcrypt from "bcrypt";
 
-// const prisma = new PrismaClient({
-//   log: ["query", "info", "warn", "error"],
-// });
-
 export const getMyBookmarks = async (req, res) => {
   try {
     const userId = req.user.userId;

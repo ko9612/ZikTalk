@@ -1,4 +1,3 @@
-// Landing page component
 import BottomSection from "@/pages/Landing/_components/BottomSection";
 import FeatureSection from "@/pages/Landing/_components/FeatureSection";
 import GuideSection from "@/pages/Landing/_components/GuideSection";

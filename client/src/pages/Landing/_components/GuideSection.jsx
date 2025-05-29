@@ -1,4 +1,3 @@
-// 한재우
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import Q from "@/assets/images/Q.svg";
@@ -26,11 +25,6 @@ const faqList = [
     expanded: false,
   },
 ];
-
-// function autoLineBreak(text) {
-//   if (!text) return "";
-//   return text.replace(/(\.|\?|\!)/g, "$1\n");
-// }
 
 const GuideSection = () => {
   const [faqs, setFaqs] = React.useState(faqList);

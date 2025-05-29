@@ -2,7 +2,6 @@ import React from "react";
 import { GRID_TEMPLATE, TEXT_COLORS } from "./constants";
 import FilterDropdown from "@/components/common/FilterDropdown";
 import { TYPE_OPTIONS } from "@/hooks/useFilter";
-// import { LoadingIndicator } from "../../common/LoadingIndicator";
 
 export const FilterComponent = React.memo(({
   filters,

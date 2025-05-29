@@ -87,30 +87,6 @@ const useNavigationBlocker = ({ onCleanup = () => {}, enabled = true }) => {
       skipNextPopState.current = true;
       // 1단계: 원래 위치로 되돌아감
       window.history.forward();
-
-      // 2단계: 되돌아간 후 다시 더미 state 추가 (뒤로가기 버튼 유지 목적)
-      // defer 해줘야 race condition 방지 가능
-      //   setTimeout(() => {
-      //     const url = new URL(window.location.href);
-      //     url.searchParams.set("_navBlock", Math.random());
-
-      //     window.history.pushState(
-      //       {
-      //         navBlockerId: Math.random(),
-      //         count: historyEntryCount.current++,
-      //       },
-      //       "",
-      //       url.toString(),
-      //     );
-
-      //     saveState({
-      //       historyEntryCount: historyEntryCount.current,
-      //       time: Date.now(),
-      //       hasPushed: true,
-      //     });
-
-      //     hasPushedInitialEntry.current = true;
-      //   }, 0);
     }
   };
 

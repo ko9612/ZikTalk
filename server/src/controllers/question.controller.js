@@ -1,4 +1,3 @@
-import prisma from "../utils/prisma.js";
 import * as questionService from "../services/question.service.js";
 
 // 모든 질문 조회
@@ -32,8 +31,6 @@ export const getAllQuestions = async (req, res) => {
 // ID로 질문 조회
 export const getQuestionById = async (req, res) => {
   try {
-    const userId = req.user.id;
-
     const question = await questionService.getQuestionById(id);
 
     if (!question) {

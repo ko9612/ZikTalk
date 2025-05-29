@@ -1,9 +1,7 @@
-import { ACTIONS } from './constants';
 import { SORT_OPTIONS } from "@/hooks/useFilter";
 
-/**
- * 서버 API로부터 받은 질문 데이터를 클라이언트에서 사용할 형태로 변환
- */
+// 서버 API로부터 받은 질문 데이터를 클라이언트에서 사용할 형태로 변환
+
 export const formatQuestionData = (question, index, offset = 0) => {
   const interview = question.interview || {};
   const formattedDate = interview.createdAt 
@@ -45,9 +43,8 @@ export const formatQuestionData = (question, index, offset = 0) => {
   };
 };
 
-/**
- * 결과를 필터링하고 정렬하는 함수
- */
+// 결과를 필터링하고 정렬하는 함수
+ 
 export const filterAndSortResults = (results, filterType, starredItems) => {
   const filteredResults = results.filter(item => !item.isDeleted);
   

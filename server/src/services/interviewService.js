@@ -21,6 +21,7 @@ export const generateQuestion = async (level, qCount, career, ratio) => {
   - 인성 질문 (soft skill):지원자의 성향, 커뮤니케이션 능력, 팀워크, 문제 해결 방식을 평가하기 위한 질문
   - 무조건 경력에 적합한 질문이어야 함
   - 질문 외 다른 문장은 포함하지 말 것
+  - 오직 한국어로만 반환한다
   - 반환 형식은 아래와 값으며, 배열에 담아서 반환한다. 특정 키에 배열을 넣은 객체 형태가 아닌, 오직 배열만 반환한다. -> [{...},{...},{...}]
   - 반환 형식 (JSON):
     {
@@ -61,6 +62,7 @@ export const generateFeedback = async (data) => {
   "${data.career}" 직무면접 준비를 위한 "${
     data.level
   }" 수준의 면접 질문에 대한 답변을 평가합니다.
+  - 오직 한국어로만 반환한다.
   - 총 질문 수: ${data.content.length}개
   - 질문과 답변 목록:
   ${data.content
