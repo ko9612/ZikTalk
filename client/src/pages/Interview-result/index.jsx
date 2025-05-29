@@ -118,7 +118,7 @@ const Index = () => {
       {fetchError ? (
         <Error500 />
       ) : (
-        <div className="flex min-h-screen w-full flex-col items-center justify-center p-7">
+        <div className="flex flex-col items-center justify-center w-full min-h-screen p-7">
           <article id="pdf-download">
             <div className="w-full max-w-[1200px]">
               {/* 결과 분석 상단 */}
@@ -166,7 +166,7 @@ const Index = () => {
                   <BoxStyle title="개선할 점">{improvements}</BoxStyle>
                 </div>
               </div>
-              <div className="mt-4 gap-4 sm:flex sm:flex-nowrap">
+              <div className="gap-4 mt-4 sm:flex sm:flex-nowrap">
                 <BoxStyle
                   type="graph"
                   title="인성 면접"
@@ -216,7 +216,7 @@ const Index = () => {
                         isQuestions.map((item, index) => (
                           <li
                             key={index}
-                            className="border-zik-border hover:bg-zik-main/10 block max-w-full cursor-pointer truncate border-b p-4"
+                            className={`border-zik-border hover:bg-zik-main/10 block max-w-full cursor-pointer truncate border-b p-4 ${selectedQuestion === item.videoUrl ? "bg-zik-main/10" : ""}`}
                             onClick={() => setSelectedQuestion(item.videoUrl)}
                           >
                             <span className="mr-4 text-xl font-bold">

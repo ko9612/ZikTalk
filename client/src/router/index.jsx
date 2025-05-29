@@ -14,7 +14,7 @@ const ResetPassword = lazy(() => import("@/pages/Reset-password"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const InterviewResult = lazy(() => import("@/pages/Interview-result"));
 const MyPage = lazy(() => import("@/pages/myPage/index"));
-const kakaoCallback = lazy(() => import("@/pages/KakaoCallback/Index"));
+const KakaoCallback = lazy(() => import("@/pages/KakaoCallback/Index"));
 const OauthSignup = lazy(() => import("@/pages/OauthSignup/Index"));
 
 const withSuspense = (Component) => {
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/kakao-callback",
-        element: withSuspense(kakaoCallback),
+        element: <KakaoCallback />,
       },
       {
         path: "/oauth-signup",

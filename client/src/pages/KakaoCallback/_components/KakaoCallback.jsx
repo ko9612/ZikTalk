@@ -8,6 +8,7 @@ import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
 import Logo from "@/assets/images/ziktalk_typo.svg";
 import { linkAccount, signin } from "@/api/signApi";
+import LoadingPage from "@/components/common/LoadingPage";
 
 const KakaoCallback = () => {
   const [isEmailDuplicated, setIsEmailDuplicated] = useState(false);
@@ -77,7 +78,7 @@ const KakaoCallback = () => {
   return (
     <>
       {isEmailDuplicated ? (
-        <div className="flex h-screen items-center">
+        <div className="flex items-center h-screen">
           <div className="mx-auto my-0 w-[70vw] md:w-[445px]">
             <div className="flex flex-col items-center whitespace-nowrap">
               <img
@@ -94,14 +95,14 @@ const KakaoCallback = () => {
                     앞으로는 이메일과 비밀번호를 이용한 일반 로그인이
                     불가능하며,
                   </p>
-                  <p className="text-zik-main mb-7 text-sm font-bold sm:text-base md:text-lg">
+                  <p className="text-sm font-bold text-zik-main mb-7 sm:text-base md:text-lg">
                     반드시 카카오 로그인을 통해 이용해 주세요.
                   </p>
                   <Button
                     shape="bar"
                     type="button"
                     color="violet"
-                    className="mb-2 w-full text-sm md:text-base"
+                    className="w-full mb-2 text-sm md:text-base"
                     onClick={() => navigate("/signin")}
                   >
                     로그인 바로가기
@@ -112,14 +113,14 @@ const KakaoCallback = () => {
                   <p className="mt-5 text-sm font-bold sm:text-base md:mt-7 md:text-lg">
                     이 이메일은 이미 일반 회원가입으로 등록되어 있어요.
                   </p>
-                  <p className="text-zik-main text-sm font-bold sm:text-base md:text-lg">
+                  <p className="text-sm font-bold text-zik-main sm:text-base md:text-lg">
                     카카오 계정과 연동하려면 비밀번호를 입력해주세요.
                   </p>
-                  <p className="mb-7 text-xs font-bold sm:text-sm md:text-base">
+                  <p className="text-xs font-bold mb-7 sm:text-sm md:text-base">
                     연동을 원하지 않으신다면 기존 방식으로 로그인해주세요.
                   </p>
 
-                  <div className="mb-3 w-full md:mb-5">
+                  <div className="w-full mb-3 md:mb-5">
                     <Input
                       type="password"
                       value={password}
@@ -137,7 +138,7 @@ const KakaoCallback = () => {
                     onClick={handleAccountLinking}
                     shape="bar"
                     color="violet"
-                    className="mb-2 w-full text-sm md:text-base"
+                    className="w-full mb-2 text-sm md:text-base"
                   >
                     계정 연동
                   </Button>
@@ -145,7 +146,7 @@ const KakaoCallback = () => {
                     shape="bar"
                     type="button"
                     color="lightViolet"
-                    className="mb-2 w-full text-sm md:text-base"
+                    className="w-full mb-2 text-sm md:text-base"
                     onClick={() => navigate("/signin")}
                   >
                     일반 로그인으로 계속
@@ -156,7 +157,9 @@ const KakaoCallback = () => {
           </div>
         </div>
       ) : (
-        ""
+        <div className="w-full h-screen">
+          <LoadingPage />
+        </div>
       )}
     </>
   );
