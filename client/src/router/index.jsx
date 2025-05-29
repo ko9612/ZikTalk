@@ -5,6 +5,10 @@ import NotFoundPage from "@/components/common/NotFoundPage";
 import LoadingPage from "@/components/common/LoadingPage";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 
+// 500 에러 페이지 import 추가
+const ErrorPage500 = lazy(() => import("@/components/ErrorPage500"));
+
+// 기존 import 문
 const Landing = lazy(() => import("../pages/Landing"));
 const Interview = lazy(() => import("../pages/Interview"));
 const Test = lazy(() => import("../pages/Test"));
@@ -33,6 +37,11 @@ const router = createBrowserRouter([
       {
         path: "",
         element: <Landing />,
+      },
+      // 여기에 500 에러 페이지 라우트 추가
+      {
+        path: "500error",
+        element: withSuspense(ErrorPage500), // TestErrorPage 대신 ErrorPage500 사용
       },
       {
         path: "/signup",

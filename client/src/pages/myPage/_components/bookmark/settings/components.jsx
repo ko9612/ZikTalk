@@ -1,9 +1,10 @@
 import React from "react";
 import { GRID_TEMPLATE, TEXT_COLORS } from "./constants";
 import FilterDropdown from "@/components/common/FilterDropdown";
-import { JOB_OPTIONS, TYPE_OPTIONS } from "@/components/common/useFilter";
+import { TYPE_OPTIONS } from "@/hooks/useFilter";
+// import { LoadingIndicator } from "../../common/LoadingIndicator";
 
-export const FilterComponent = ({
+export const FilterComponent = React.memo(({
   filters,
   onJobFilterChange,
   onTypeFilterChange,
@@ -25,9 +26,9 @@ export const FilterComponent = ({
       />
     </div>
   </div>
-);
+));
 
-export const TableHeader = () => (
+export const TableHeader = React.memo(() => (
   <div
     className={`mb-3 hidden items-center border-t-2 border-b-2 border-t-gray-500 border-b-gray-200 px-1 py-2 ${TEXT_COLORS.header} tracking-wide sm:grid sm:px-2 sm:text-sm md:px-4 md:text-base`}
     style={{ gridTemplateColumns: GRID_TEMPLATE }}
@@ -38,10 +39,4 @@ export const TableHeader = () => (
     <div className="pr-8 text-left">질문</div>
     <div className="flex justify-center">즐겨찾기</div>
   </div>
-);
-
-export const LoadingIndicator = () => (
-  <div className="my-6 flex justify-center">
-    <div className="bg- h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-indigo-500"></div>
-  </div>
-);
+));

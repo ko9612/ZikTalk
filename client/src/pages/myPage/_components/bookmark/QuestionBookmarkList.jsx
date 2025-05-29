@@ -1,15 +1,11 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFilter, SORT_OPTIONS } from "@/components/common/useFilter";
+import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
 import { useToast } from "@/hooks/useToast";
-import {
-  PAGE_SIZE,
-  TEXT_COLORS,
-  TableHeader,
-  LoadingIndicator,
-} from "./settings";
+import { PAGE_SIZE, TEXT_COLORS, TableHeader } from "./settings";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";
@@ -49,7 +45,7 @@ const useBookmarkListState = () => {
             : undefined;
 
         // 전체 데이터 받아오기 (최대 200개)
-        const response = await fetchBookmarks(1, 200, roleParam, typeParam);
+        const response = await fetchBookmarks(1, 150, roleParam, typeParam);
         if (!response || !response.questions) {
           throw new Error("서버 응답 형식이 올바르지 않습니다.");
         }
@@ -88,7 +84,10 @@ const useBookmarkListState = () => {
   useEffect(() => {
     // 페이지네이션만 적용
     setVisibleResults(
-      filteredQuestions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+      filteredQuestions.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE,
+      ),
     );
     setTotalPages(Math.ceil(filteredQuestions.length / PAGE_SIZE));
   }, [filteredQuestions, currentPage]);
@@ -155,21 +154,25 @@ const useBookmarkListState = () => {
   }, []);
 
   // 필터 변경 핸들러
-  const handleFilterChange = useCallback((filters) => {
-    let filtered = allQuestions;
-    if (filters.job && filters.job !== "직군·직무") {
-      filtered = filtered.filter(q =>
-        q.career === filters.job ||
-        q.role === filters.job ||
-        (q.interview && q.interview.role === filters.job)
-      );
-    }
-    if (filters.questionType && filters.questionType !== "질문유형") {
-      filtered = filtered.filter(q => q.type === filters.questionType);
-    }
-    setFilteredQuestions(filtered);
-    setCurrentPage(1);
-  }, [allQuestions]);
+  const handleFilterChange = useCallback(
+    (filters) => {
+      let filtered = allQuestions;
+      if (filters.job && filters.job !== "직군·직무") {
+        filtered = filtered.filter(
+          (q) =>
+            q.career === filters.job ||
+            q.role === filters.job ||
+            (q.interview && q.interview.role === filters.job),
+        );
+      }
+      if (filters.questionType && filters.questionType !== "질문유형") {
+        filtered = filtered.filter((q) => q.type === filters.questionType);
+      }
+      setFilteredQuestions(filtered);
+      setCurrentPage(1);
+    },
+    [allQuestions],
+  );
 
   return {
     state: {
@@ -179,6 +182,7 @@ const useBookmarkListState = () => {
       loading,
       error,
       openIds,
+      filteredQuestions, // filteredQuestions 추가
     },
     fetchBookmarkedQuestions,
     toggleBookmark,
@@ -212,8 +216,15 @@ const QuestionBookmarkList = ({ testEmpty }) => {
     handleFilterChange,
   } = useBookmarkListState();
 
-  const { currentPage, totalPages, visibleResults, loading, error, openIds } =
-    state;
+  const {
+    currentPage,
+    totalPages,
+    visibleResults,
+    loading,
+    error,
+    openIds,
+    filteredQuestions, // filteredQuestions 추가
+  } = state;
 
   const [dynamicJobOptions, setDynamicJobOptions] = useState([
     { value: "직군·직무", label: "직군·직무" },
@@ -336,7 +347,22 @@ const QuestionBookmarkList = ({ testEmpty }) => {
 
         // 북마크 해제된 경우 목록에서 제거
         if (!newBookmarkState) {
-          setVisibleResults((prev) => prev.filter((item) => item.id !== id));
+          // 현재 페이지에서 항목을 제거
+          setVisibleResults((prev) => {
+            const filtered = prev.filter((item) => item.id !== id);
+
+            // 다음 페이지의 첫 번째 항목을 가져와 현재 페이지의 마지막에 추가
+            if (filtered.length < PAGE_SIZE && currentPage < totalPages) {
+              // filteredQuestions에서 다음 페이지의 첫 번째 항목을 가져옴
+              const nextPageFirstItem =
+                filteredQuestions[currentPage * PAGE_SIZE];
+              if (nextPageFirstItem) {
+                return [...filtered, nextPageFirstItem];
+              }
+            }
+
+            return filtered;
+          });
 
           // 현재 페이지의 데이터가 부족하고, 이전 페이지가 있는 경우
           if (visibleResults.length <= 1 && currentPage > 1) {
@@ -357,7 +383,15 @@ const QuestionBookmarkList = ({ testEmpty }) => {
         showToast("북마크 처리 중 오류가 발생했습니다.", "error");
       }
     },
-    [visibleResults, currentPage, filters, navigate, showToast],
+    [
+      visibleResults,
+      currentPage,
+      totalPages,
+      filteredQuestions,
+      filters,
+      navigate,
+      showToast,
+    ],
   );
 
   const isEmpty = visibleResults.length === 0 && !loading;
@@ -416,7 +450,7 @@ const QuestionBookmarkList = ({ testEmpty }) => {
                   <div key={item.id}>
                     <FaqItem
                       id={item.id}
-                      displayId={index + 1}
+                      displayId={(currentPage - 1) * PAGE_SIZE + index + 1}
                       career={item.career}
                       type={item.type}
                       question={item.question}
