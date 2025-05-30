@@ -20,6 +20,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// ping test용용
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 const corsOptions = {
   origin: [
     "http://localhost:5173",
