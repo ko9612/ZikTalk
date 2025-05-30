@@ -20,26 +20,23 @@ const useBookmarkListState = (filters) => {
   const [error, setError] = useState(null);
   const [openIds, setOpenIds] = useState([]);
   const [fetchError, setFetchError] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true); // 초기 로딩 상태
-  const [backgroundLoading, setBackgroundLoading] = useState(false); // 백그라운드 로딩 상태
 
   // 초기 데이터 로드
   useEffect(() => {
     const loadData = async () => {
       try {
-        setInitialLoading(true); // 초기 로딩 시작
+        setLoading(true);
 
         // 전체 데이터 수 확인
         const response = await fetchBookmarks(1, 1);
 
-        // 데이터가 없는 경우 즉시 로딩 종료
+        // 데이터가 없는 경우
         if (!response || !response.totalCount || response.totalCount === 0) {
           setAllResults([]);
           setFilteredResults([]);
           setVisibleResults([]);
           setTotalPages(0);
           setCurrentPage(1);
-          setInitialLoading(false); // 초기 로딩 종료
           return;
         }
 
@@ -69,11 +66,9 @@ const useBookmarkListState = (filters) => {
         setVisibleResults(firstPageQuestions);
         setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
         setCurrentPage(1);
-        setInitialLoading(false); // 첫 페이지 데이터 로드 완료
 
         // 나머지 데이터는 백그라운드에서 로드
         if (totalCount > PAGE_SIZE) {
-          setBackgroundLoading(true); // 백그라운드 로딩 시작
           const remainingPages = Math.ceil(
             (totalCount - PAGE_SIZE) / PAGE_SIZE,
           );
@@ -112,12 +107,11 @@ const useBookmarkListState = (filters) => {
           });
 
           setFilteredResults(filtered);
-          setBackgroundLoading(false); // 백그라운드 로딩 종료
         }
       } catch (error) {
         setError("데이터를 불러오는데 실패했습니다.");
-        setInitialLoading(false);
-        setBackgroundLoading(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -279,8 +273,6 @@ const useBookmarkListState = (filters) => {
       error,
       openIds,
       allResults,
-      initialLoading,
-      backgroundLoading,
     },
     toggleBookmark,
     toggleOpen,
@@ -316,8 +308,6 @@ const QuestionBookmarkList = () => {
     loading,
     openIds,
     allResults,
-    initialLoading,
-    backgroundLoading,
   } = state;
 
   // 직군/직무 옵션을 현재 데이터에서 추출
@@ -422,14 +412,12 @@ const QuestionBookmarkList = () => {
               <TableHeader />
 
               <div className="relative mb-4 h-full min-h-[100px] overflow-y-hidden rounded-lg">
-                {initialLoading &&
-                visibleResults.length === 0 &&
-                !backgroundLoading ? (
+                {loading && visibleResults.length === 0 ? (
                   <div className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
                     <LoadingIndicator />
                   </div>
                 ) : (
-                  <div className="relative h-full p-2">
+                  <div className="h-full p-2">
                     {visibleResults.map((item, index) => (
                       <div key={item.id}>
                         <FaqItem
@@ -448,21 +436,18 @@ const QuestionBookmarkList = () => {
                         />
                       </div>
                     ))}
-                    {backgroundLoading && (
-                      <div className="absolute top-2 right-2 text-xs text-gray-500">
-                        추가 데이터 로딩중...
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
-
+              {/* 페이지네이션 컴포넌트는 항상 카드 리스트 하단에 위치 */}
               {!isEmpty && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </>
               )}
             </>
           )}
