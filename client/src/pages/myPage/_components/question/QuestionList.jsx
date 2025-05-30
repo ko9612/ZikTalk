@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
 import EmptyQuestionList from "./EmptyQuestionList";
 import { Header, FilterBar, ResultGrid } from "./settings";
-import { LoadingIndicator } from "../common/LoadingIndicator";
+import { LoadingIndicator } from "../../../../components/common/LoadingIndicator";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { SCROLL_BATCH_SIZE } from "./settings/constants";
 import axiosInstance from "@/api/axiosInstance";
 import { batchDeleteInterviews } from "@/api/myPageApi";
-import ResultCard from "./ResultCard";
+import ResultCard from "./QuestionCard";
 import Error500 from "@/components/common/Error500";
 
 // 중복 제거 유틸 함수

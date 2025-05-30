@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { RiArrowRightSLine } from "react-icons/ri";
 
-export const ResultCard = ({
+export const QuestionCard = ({
   item,
   isDeleteMode,
   selected,
@@ -174,4 +174,4 @@ export const ActionButton = ({
   );
 };
 
-export default ResultCard; 
+export default QuestionCard; 

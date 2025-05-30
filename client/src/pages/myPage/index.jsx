@@ -14,7 +14,6 @@ const tabs = [
 
 const MyPage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const currentPath = location.pathname.split("/").pop() || "result-list";
 
   const renderContent = () => {
@@ -25,13 +24,6 @@ const MyPage = () => {
         return <QuestionBookmarkList />;
       case "info":
         return <MyInfo />;
-      case "empty":
-        if (location.pathname.includes("bookmark")) {
-          return <EmptyBookmarkList />;
-        } else if (location.pathname.includes("result-list")) {
-          return <EmptyQuestionList />;
-        }
-        return null;
       default:
         return <QuestionList />;
     }
