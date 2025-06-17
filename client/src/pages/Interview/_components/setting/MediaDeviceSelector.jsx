@@ -25,6 +25,9 @@ const MediaDeviceSelector = () => {
   const animationId = useRef(null); // 볼륨 시각화 애니메이션 ID
   const streamRef = useRef(null); // 마이크 볼륨 감지용 스트림 참조
 
+  // ✅ 취소 토큰 추가
+  const cancelTokenRef = useRef({ cancelled: false });
+
   // ------------ 전역 상태 (Zustand Store) ------------
   const { navigateTo } = useSetupNavigationStore((state) => state);
   const { isGoingBack, setGoingBack } = useSetupNavigationStore();
@@ -39,91 +42,81 @@ const MediaDeviceSelector = () => {
   };
 
   /**
-   * ✅ 마이크 초기화 및 접근 권한 요청
-   *
-   * 1. 마이크 접근 권한 요청
-   * 2. 사용 가능한 마이크 목록 가져오기
-   * 3. 디바이스 변경 이벤트 감지 및 처리
+   * ✅ 통합된 미디어 디바이스 초기화 useEffect
+   * 마이크 → 카메라 → 볼륨 감지 순서로 순차적 실행
    */
   useEffect(() => {
+    // ✅ 새로운 취소 토큰 생성
+    const cancelToken = { cancelled: false };
+    cancelTokenRef.current = cancelToken;
+
     if (isGoingBack) {
+      setGoingBack(false);
       return;
     }
-    // 마이크 초기화 함수
+
+    /**
+     * 1단계: 마이크 초기화 및 접근 권한 요청
+     */
     const initMic = async () => {
       try {
+        // ✅ 취소 확인
+        if (cancelToken.cancelled) return false;
+
         // 기존 스트림이 있으면 트랙 정리 (메모리 누수 방지)
         if (micStreamRef.current) {
           micStreamRef.current.getTracks().forEach((track) => track.stop());
         }
+
         // 마이크 접근 권한 요청 (오디오만)
         const micStream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
+
+        // ✅ 비동기 작업 완료 후 취소 확인
+        if (cancelToken.cancelled) {
+          micStream.getTracks().forEach((track) => track.stop());
+          return false;
+        }
+
         micStreamRef.current = micStream; // 스트림 참조 저장
+
         // 사용 가능한 마이크 목록 가져오기
         const devices = await navigator.mediaDevices.enumerateDevices();
+
+        // ✅ 또 다른 비동기 작업 완료 후 취소 확인
+        if (cancelToken.cancelled) {
+          micStream.getTracks().forEach((track) => track.stop());
+          return false;
+        }
+
         const audioInputs = devices.filter((d) => d.kind === "audioinput");
         setMics(audioInputs);
         setHasMicAccess(audioInputs.length > 0);
+
         // 선택된 마이크가 없으면 첫 번째 마이크 선택
         if (!selectedMicId && audioInputs.length > 0) {
           setMicId(audioInputs[0].deviceId);
         }
+
+        return true;
       } catch (err) {
         console.warn("마이크 접근 실패", err);
-        setHasMicAccess(false);
+        if (!cancelToken.cancelled) {
+          setHasMicAccess(false);
+        }
+        return false;
       }
     };
-    // 마이크 초기화 실행
-    initMic();
 
     /**
-     * 디바이스 변경 감지 핸들러 (마이크 연결/해제 등)
-     * 예: 마이크 연결 끊김, 새 마이크 연결 등
+     * 2단계: 카메라 초기화 및 접근 권한 요청
      */
-    const handleDeviceChange = async () => {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const audioInputs = devices.filter((d) => d.kind === "audioinput");
-        setMics(audioInputs);
-        setHasMicAccess(audioInputs.length > 0);
-      } catch (err) {
-        console.error("디바이스 상태 갱신 실패", err);
-        setHasMicAccess(false);
-      }
-    };
-    // 디바이스 변경 이벤트 리스너 등록
-    navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange);
-
-    // 정리 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
-    return () => {
-      // 마이크 스트림 정리 (메모리 누수 방지)
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      // 이벤트 리스너 제거
-      navigator.mediaDevices.removeEventListener(
-        "devicechange",
-        handleDeviceChange,
-      );
-    };
-  }, [selectedMicId, setMicId]);
-
-  /**
-   * ✅ 카메라 초기화 및 접근 권한 요청
-   *
-   * 1. 카메라 접근 권한 요청
-   * 2. 시스템의 기본 카메라를 자동으로 선택
-   * 3. 카메라 ID 저장 및 selectedCameraId 설정
-   */
-  useEffect(() => {
-    if (isGoingBack) {
-      return;
-    }
-    // 카메라 초기화 함수
     const initCamera = async () => {
       try {
+        // ✅ 취소 확인
+        if (cancelToken.cancelled) return false;
+
         // 기존 스트림이 있으면 트랙 정리 (메모리 누수 방지)
         if (camStreamRef.current) {
           camStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -133,11 +126,18 @@ const MediaDeviceSelector = () => {
         const camStream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
+
+        // ✅ 비동기 작업 완료 후 취소 확인
+        if (cancelToken.cancelled) {
+          camStream.getTracks().forEach((track) => track.stop());
+          return false;
+        }
+
         camStreamRef.current = camStream; // 스트림 참조 저장
 
         // 활성화된 카메라의 ID 가져오기 및 저장
         const track = camStream.getVideoTracks()[0];
-        if (track) {
+        if (track && !cancelToken.cancelled) {
           // 기본 카메라의 deviceId 가져오기
           const deviceId = track.getSettings().deviceId;
 
@@ -146,29 +146,108 @@ const MediaDeviceSelector = () => {
           setHasCameraAccess(true);
 
           // 비디오 요소에 연결
-          if (videoRef.current) {
+          if (videoRef.current && !cancelToken.cancelled) {
             videoRef.current.srcObject = camStream;
           }
         }
+
+        return true;
       } catch (err) {
         console.warn("카메라 접근 실패", err);
-        setHasCameraAccess(false);
+        if (!cancelToken.cancelled) {
+          setHasCameraAccess(false);
+        }
+        return false;
       }
     };
 
-    // 카메라 초기화 실행
-    initCamera();
+    /**
+     * 3단계: 마이크 볼륨 감지 및 시각화 시작
+     */
+    const startMicVolume = async (micId) => {
+      if (!micId || cancelToken.cancelled) return;
+
+      try {
+        // 선택한 마이크로 오디오 스트림 가져오기
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: micId },
+        });
+
+        // ✅ 비동기 작업 완료 후 취소 확인
+        if (cancelToken.cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        // 볼륨 감지용 스트림 참조 저장
+        streamRef.current = stream;
+
+        // Web Audio API 설정
+        const audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256; // FFT 크기 설정 (작을수록 성능 좋음)
+
+        // 오디오 소스를 분석기에 연결
+        source.connect(analyser);
+        analyserRef.current = analyser;
+
+        // 주파수 데이터 분석을 위한 버퍼 설정
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        /**
+         * 볼륨 레벨 업데이트 함수 (재귀적으로 호출됨)
+         * - 주파수 데이터를 가져와 평균값 계산
+         * - 볼륨 상태 업데이트
+         * - 애니메이션 프레임으로 지속적 업데이트
+         */
+        const updateVolume = () => {
+          // ✅ 애니메이션 프레임에서도 취소 확인
+          if (cancelToken.cancelled) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+          const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+          setVolume(avg); // 0-255 사이의 값
+          animationId.current = requestAnimationFrame(updateVolume);
+        };
+
+        // 볼륨 업데이트 시작 (취소되지 않은 경우에만)
+        if (!cancelToken.cancelled) {
+          updateVolume();
+        }
+      } catch (err) {
+        console.error("마이크 감지 실패", err);
+        if (!cancelToken.cancelled) {
+          setHasMicAccess(false);
+        }
+      }
+    };
 
     /**
-     * 카메라 디바이스 변경 감지 핸들러
-     * 카메라 연결/해제를 감지하고 상태 업데이트
+     * 디바이스 변경 감지 핸들러
      */
     const handleDeviceChange = async () => {
+      // ✅ 취소 확인
+      if (cancelToken.cancelled) return;
+
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
+
+        // ✅ 비동기 작업 완료 후 취소 확인
+        if (cancelToken.cancelled) return;
+
+        const audioInputs = devices.filter((d) => d.kind === "audioinput");
         const videoDevices = devices.filter((d) => d.kind === "videoinput");
 
-        // 카메라 장치가 하나도 없으면 카메라 접근 실패로 간주
+        // 마이크 상태 업데이트
+        setMics(audioInputs);
+        setHasMicAccess(audioInputs.length > 0);
+
+        // 카메라 상태 업데이트
         if (videoDevices.length === 0) {
           setHasCameraAccess(false);
           // 기존 스트림 정리
@@ -179,99 +258,90 @@ const MediaDeviceSelector = () => {
           if (videoRef.current) {
             videoRef.current.srcObject = null;
           }
-        } else if (!hasCameraAccess) {
+        } else if (!hasCameraAccess && !cancelToken.cancelled) {
           // 카메라가 다시 연결된 경우 재초기화
           initCamera();
         }
       } catch (err) {
-        console.error("카메라 상태 갱신 실패", err);
-        setHasCameraAccess(false);
+        console.error("디바이스 상태 갱신 실패", err);
+        if (!cancelToken.cancelled) {
+          setHasMicAccess(false);
+          setHasCameraAccess(false);
+        }
+      }
+    };
+
+    /**
+     * 순차적 초기화 실행 함수
+     */
+    const initializeDevices = async () => {
+      // ✅ 각 단계마다 취소 확인
+      if (cancelToken.cancelled) return;
+
+      // 1단계: 마이크 초기화
+      const micSuccess = await initMic();
+      if (cancelToken.cancelled) return;
+
+      // 2단계: 카메라 초기화
+      const cameraSuccess = await initCamera();
+      if (cancelToken.cancelled) return;
+
+      // 3단계: 마이크 볼륨 감지 시작 (마이크 초기화 성공 시)
+      if (micSuccess && selectedMicId && !cancelToken.cancelled) {
+        await startMicVolume(selectedMicId);
+      } else if (micSuccess && mics.length > 0 && !cancelToken.cancelled) {
+        // selectedMicId가 없지만 마이크가 있는 경우 첫 번째 마이크 사용
+        await startMicVolume(mics[0].deviceId);
       }
     };
 
     // 디바이스 변경 이벤트 리스너 등록
     navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange);
 
-    // 정리 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
+    // 순차적 초기화 시작
+    initializeDevices();
+
+    // ✅ 정리 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
     return () => {
+      // ✅ 취소 토큰 설정 (가장 먼저!)
+      cancelToken.cancelled = true;
+
+      // 마이크 스트림 정리 (메모리 누수 방지)
+      if (micStreamRef.current) {
+        micStreamRef.current.getTracks().forEach((track) => track.stop());
+        micStreamRef.current = null;
+      }
+
       // 카메라 스트림 정리 (메모리 누수 방지)
       if (camStreamRef.current) {
         camStreamRef.current.getTracks().forEach((track) => track.stop());
+        camStreamRef.current = null;
       }
+
+      // 볼륨 감지용 스트림 정리
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+
+      // 애니메이션 프레임 취소
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+        animationId.current = null;
+      }
+
+      // 비디오 요소 정리
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+
       // 이벤트 리스너 제거
       navigator.mediaDevices.removeEventListener(
         "devicechange",
         handleDeviceChange,
       );
     };
-  }, [setCameraId, hasCameraAccess]);
-
-  /**
-   * 마이크 볼륨 감지 및 시각화
-   *
-   * 1. 선택된 마이크의 오디오 스트림 가져오기
-   * 2. Web Audio API를 사용하여 오디오 분석
-   * 3. 실시간 볼륨 수준 측정 및 상태 업데이트
-   */
-  useEffect(() => {
-    if (isGoingBack) {
-      setGoingBack(false);
-      return;
-    }
-    // 마이크 ID나 접근 권한이 없으면 중단
-    if (!selectedMicId || !hasMicAccess) return;
-    // 마이크 볼륨 모니터링 시작 함수
-    const startMicVolume = async () => {
-      try {
-        // 선택한 마이크로 오디오 스트림 가져오기
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: { deviceId: selectedMicId },
-        });
-        // 볼륨 감지용 스트림 참조 저장
-        streamRef.current = stream;
-        // Web Audio API 설정
-        const audioCtx = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256; // FFT 크기 설정 (작을수록 성능 좋음)
-        // 오디오 소스를 분석기에 연결
-        source.connect(analyser);
-        analyserRef.current = analyser;
-        // 주파수 데이터 분석을 위한 버퍼 설정
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        /**
-         * 볼륨 레벨 업데이트 함수 (재귀적으로 호출됨)
-         * - 주파수 데이터를 가져와 평균값 계산
-         * - 볼륨 상태 업데이트
-         * - 애니메이션 프레임으로 지속적 업데이트
-         */
-        const updateVolume = () => {
-          analyser.getByteFrequencyData(dataArray);
-          const avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
-          setVolume(avg); // 0-255 사이의 값
-          animationId.current = requestAnimationFrame(updateVolume);
-        };
-        // 볼륨 업데이트 시작
-        updateVolume();
-      } catch (err) {
-        console.error("마이크 감지 실패", err);
-        setHasMicAccess(false);
-      }
-    };
-    // 볼륨 감지 시작
-    startMicVolume();
-    // 정리 함수: 컴포넌트 언마운트 또는 의존성 변경 시 실행
-    return () => {
-      // 볼륨 감지용 스트림 정리
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-      }
-      // 애니메이션 프레임 취소
-      cancelAnimationFrame(animationId.current);
-    };
-  }, [selectedMicId, hasMicAccess]);
+  }, [selectedMicId, setCameraId, hasCameraAccess, setMicId, setGoingBack]);
 
   /**
    * 렌더링 부분
