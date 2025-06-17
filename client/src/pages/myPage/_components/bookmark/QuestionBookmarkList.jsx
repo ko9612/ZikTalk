@@ -3,7 +3,7 @@ import { useFilter } from "@/hooks/useFilter";
 import EmptyBookmarkList from "./EmptyBookmarkList";
 import { fetchBookmarks, toggleQuestionBookmark } from "@/api/myPageApi";
 import { PAGE_SIZE, TEXT_COLORS, TableHeader } from "./settings";
-import { LoadingIndicator } from "../common/LoadingIndicator";
+import { LoadingIndicator } from "@/components/common/LoadingIndicator";
 import FaqItem from "@/components/common/FaqItem";
 import Pagination from "@/components/common/Pagination";
 import FilterDropdown from "@/components/common/FilterDropdown";

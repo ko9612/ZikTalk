@@ -9,7 +9,7 @@ import {
   deleteUserAccount,
   fetchUserInfo,
 } from "@/api/myPageApi";
-import { LoadingIndicator } from "../common/LoadingIndicator";
+import { LoadingIndicator } from "../../../../components/common/LoadingIndicator";
 import { useLogout, useDeleteKaKaoUser } from "@/hooks/useAuth";
 import Error500 from "@/components/common/Error500";
 
