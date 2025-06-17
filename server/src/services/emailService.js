@@ -8,8 +8,11 @@ export const sendEmail = async (email, attributes = {}) => {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.GMAIL_EMAIL_USER,
-        pass: process.env.GMAIL_EMAIL_PASS,
+        type: "OAuth2",
+        user: process.env.GMAIL_OAUTH_USER,
+        clientId: process.env.GMAIL_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GMAIL_OAUTH_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_OAUTH_REFRESH_TOKEN,
       },
     });
     const mailOptions = {
