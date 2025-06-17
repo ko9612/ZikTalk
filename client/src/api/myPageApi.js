@@ -15,9 +15,9 @@ export const fetchBookmarks = async (
     };
 
     const response = await axiosInstance.get("/mypage/bookmarks", { params });
+
     return response.data;
   } catch (error) {
-    console.error("북마크 조회 중 오류:", error);
     throw error;
   }
 };
@@ -118,6 +118,7 @@ export const updateUserInfo = async (userData) => {
 export const deleteUserAccount = async () => {
   try {
     const response = await axiosInstance.post(`/mypage/user/delete`);
+
     return response.data;
   } catch (err) {
     if (err.response) {
@@ -127,4 +128,11 @@ export const deleteUserAccount = async () => {
     }
     throw err;
   }
+};
+// 기존 API 함수는 유지 (하위 호환성)
+export const myPageApi = async () => {
+  try {
+    const response = await axiosInstance.get(`/mypage/bookmarks`);
+    return response;
+  } catch (err) {}
 };

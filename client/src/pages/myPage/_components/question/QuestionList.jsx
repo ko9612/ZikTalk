@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useFilter, SORT_OPTIONS } from "@/hooks/useFilter";
 import EmptyQuestionList from "./EmptyQuestionList";
 import { Header, FilterBar, ResultGrid } from "./settings";
-import { LoadingIndicator } from "@/components/common/LoadingIndicator";
+import { LoadingIndicator } from "../common/LoadingIndicator";
 import CommonModal from "@/components/common/Modal/CommonModal";
 import { SCROLL_BATCH_SIZE } from "./settings/constants";
 import axiosInstance from "@/api/axiosInstance";

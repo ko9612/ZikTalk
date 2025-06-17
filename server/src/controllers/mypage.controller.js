@@ -13,40 +13,51 @@ export const getMyBookmarks = async (req, res) => {
       bookmarked: true,
     };
 
-    if (req.query.role) {
-      where.interview = {
-        role: req.query.role,
-      };
+    try {
+      if (req.query.role) {
+        where.interview = {
+          role: req.query.role,
+        };
+      }
+
+      if (req.query.type) {
+        where.type = req.query.type === "직무" ? "JOB" : "PERSONALITY";
+      }
+    } catch (filterError) {
+      where.interview = undefined;
+      where.type = undefined;
     }
 
-    if (req.query.type) {
-      where.type = req.query.type === "직무" ? "JOB" : "PERSONALITY";
-    }
-
-    const [totalCount, questions] = await Promise.all([
-      prisma.question.count({ where }),
-      prisma.question.findMany({
+    try {
+      const totalCount = await prisma.question.count({
         where,
-        include: { interview: true },
+      });
+
+      const questions = await prisma.question.findMany({
+        where,
+        include: {
+          interview: true,
+        },
         orderBy: { order: "asc" },
         skip,
         take: pageSize,
-      })
-    ]);
+      });
 
-    res.status(200).json({
-      questions,
-      totalCount,
-      currentPage: page,
-      pageSize,
-      totalPages: Math.ceil(totalCount / pageSize),
-    });
+      res.status(200).json({
+        questions,
+        totalCount,
+        currentPage: page,
+        pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
+      });
+    } catch (dbError) {
+      return res.status(500).json({
+        message: "데이터 조회 중 오류가 발생했습니다.",
+        error: dbError.message,
+      });
+    }
   } catch (error) {
-    console.error("북마크 조회 중 오류:", error);
-    res.status(500).json({ 
-      message: "서버 오류가 발생했습니다.",
-      error: error.message 
-    });
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
 
