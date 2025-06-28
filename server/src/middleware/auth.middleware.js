@@ -74,7 +74,6 @@ export const checkEmailUserId = async (req, res, next) => {
     const existingUser = await prisma.user.findFirst({
       where: {
         email,
-        provider: "local",
       },
     });
 
@@ -82,6 +81,10 @@ export const checkEmailUserId = async (req, res, next) => {
       return res
         .status(404)
         .json({ message: "회원가입하지 않은 이메일입니다." });
+    }
+
+    if (existingUser.provider === "kakao") {
+      return res.status(403).json({ message: "카카오로 가입한 이메일입니다." });
     }
 
     req.user = req.user || {};

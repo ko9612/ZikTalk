@@ -36,12 +36,18 @@ function ResetPassword({ isOpenModal, modalHandler }) {
 
       setIsLoading(false);
     } catch (e) {
-      if (e.response && e.response.status === 404) {
-        setError("email", {
-          message: "가입하지 않은 이메일입니다.",
-        });
+      if (e.response) {
+        const status = e.response.status;
+        const message =
+          e.response.data?.message || "알 수 없는 오류가 발생했습니다.";
+
+        if (status === 404 || status === 403) {
+          setError("email", { message });
+        } else {
+          console.error("서버 오류:", message);
+        }
       } else {
-        console.error("서버 오류:", e.response.data);
+        console.error("요청 실패:", e.message);
       }
 
       setIsEmailSent(false);
