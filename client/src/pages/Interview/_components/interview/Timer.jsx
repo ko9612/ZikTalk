@@ -97,7 +97,7 @@ const Timer = ({ qes, browserable, start, stop }) => {
         <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6">
           <div
             className={twMerge(
-              "text-zik-main text-lg",
+              "text-zik-main text-lg text-nowrap",
               isReplying && "text-[#FE607D]",
             )}
           >
@@ -110,7 +110,7 @@ const Timer = ({ qes, browserable, start, stop }) => {
           <div
             className={twMerge(
               "text-zik-main text-6xl font-bold",
-              isLoading && "text-5xl",
+              isLoading && "text-5xl text-nowrap",
               isReplying && "text-[#FE607D]",
             )}
           >
