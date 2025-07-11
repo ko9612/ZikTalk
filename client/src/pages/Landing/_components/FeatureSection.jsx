@@ -150,7 +150,7 @@ const FeatureSection = () => {
           >
             <div className={`${filtered}`}></div>
             <div className="relative flex h-full flex-col gap-5 p-7">
-              <strong className="text-3xl text-nowrap text-white">
+              <strong className="text-xl md:text-3xl text-nowrap text-white">
                 다시보고 싶은 질문
               </strong>
               <p className="text-base font-medium text-white lg:text-lg">
