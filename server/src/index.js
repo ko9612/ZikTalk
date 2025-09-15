@@ -24,7 +24,8 @@ app.use((req, res, next) => {
 // ping test용
 app.head("/health", async (req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const result = await prisma.$queryRaw`SELECT 1 as test_value`;
+    console.log("DB 연결 테스트 결과:", result);
     res.status(200).end();
   } catch (error) {
     console.error("Health check error:", error);
