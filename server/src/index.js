@@ -25,16 +25,10 @@ app.use((req, res, next) => {
 app.head("/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.status(200).json({
-      status: "OK",
-      timestamp: new Date().toISOString(),
-    });
+    res.status(200).end();
   } catch (error) {
     console.error("Health check error:", error);
-    res.status(500).json({
-      status: "ERROR",
-      timestamp: new Date().toISOString(),
-    });
+    res.status(500).end();
   }
 });
 
