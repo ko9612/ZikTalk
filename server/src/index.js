@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 });
 
 // ping test용
-app.get("/health", async (req, res) => {
+app.head("/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.status(200).json({
