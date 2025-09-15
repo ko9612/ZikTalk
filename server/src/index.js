@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import rootRouter from "./routes/root.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { prisma } from "./utils/prisma.js";
 
 dotenv.config();
 const app = express();
@@ -20,9 +21,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// ping test용용
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
+// ping test용
+app.get("/health", async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({
+      status: "OK",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Health check error:", error);
+    res.status(500).json({
+      status: "ERROR",
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 const corsOptions = {
