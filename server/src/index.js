@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import rootRouter from "./routes/root.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { prisma } from "./utils/prisma.js";
+import prisma from "./utils/prisma.js";
 
 dotenv.config();
 const app = express();
